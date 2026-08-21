@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>พาร์ท 3 — สำหรับโปรแกรมเมอร์ที่รับช่วงต่อระบบ</title>
+<style>
+  :root {
+    --bg: #f6f8f3; --surface: #ffffff; --surface-2: #eef2ea;
+    --ink: #17211a; --ink-muted: #4c5a4f; --ink-faint: #7c8a7d;
+    --line: #dee6da; --line-strong: #c4d0bf;
+    --accent: #266448; --accent-ink: #ffffff; --accent-soft: #e2efe4; --accent-soft-line: #bcdac4;
+    --gold: #9a6d12; --gold-soft: #fbf1dc; --gold-soft-line: #ecd28b;
+    --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
+    --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+      --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+      --line: #2b352a; --line-strong: #3a463790;
+      --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+      --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+    --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+    --line: #2b352a; --line-strong: #3a463790;
+    --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+    --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  h1, h2, h3 { text-wrap: balance; font-weight: 700; color: var(--ink); margin: 0; }
+  p { text-wrap: pretty; margin: 0; }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.4em; }
+
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--surface); }
+  .topbar__mark { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 17px; flex: none; }
+  .topbar__title { font-weight: 700; font-size: 15px; }
+  .topbar__sub { font-size: 12.5px; color: var(--ink-faint); }
+  .topbar__back { margin-inline-start: auto; font-size: 12.6px; font-weight: 600; color: var(--ink-muted); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; }
+  .topbar__back:hover { border-color: var(--accent); color: var(--accent); }
+
+  main { max-width: 880px; margin: 0 auto; padding: 48px clamp(24px, 5vw, 64px) 80px; }
+  .hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+  .hero__eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .hero h1 { font-size: clamp(26px, 3.6vw, 36px); line-height: 1.28; margin-bottom: 14px; }
+  .hero p.lead { font-size: 16px; color: var(--ink-muted); max-width: 68ch; margin-bottom: 30px; }
+
+  .cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 8px 0 8px; }
+  .card {
+    border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 20px 22px;
+    box-shadow: var(--shadow); text-decoration: none; color: var(--ink); display: block;
+  }
+  .card:hover { border-color: var(--accent-soft-line); }
+  .card .em { font-size: 22px; margin-bottom: 10px; display: block; }
+  .card h3 { font-size: 15.5px; margin-bottom: 6px; }
+  .card p { font-size: 13.3px; color: var(--ink-muted); }
+  .card .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .card .tag { font-size: 11px; font-family: var(--font-mono); color: var(--ink-faint); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; }
+
+  .callout {
+    border: 1px solid var(--line); border-inline-start: 3px solid var(--gold);
+    background: var(--gold-soft); border-radius: 10px; padding: 15px 18px; margin: 34px 0 0;
+  }
+  .callout__label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold); margin-bottom: 5px; }
+  .callout p { font-size: 13.8px; color: var(--ink); }
+
+  footer { font-size: 12px; color: var(--ink-faint); margin-top: 40px; max-width: 880px; margin-inline: auto; padding: 0 clamp(24px, 5vw, 64px) 40px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar__mark">🧑‍💻</div>
+  <div>
+    <div class="topbar__title">พาร์ท 3 — สำหรับโปรแกรมเมอร์ที่รับช่วงต่อระบบ</div>
+    <div class="topbar__sub">ไฟล์/ฟังก์ชัน/endpoint สำคัญ, การ deploy, และการดูแลรักษาต่อ</div>
+  </div>
+  <a class="topbar__back" href="../index.html">← กลับหน้ารวมเอกสาร</a>
+</div>
+
+<main>
+  <div class="hero__eyebrow">สาย 3 จาก 3 — โปรแกรมเมอร์รับช่วงต่อ</div>
+  <h1>ทำสิ่งนี้ต้องแก้ไฟล์ไหน เรียกฟังก์ชันอะไร แล้ว deploy ยังไง</h1>
+  <p class="lead">
+    ไม่เรียงเป็นลำดับขั้นแบบพาร์ท 1 — เป็นเอกสารอ้างอิงที่เปิดใช้เฉพาะตอนต้องการ เลือกเปิดหัวข้อที่ตรงกับงานที่กำลังทำได้เลย
+  </p>
+
+  <div class="cardgrid">
+    <a class="card" href="../reference/ops-manual.html">
+      <span class="em">📘</span>
+      <h3>คู่มือปฏิบัติงาน</h3>
+      <p>ทำสิ่งนี้ต้องแก้ไฟล์ไหน เรียกฟังก์ชันอะไร — จัดการเอกสาร KB, เพิ่ม API+กราฟ, LINE Webhook, OCR/DeepSeek fallback, ผู้ใช้/สิทธิ์, วิธี deploy สู่ production, การทดสอบ, ตัวแปรปรับพฤติกรรม และช่องโหว่ความปลอดภัยที่ต้องแก้ก่อนส่งมอบ</p>
+      <div class="tags"><span class="tag">file/function map</span><span class="tag">deploy</span><span class="tag">security</span></div>
+    </a>
+    <a class="card" href="../reference/admin-manual.html">
+      <span class="em">🩺</span>
+      <h3>คู่มือดูแลระบบ</h3>
+      <p>ระบบพังตอนตี 2 ต้องทำอะไรก่อน — อาการที่พบบ่อยและจุดที่ต้องเช็ค, วิธี rollback เมื่อ deploy ใหม่ทำระบบพัง, ตัวขับต้นทุนใช้งานจริงและสวิตช์ลดต้นทุน (= งาน MA ต่อเนื่องหลังรับช่วง)</p>
+      <div class="tags"><span class="tag">incident response</span><span class="tag">rollback</span><span class="tag">cost</span></div>
+    </a>
+    <a class="card" href="../reference/technical-faq.html">
+      <span class="em">❓</span>
+      <h3>ถามตอบเทคนิค</h3>
+      <p>ค้นหาคำตอบเฉพาะจุดเร็ว ๆ — แนวคิด RAG/Chatbot ทั่วไป 12 ข้อ, เหตุผลการออกแบบเฉพาะโปรเจกต์นี้ 12 ข้อ, และตารางค้นเร็ว "ทำ X ต้องดูไฟล์ไหน" 20 รายการ</p>
+      <div class="tags"><span class="tag">Q&amp;A</span><span class="tag">code lookup</span></div>
+    </a>
+  </div>
+
+  <div class="callout">
+    <span class="callout__label">ยังไม่ครบ</span>
+    <p>เอกสารปฐมนิเทศโปรแกรมเมอร์แบบเต็ม (setup แบบเร่งด่วน, แล็บลงมือทำ, ขั้นตอนส่ง PR แรก) และเรื่องธรรมาภิบาลข้อมูล ยังไม่ได้จัดเข้าพาร์ทนี้อย่างเป็นทางการ — ดูได้ที่หน้ารวมเอกสารหลักในกลุ่ม "ไฟล์อื่น ๆ ที่ยังไม่จัดพาร์ท" ไปก่อน</p>
+  </div>
+</main>
+
+<footer>เอกสารพาร์ท 3 ลิงก์ไปยังไฟล์ในโฟลเดอร์ <code>reference/</code> โดยตรง — เก็บโฟลเดอร์นี้ไว้ข้าง ๆ เสมอ</footer>
+</body>
+</html>

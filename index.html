@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>ศูนย์รวมเอกสาร OAE Chatbot</title>
+<style>
+  :root {
+    --bg: #f6f8f3; --surface: #ffffff; --surface-2: #eef2ea;
+    --ink: #17211a; --ink-muted: #4c5a4f; --ink-faint: #7c8a7d;
+    --line: #dee6da; --line-strong: #c4d0bf;
+    --accent: #266448; --accent-ink: #ffffff; --accent-soft: #e2efe4; --accent-soft-line: #bcdac4;
+    --gold: #9a6d12; --gold-soft: #fbf1dc; --gold-soft-line: #ecd28b;
+    --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
+    --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+      --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+      --line: #2b352a; --line-strong: #3a463790;
+      --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+      --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+    --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+    --line: #2b352a; --line-strong: #3a463790;
+    --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+    --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  h1, h2, h3 { text-wrap: balance; font-weight: 700; color: var(--ink); margin: 0; }
+  p { text-wrap: pretty; margin: 0; }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.4em; }
+
+  main { max-width: 920px; margin: 0 auto; padding: 56px clamp(24px, 5vw, 64px) 80px; }
+  .hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+  .hero__eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .hero h1 { font-size: clamp(26px, 3.6vw, 36px); line-height: 1.28; margin-bottom: 14px; }
+  .hero p.lead { font-size: 16px; color: var(--ink-muted); max-width: 68ch; margin-bottom: 40px; }
+
+  .partgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0 0 40px; }
+  .partcard {
+    display: flex; flex-direction: column; border: 1px solid var(--line); background: var(--surface);
+    border-radius: 16px; padding: 22px 22px 20px; box-shadow: var(--shadow); text-decoration: none; color: var(--ink);
+    min-height: 210px;
+  }
+  .partcard:hover { border-color: var(--accent-soft-line); }
+  .partcard__n { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-soft-line); border-radius: 7px; padding: 2px 8px; align-self: flex-start; margin-bottom: 12px; }
+  .partcard .em { font-size: 26px; margin-bottom: 10px; display: block; }
+  .partcard h2 { font-size: 16.5px; margin-bottom: 8px; }
+  .partcard p { font-size: 13.4px; color: var(--ink-muted); flex: 1; }
+  .partcard .who { font-size: 12px; color: var(--ink-faint); margin-top: 12px; font-weight: 600; }
+  .partcard.pending { opacity: 0.7; cursor: default; }
+  .partcard.pending .partcard__n { background: var(--gold-soft); color: var(--gold); border-color: var(--gold-soft-line); }
+  .partcard.pending .badge { display: inline-block; font-size: 10.5px; font-weight: 700; color: var(--gold); background: var(--gold-soft); border: 1px solid var(--gold-soft-line); border-radius: 999px; padding: 2px 9px; margin-top: 12px; }
+
+  .callout {
+    border: 1px solid var(--accent-soft-line); border-inline-start: 3px solid var(--accent);
+    background: var(--accent-soft); border-radius: 10px; padding: 15px 18px; margin: 0 0 40px;
+  }
+  .callout__label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 5px; }
+  .callout p { font-size: 13.8px; color: var(--ink); }
+
+  details.unsorted { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 4px 0; }
+  details.unsorted summary { cursor: pointer; padding: 14px 18px; font-size: 13.4px; font-weight: 600; color: var(--ink-muted); list-style: none; display: flex; align-items: center; gap: 8px; }
+  details.unsorted summary::-webkit-details-marker { display: none; }
+  details.unsorted summary::before { content: "▸"; color: var(--ink-faint); font-size: 11px; }
+  details.unsorted[open] summary::before { content: "▾"; }
+  .navlist { list-style: none; margin: 0; padding: 4px 10px 14px; display: flex; flex-direction: column; gap: 2px; }
+  .navlink {
+    display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 9px;
+    text-decoration: none; color: var(--ink); border: 1px solid transparent;
+  }
+  .navlink:hover { background: var(--surface-2); border-color: var(--line); }
+  .navlink .em { font-size: 16px; flex: none; line-height: 1.3; }
+  .navlink .t { font-size: 13.4px; font-weight: 600; color: var(--ink); }
+  .navlink .d { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; line-height: 1.4; }
+
+  footer { font-size: 12px; color: var(--ink-faint); margin-top: 30px; }
+
+  @media (max-width: 760px) {
+    .partgrid { grid-template-columns: 1fr; }
+    main { padding: 36px 20px 60px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="hero__eyebrow">เอกสารอบรม oae-chatbot</div>
+  <h1>เอกสาร OAE Chatbot แบ่งเป็น 3 พาร์ท</h1>
+  <p class="lead">
+    <br><br>
+  </p>
+
+  <div class="partgrid">
+    <a class="partcard" href="part1/index.html" target="_blank" rel="noopener">
+<span class="partcard__n">พาร์ท 1 🎓</span>
+<h2>เรียนรู้ระบบ LLM Chatbot</h2>
+<p>เรียนรู้ตั้งแต่การเตรียมเครื่อง ทดสอบ RAG ตามรอยการทำงานในโค้ด ทดลองสร้างแชทบอท LINE ไปจนถึงภาพรวมของระบบทั้งหมด</p>
+<span class="who">ไม่จำเป็นต้องมีพื้นฐานการเขียนโปรแกรมมาก่อน</span>
+</a>
+
+<div class="partcard pending">
+  <span class="partcard__n">พาร์ท 2 🗂️</span>
+  <h2>ดูแลระบบหลังบ้าน</h2>
+  <p>เรียนรู้การใช้งานระบบหลังบ้าน ตั้งแต่การจัดการเอกสาร ผู้ใช้งาน และการดูข้อมูลต่าง ๆ โดยไม่ต้องเขียนโค้ด</p>
+  <span class="badge">กำลังจัดทำ — รอข้อมูลฟีเจอร์เพิ่มเติม</span>
+</div>
+
+<a class="partcard" href="part3/index.html" target="_blank" rel="noopener">
+  <span class="partcard__n">พาร์ท 3 🧑‍💻</span>
+  <h2>พัฒนาและดูแลระบบต่อ</h2>
+  <p>ทำความเข้าใจโครงสร้างระบบ ไฟล์ ฟังก์ชัน และ API ที่สำคัญ พร้อมแนวทางแก้ไขปัญหา การ Deploy และการดูแลระบบต่อเนื่อง
+  </p>
+  <span class="who">สำหรับผู้ที่จะพัฒนาและดูแลระบบต่อ</span>
+</a>
+    </a>
+  </div>
+
+  <!-- <div class="callout">
+    <span class="callout__label">แนะนำเส้นทางอ่าน</span>
+    <p>ถ้าเพิ่งเริ่มรู้จักระบบ เข้าพาร์ท 1 ก่อน ไล่ตามลำดับขั้นที่ 1 → 5 ในหน้านั้น ถ้าจะรับช่วงดูแลโค้ดต่อ ข้ามไปพาร์ท 3 ได้เลย — เปิดเฉพาะหัวข้อที่ตรงกับงานที่กำลังทำ</p>
+  </div> -->
+
+  <!-- <details class="unsorted">
+    <summary>ไฟล์อื่น ๆ ที่ยังไม่จัดพาร์ท (6 ไฟล์)</summary>
+    <ul class="navlist">
+      <li><a class="navlink" href="training/00_chapter00_orientation.html" target="_blank" rel="noopener">
+        <span class="em">🎓</span><span><span class="t">ปฐมนิเทศนักพัฒนา</span><span class="d">ภาพรวมหลักสูตร 6 วัน + checklist ทั้งหมด</span></span>
+      </a></li>
+      <li><a class="navlink" href="training/01_chapter01_setup-quick.html" target="_blank" rel="noopener">
+        <span class="em">⚡</span><span><span class="t">เตรียมเครื่อง (ฉบับรวบรัด)</span><span class="d">6 ขั้นตอน ใช้ไฟล์ Docker bundle ที่เตรียมไว้ — เหมาะกับวันอบรม</span></span>
+      </a></li>
+      <li><a class="navlink" href="training/05_chapter05_hands-on-labs.html" target="_blank" rel="noopener">
+        <span class="em">🔬</span><span><span class="t">แล็บฝึกมือ</span><span class="d">4 แล็บลงมือแก้โค้ดจริง</span></span>
+      </a></li>
+      <li><a class="navlink" href="training/06_chapter06_first-pr.html" target="_blank" rel="noopener">
+        <span class="em">🚀</span><span><span class="t">PR แรก</span><span class="d">เช็คความปลอดภัย + ส่ง PR ชิ้นแรก</span></span>
+      </a></li>
+      <li><a class="navlink" href="reference/data-governance.html" target="_blank" rel="noopener">
+        <span class="em">🛡️</span><span><span class="t">ธรรมาภิบาลข้อมูล</span><span class="d">PDPA ที่มีอยู่จริง + คุณภาพเนื้อหา KB</span></span>
+      </a></li>
+      <li><a class="navlink" href="LINE-OA-Chatbot-Guide.html" target="_blank" rel="noopener">
+        <span class="em">📄</span><span><span class="t">สร้างแชทบอท LINE จากศูนย์ (สำเนาที่ราก)</span><span class="d">เหมือนไฟล์ที่ใช้ในพาร์ท 1 — เก็บไว้เผื่ออ้างอิง</span></span>
+      </a></li>
+    </ul>
+  </details> -->
+
+  <footer>เก็บไฟล์นี้ไว้เป็น home คู่กับโฟลเดอร์  <code>part1/</code>, <code>part3/</code>, <code>resource/</code></footer>
+</main>
+</body>
+</html>

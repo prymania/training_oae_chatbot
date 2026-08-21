@@ -1,0 +1,618 @@
+<title>ทดสอบ RAG OAE Chatbot</title>
+<style>
+  :root {
+    --bg: #f6f8f3; --surface: #ffffff; --surface-2: #eef2ea;
+    --ink: #17211a; --ink-muted: #4c5a4f; --ink-faint: #7c8a7d;
+    --line: #dee6da; --line-strong: #c4d0bf;
+    --accent: #266448; --accent-ink: #ffffff; --accent-soft: #e2efe4; --accent-soft-line: #bcdac4;
+    --gold: #9a6d12; --gold-soft: #fbf1dc; --gold-soft-line: #ecd28b;
+    --code-bg: #10231a; --code-ink: #d9ead9; --code-accent: #7fd7a0;
+    --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
+    --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+      --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+      --line: #2b352a; --line-strong: #3a463790;
+      --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+      --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+      --code-bg: #0b1710; --code-ink: #cfe6d2; --code-accent: #8fe0ab;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+    --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+    --line: #2b352a; --line-strong: #3a463790;
+    --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+    --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+    --code-bg: #0b1710; --code-ink: #cfe6d2; --code-accent: #8fe0ab;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 700; color: var(--ink); }
+  p { text-wrap: pretty; }
+  code { font-family: var(--font-mono); font-size: 0.87em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.4em; }
+
+  .topbar { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .topbar__row { display: flex; align-items: center; gap: 12px; padding: 13px 24px; }
+  .topbar__mark { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 16px; flex: none; }
+  .topbar__title { font-weight: 700; font-size: 15px; }
+  .topbar__sub { font-size: 12.5px; color: var(--ink-faint); }
+  .topbar__progress { margin-inline-start: auto; display: flex; align-items: center; gap: 10px; }
+  .progress-track { width: 120px; height: 7px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; }
+  .progress-label { font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); white-space: nowrap; }
+
+  main { max-width: 800px; margin: 0 auto; padding: 40px clamp(20px, 4vw, 40px) 100px; }
+
+  .hero { margin-bottom: 26px; }
+  .hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+  .hero__eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .hero h1 { font-size: clamp(23px, 3.2vw, 30px); line-height: 1.3; margin: 0 0 12px; }
+  .hero p.lead { font-size: 15.5px; color: var(--ink-muted); margin: 0; }
+
+  .series-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 4px; }
+  .series-nav a {
+    font-size: 12px; font-weight: 600; text-decoration: none; color: var(--ink-muted);
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .series-nav a.current { color: var(--accent); border-color: var(--accent-soft-line); background: var(--accent-soft); font-weight: 700; }
+  .series-nav a:hover { border-color: var(--accent); }
+
+  .conceptbox { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 18px 20px; margin: 26px 0; box-shadow: var(--shadow); }
+  .conceptbox h3 { font-size: 14.5px; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+  .conceptbox p { font-size: 13.8px; color: var(--ink-muted); margin: 0 0 8px; }
+  .conceptbox p:last-child { margin-bottom: 0; }
+
+  .partlabel {
+    display: flex; align-items: center; gap: 10px; margin: 36px 0 4px;
+    font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint);
+  }
+  .partlabel::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .partlabel:first-of-type { margin-top: 26px; }
+
+  .step { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); margin: 14px 0; overflow: hidden; scroll-margin-top: 90px; }
+  .step__head { display: flex; align-items: flex-start; gap: 13px; padding: 16px 20px 14px; border-bottom: 1px solid var(--line); }
+  .step__badge { flex: none; width: 32px; height: 32px; border-radius: 9px; background: var(--accent-soft); border: 1px solid var(--accent-soft-line); color: var(--accent); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 14px; }
+  .step__badge.gold { background: var(--gold-soft); border-color: var(--gold-soft-line); color: var(--gold); }
+  .step__head h2 { font-size: 16.5px; margin: 0; }
+  .step__program { font-size: 12.5px; color: var(--ink-faint); margin-top: 2px; }
+  .step__body { padding: 16px 20px 18px; }
+
+  .cmdblock { position: relative; margin: 4px 0 16px; }
+  .cmdblock pre { background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 13px 50px 13px 15px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.55; margin: 0; white-space: pre-wrap; }
+  .cmdblock pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+  .copy-btn { position: absolute; top: 8px; right: 8px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.08); color: var(--code-ink); border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+  .copy-btn:hover { background: rgba(255,255,255,0.16); }
+  .copy-btn.copied { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  .explain { display: grid; gap: 10px; margin-top: 4px; }
+  .explain-row { display: flex; gap: 10px; }
+  .explain-row .icon { flex: none; width: 22px; text-align: center; font-size: 14px; padding-top: 1px; }
+  .explain-row .txt { font-size: 13.8px; color: var(--ink); }
+  .explain-row .txt strong { color: var(--ink); }
+  .explain-row .txt .sub { color: var(--ink-muted); }
+
+  .verify { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 12px; font-size: 13px; color: var(--ink-muted); }
+  .verify code { font-size: 0.92em; }
+
+  .step__check { display: flex; align-items: center; gap: 9px; margin-top: 14px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); }
+  .step__check input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; flex: none; }
+  .step__check label { font-size: 13.3px; cursor: pointer; color: var(--ink-muted); }
+  .step__check.checked { background: var(--accent-soft); border-color: var(--accent-soft-line); }
+  .step__check.checked label { color: var(--accent); font-weight: 600; }
+
+  .callout { border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 13px 16px; margin: 16px 0; }
+  .callout p { margin: 0; font-size: 13.6px; color: var(--ink); }
+  .callout__label { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 5px; }
+  .callout--gold { border-inline-start-color: var(--gold); background: var(--gold-soft); }
+  .callout--gold .callout__label { color: var(--gold); }
+
+  footer { max-width: 800px; margin: 0 auto; border-top: 1px solid var(--line); padding: 22px clamp(20px, 4vw, 40px) 40px; font-size: 12.5px; color: var(--ink-faint); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+  footer button { font-family: var(--font-ui); font-size: 12px; color: var(--ink-faint); background: none; border: 1px solid var(--line-strong); border-radius: 7px; padding: 5px 10px; cursor: pointer; }
+  footer button:hover { color: var(--ink); border-color: var(--ink-faint); }
+</style>
+
+<div class="topbar">
+  <div class="topbar__row">
+    <div class="topbar__mark">🧪</div>
+    <div>
+      <div class="topbar__title">ทดสอบ RAG ครั้งแรก — OAE Chatbot</div>
+      <div class="topbar__sub">ขั้นที่ 2 ของสายผู้สนใจระบบ — ต่อจากเตรียมเครื่องพัฒนา 12 ข้อ (ขั้นที่ 1) → พิสูจน์ด้วยมือว่าบอทไม่ได้เดา</div>
+    </div>
+    <div class="topbar__progress">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0/10</span>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="hero">
+    <div class="hero__eyebrow">ขั้นที่ 2 ทดสอบ RAG</div>
+    <h1>ระบบรันขึ้นแล้ว — มาพิสูจน์ว่า RAG ทำงานยังไง</h1>
+    <p class="lead">
+
+      <br>ทำครบ 12 ข้อของ "ขั้นที่ 1 เตรียมเครื่องพัฒนา" แล้ว ระบบก็แค่ "รันอยู่" แต่ยังไม่รู้ว่ามันทำงานยังไง
+      ขั้นตอนนี้จะทดสอบการทำงานของบอทโดย
+      <br> 1. เริ่มถามบอทเรื่องที่ยังไม่มีเอกสาร (แมววิเชียรมาศ) ระบบตอบกึ่ง ๆ ปฏิเสธ
+      <br> 2. ฝังเอกสาร เข้าไป ถามซ้ำ บอทตอบได้แล้ว 
+      <br> 3. <strong>ลบเอกสารนั้นทิ้ง</strong> (refresh website หลังลบเอกสาร) ถามซ้ำอีกครั้งเพื่อดูว่ามัน "ลืม" ทันที 
+      <br> <br>
+      ถ้าทำสำเร็จ แปลว่าเราเพิ่งพิสูจน์ว่า ระบบนี้ตอบจากเอกสารจริงที่มีอยู่ ณ ขณะนั้นเท่านั้น
+      ไม่ได้ทายจากความรู้ทั่วไปของ AI ต่อให้เรื่องนั้น AI จะ "รู้จัก" อยู่แล้วก็ตาม
+    </p>
+    <nav class="series-nav">
+      <a href="step1_setup-full.html">🧰 เตรียมเครื่องพัฒนา (ขั้นที่ 1)</a>
+      <a class="current">🧪 ทดสอบ RAG (ขั้นที่ 2) · กำลังอ่าน</a>
+      <a href="step3_trace-question.html">🧵 ตามรอยคำถาม (ขั้นที่ 3)</a>
+      <a href="step4_line-oa-guide.html">💬 สร้างแชทบอท LINE (ขั้นที่ 4)</a>
+      <a href="step5_system-overview.html">📗 ภาพรวมระบบ (ขั้นที่ 5)</a>
+    </nav>
+  </div>
+
+  <!-- <div class="conceptbox">
+    <h3>💡 ทำไมขั้นตอนนี้ถึงสำคัญ</h3>
+    <p>แชทบอท AI ทั่วไปตอบจาก "ความจำ" ที่เรียนรู้มาตอนฝึกโมเดล ซึ่งบางครั้ง<strong>สร้างข้อมูลที่ไม่มีจริงขึ้นมาเอง</strong>ได้ (เรียกว่า hallucination) — ยอมรับไม่ได้กับข้อมูลราชการที่ต้องอ้างอิงได้จริง</p>
+    <p>OAE Chatbot แก้ปัญหานี้ด้วยเทคนิคที่เรียกว่า <strong>RAG (Retrieval-Augmented Generation)</strong>: ก่อนตอบทุกครั้ง ระบบจะค้นเอกสารที่เกี่ยวข้องก่อน แล้ว "บังคับ" ให้ AI ใช้เฉพาะข้อมูลที่ค้นเจอมาตอบเท่านั้น การทดลองด้านล่างนี้คือการพิสูจน์กลไกนี้แบบจับต้องได้ ไม่ใช่แค่เชื่อคำอธิบาย</p>
+  </div> -->
+
+  <!-- conceptbox เดิม -->
+  <div class="conceptbox">
+    <h3>💡 ทำไมขั้นตอนนี้ถึงสำคัญ</h3>
+    <p>
+      แชทบอท AI ทั่วไปตอบจาก "ความจำ" ที่เรียนรู้มาตอนฝึกโมเดล
+      ซึ่งบางครั้ง<strong>สร้างข้อมูลที่ไม่มีจริงขึ้นมาเอง</strong>ได้
+      (เรียกว่า hallucination) — ยอมรับไม่ได้กับข้อมูลราชการที่ต้องอ้างอิงได้จริง
+    </p>
+    <p>
+      OAE Chatbot แก้ปัญหานี้ด้วยเทคนิคที่เรียกว่า
+      <strong>RAG (Retrieval-Augmented Generation)</strong>:
+      ก่อนตอบทุกครั้ง ระบบจะค้นเอกสารที่เกี่ยวข้องก่อน แล้ว
+      <strong>กำหนดให้ AI ตอบโดยอ้างอิงจากข้อมูลที่ระบบค้นพบจากฐานความรู้
+        และหากไม่พบข้อมูลที่เกี่ยวข้อง ระบบจะปฏิเสธการตอบ</strong>
+      การทดลองด้านล่างนี้คือการพิสูจน์กลไกนี้แบบจับต้องได้
+      ไม่ใช่แค่เชื่อคำอธิบาย
+    </p>
+  </div>
+
+  <div class="partlabel">ก่อนเริ่ม — ยืนยันการทำงานของขั้นที่ 1</div>
+
+  <section class="step" id="s0">
+    <div class="step__head">
+      <div class="step__badge gold">✓</div>
+      <div><h2>ยืนยันว่าเข้าแอดมินได้ก่อน</h2><div class="step__program">ขั้นที่ 1 พาไปถึงหน้าแชทเท่านั้น — ยังไม่ได้เช็คหน้าแอดมิน</div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🔑</span><span class="txt"><strong>ทำอะไร:</strong> <span class="sub">เปิด <code>http://localhost:8000/admin</code> แล้วล็อกอินด้วยค่าที่กรอกไว้ใน <code>.env</code> ตอนติดตั้ง (<code>ADMIN_USERNAME</code> / <code>ADMIN_PASSWORD</code>) 
+          <br> ถ้าไม่ได้แก้ค่าเอง username เริ่มต้นคือ 
+          <br><code>admin</code> 
+          <br><code>admin1234</code></span></span></div>
+      </div>
+      <div class="verify">✅ <strong>เช็ค:</strong> เข้าหน้าแอดมินได้ เห็นเมนูด้านซ้าย เช่น "ฐานความรู้", "บันทึกคำถาม-คำตอบ", "ภาพรวมสำหรับผู้บริหาร"</div>
+      <div class="step__check"><input type="checkbox" id="c0"><label for="c0">ล็อกอินแอดมินสำเร็จ</label></div>
+    </div>
+  </section>
+
+  <div class="partlabel">ขั้นที่ 1 — ถามเรื่องที่ระบบยังไม่รู้จัก</div>
+
+  <section class="step" id="s1">
+    <div class="step__head">
+      <div class="step__badge">1</div>
+      <div><h2>ถามคำถามที่ระบบยังไม่รู้จัก</h2><div class="step__program">คำถามเกี่ยวกับแมววิเชียรมาศ — ยังไม่ต้องฝังข้อมูลอะไรก่อน</div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ทำไมต้องเป็นเรื่องแมว:</strong> <span class="sub">เอกสารของ สศก. เป็นข้อมูลด้านเศรษฐกิจการเกษตรเท่านั้น เรื่องแมว (ปศุสัตว์/สัตว์เลี้ยง) จึงอยู่นอกขอบเขตของฐานความรู้ปัจจุบันโดยสิ้นเชิง — ต่างจากการแต่งข้อมูลปลอมขึ้นมาเอง ตรงที่นี่เป็น "เรื่องจริงที่ AI น่าจะรู้อยู่แล้ว" แต่ระบบต้องปฏิเสธตอบเพราะไม่มีในเอกสารที่มอบให้ ถ้าฝัง <code>cat.txt</code> เข้าไปแล้วบอทตอบถูกได้ แปลว่าคำตอบนั้นมาจากเอกสารที่เพิ่งฝังจริง ๆ ไม่ใช่ความรู้ทั่วไปที่ AI มีอยู่แล้ว</span></span></div>
+      </div>
+      <div class="cmdblock">
+        <pre><code>แมววิเชียรมาศมีลักษณะยังไง
+ดูแลแมวยังไง
+คนไทยมีความเชื่อเกี่ยวกับแมววิเชียรมาศยังไง</code></pre>
+        <button class="copy-btn" data-copy="แมววิเชียรมาศมีลักษณะยังไง
+ดูแลแมวยังไง
+คนไทยมีความเชื่อเกี่ยวกับแมววิเชียรมาศยังไง">คัดลอก</button>
+      </div>
+      <div class="verify">💡 <strong>สังเกต:</strong> ลองถามคำถามพวกนี้ในหน้าแชทตอนนี้เลยก็ได้ — ระบบยังตอบเรื่องแมวไม่ได้ (จะได้คำตอบทำนอง "ไม่มีข้อมูลเรื่องนี้ในเอกสารของ สศก. แนะนำให้ติดต่อกรมปศุสัตว์แทน") เดี๋ยวขั้นถัดไปจะฝังข้อมูลเข้าไป แล้วมาดูว่าคำตอบเปลี่ยนไหม</div>
+      <div class="step__check"><input type="checkbox" id="c1"><label for="c1">ลองถามแล้ว เห็นว่าระบบยังตอบไม่ได้</label></div>
+    </div>
+  </section>
+
+  <section class="step" id="s2">
+    <div class="step__head">
+      <div class="step__badge">2</div>
+      <div><h2>ฝังข้อความเข้าคลังความรู้ (ไม่ต้องมี PDF)</h2>
+        <div class="step__program">หน้าแอดมิน → แท็บ "โดเมน" → "เพิ่มโดเมน" → แมว, รหัสโดเมน cat</div>
+        <div class="step__program">หน้าแอดมิน → แท็บ "ฐานความรู้" → ช่องเพิ่มข้อความโดยตรง</div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">📄</span><span class="txt"><strong>เนื้อหาที่จะฝัง:</strong> <span class="sub">เปิดไฟล์ <a href="../resource/cat.txt" target="_blank" rel="noopener"><code>resource/cat.txt</code></a> ที่ผู้จัดอบรมเตรียมไว้ (คลิกลิงก์นี้เพื่อเปิด) คัดลอกเนื้อหาทั้งหมด แล้ววางในช่องฝังข้อความโดยตรงที่หน้าแอดมิน 
+        <br> **  อย่าลืมเปลี่ยนโดเมน เป็น แมว **</span></span></div>
+        <div class="explain-row"><span class="icon">📦</span><span class="txt"><strong>ทำอะไร:</strong> <span class="sub">แท็บ "ฐานความรู้" มี 2 วิธีป้อนข้อมูล — อัปโหลด PDF (ต้องผ่าน OCR ก่อน ใช้เวลานานกว่า) กับ <strong>ฝังข้อความโดยตรง</strong> (พิมพ์/วางข้อความแล้วฝังทันที ไม่ต้องมีไฟล์เลย) เลือกแบบหลังสำหรับการทดสอบนี้ — เร็วกว่าและตัดตัวแปรเรื่อง OCR ออกไปก่อน</span></span></div>
+        <div class="explain-row"><span class="icon">🔧</span><span class="txt"><strong>เบื้องหลังที่เกิดขึ้น:</strong> <span class="sub">ข้อความที่วางเข้าไปจะถูกแปลงเป็น "เวกเตอร์" (ชุดตัวเลขที่แทนความหมาย) ด้วยโมเดล bge-m3 ที่ Ollama รันอยู่ในเครื่องคุณ แล้วบันทึกลงฐานข้อมูล PostgreSQL — เวกเตอร์นี้คือสิ่งที่ระบบใช้ "ค้นหา" ว่าข้อความไหนเกี่ยวข้องกับคำถามที่ถามเข้ามา</span></span></div>
+        <div class="explain-row"><span class="icon">🏷️</span><span class="txt"><strong>ช่องหมวด/โดเมน:</strong> <span class="sub">เลือกหมวดอะไรก็ได้ที่มีอยู่แล้วในลิสต์ — ไม่ต้องกังวลว่าไม่มีหมวด "แมว" ให้เลือก เพราะการค้นหาจากหน้าแชทหลักในขั้นที่ 3 ไม่ได้ระบุหมวดเจาะจง (ค้นข้ามหมวดทั้งหมด) เลือกหมวดไหนก็ยังเจอได้เหมือนกัน</span></span></div>
+      </div>
+      <div class="verify">✅ <strong>เช็ค:</strong> กดฝัง/บันทึกแล้วไม่มี error ขึ้น</div>
+      <div class="step__check"><input type="checkbox" id="c2"><label for="c2">ฝังข้อความสำเร็จแล้ว</label></div>
+    </div>
+  </section>
+
+  <section class="step" id="sdb">
+    <div class="step__head">
+      <div class="step__badge gold">＋</div>
+      <div><h2>โบนัส (ไม่บังคับ) — เช็คข้อมูลใน database ที่เราเพิ่งใส่เรื่องแมวลงไป</h2><div class="step__program">ลองได้ถ้าอยากเห็นเบื้องหลัง ไม่ทำก็ข้ามไปขั้นที่ 3 ได้เลย</div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">💡</span><span class="txt"><strong>ทำไมอยากลอง:</strong> <span class="sub">ข้อความที่เพิ่งฝังในขั้นที่ 2 ถูกเก็บเป็นแถวหนึ่งในตาราง <code>knowledge_base</code> จริง ๆ ลองเข้าไปดูด้วยตาตัวเองว่าหน้าตาเป็นยังไง มีคอลัมน์อะไรบ้าง</span></span></div>
+      </div>
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🖥️</span><span class="txt"><strong>วิธีที่ 1 — ผ่าน terminal (ไม่ต้องติดตั้งอะไรเพิ่ม):</strong> <span class="sub">รันจากโฟลเดอร์โปรเจกต์ (<code>chatbot-OAE</code>) — <code>psql</code> ติดมากับ container ของ Postgres อยู่แล้ว</span></span></div>
+      </div>
+      <div class="cmdblock">
+        <pre><code>docker compose exec postgres psql -U postgres -d postgres</code></pre>
+        <button class="copy-btn" data-copy="docker compose exec postgres psql -U postgres -d postgres">คัดลอก</button>
+      </div>
+      <div class="cmdblock">
+        <pre><code>SELECT id, source, category, left(text, 80) AS text_preview
+FROM knowledge_base
+ORDER BY id DESC
+LIMIT 5;</code></pre>
+        <button class="copy-btn" data-copy="SELECT id, source, category, left(text, 80) AS text_preview
+FROM knowledge_base
+ORDER BY id DESC
+LIMIT 5;">คัดลอก</button>
+      </div>
+      <div class="explain">
+        <div class="explain-row"><span class="icon">📦</span><span class="txt"><strong>ทำอะไร:</strong> <span class="sub">คำสั่ง SQL ด้านบนดึงแถวล่าสุด 5 แถวจากตาราง <code>knowledge_base</code> มาโชว์แค่ 80 ตัวอักษรแรกของข้อความ (ตัดคอลัมน์ <code>embedding</code> ที่เป็นตัวเลขยาวเป็นพันตัวออกไปเพื่อให้อ่านง่าย) — พิมพ์ <code>\q</code> แล้ว Enter เพื่อออกจาก psql</span></span></div>
+      </div>
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🖼️</span><span class="txt"><strong>วิธีที่ 2 — ผ่านโปรแกรม DBeaver (ถ้าอยากได้หน้าตา GUI):</strong> <span class="sub">ดาวน์โหลด DBeaver Community (ฟรี) จาก <a href="https://dbeaver.io/download/" target="_blank" rel="noopener">dbeaver.io/download</a> แล้วสร้างการเชื่อมต่อใหม่แบบ PostgreSQL ด้วยค่าด้านล่าง</span></span></div>
+      </div>
+      <div class="cmdblock">
+        <pre><code>Host: localhost
+Port: 5433
+Database: postgres
+Username: postgres
+Password: postgres</code></pre>
+        <button class="copy-btn" data-copy="Host: localhost
+Port: 5433
+Database: postgres
+Username: postgres
+Password: postgres">คัดลอก</button>
+      </div>
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ทำไม port 5433 ไม่ใช่ 5432:</strong> <span class="sub"><code>docker-compose.yml</code> จับคู่พอร์ตฝั่งเครื่องเราไว้ที่ 5433 (ไม่ใช่ 5432 มาตรฐาน) เพื่อไม่ให้ชนกับ Postgres ที่อาจติดตั้งไว้ในเครื่องอยู่แล้ว — เชื่อมต่อจากเครื่องเราต้องใช้ 5433 เสมอ (ภายใน container ยังคุยกันที่ 5432 ตามปกติ)</span></span></div>
+      </div>
+      <div class="verify">✅ <strong>เช็ค:</strong> เห็นแถวข้อมูลเรื่องแมววิเชียรมาศที่เพิ่งฝังไปในขั้นที่ 2 (ไม่ว่าจะดูผ่าน psql หรือ DBeaver)</div>
+      <div class="step__check"><input type="checkbox" id="cdb"><label for="cdb">ลองดูข้อมูลใน database แล้ว (วิธีใดวิธีหนึ่ง)</label></div>
+    </div>
+  </section>
+
+  <div class="partlabel">ขั้นที่ 2 — ถามแล้วดูว่าบอทตอบถูก</div>
+
+  <section class="step" id="s3">
+    <div class="step__head">
+      <div class="step__badge">3</div>
+      <div><h2>ถามคำถามเดียวกับขั้นที่ 1 ซ้ำอีกครั้ง</h2><div class="step__program">กลับไปหน้าแชทหลัก (localhost:8000)</div></div>
+    </div>
+    <div class="step__body">
+      <div class="cmdblock">
+      <pre><code>แมววิเชียรมาศมีลักษณะยังไง
+ดูแลแมวยังไง
+คนไทยมีความเชื่อเกี่ยวกับแมววิเชียรมาศยังไง</code></pre>
+      <button class="copy-btn" data-copy="แมววิเชียรมาศมีลักษณะยังไง
+ดูแลแมวยังไง
+คนไทยมีความเชื่อเกี่ยวกับแมววิเชียรมาศยังไง">คัดลอก</button>
+      </div>
+      <div class="explain">
+        <!-- <div class="explain-row"><span class="icon">📦</span><span class="txt"><strong>เบื้องหลังที่เกิดขึ้นตอนกดส่ง:</strong> 
+          <span class="sub"> <br>คำถามถูกแปลงเป็นเวกเตอร์ แล้วระบบเทียบว่าเวกเตอร์ไหนในฐานข้อมูล "ใกล้เคียงความหมาย" กับคำถามที่สุด 
+            <br>ข้อความที่เพิ่งฝังไปในขั้นที่ 2 ควรถูกดึงขึ้นมาเป็นอันดับแรก เพราะพูดเรื่องเดียวกัน จากนั้นข้อความนั้นถูกส่งให้โมเดลภาษาอ่านแล้วเรียบเรียงเป็นคำตอบ</span></span></div> -->
+        
+            <div class="explain-row">
+              <span class="icon">🔧</span>
+              <span class="txt">
+                <strong>เบื้องหลังที่เกิดขึ้น:</strong>
+                <span class="sub">
+                  ข้อความที่วางเข้าไปจะถูกแบ่งเป็นชิ้นข้อมูล (chunk)
+                  แล้วแปลงเป็น "เวกเตอร์" (ชุดตัวเลขที่แทนความหมายของข้อความ)
+                  ด้วยโมเดล bge-m3 ที่ Ollama รันอยู่ในเครื่องคุณ
+                  จากนั้นระบบจะเก็บทั้ง <strong>ข้อความต้นฉบับและเวกเตอร์</strong>
+                  ลงฐานข้อมูล PostgreSQL — เวกเตอร์ใช้สำหรับค้นหาข้อมูลที่มี
+                  ความหมายใกล้เคียงกับคำถามในภายหลัง
+                </span>
+              </span>
+            </div>
+
+      </div>
+      <div class="verify">✅ <strong>เช็ค:</strong> คำตอบเปลี่ยนจาก "ไม่มีข้อมูล" (ในขั้นที่ 1) เป็นคำตอบจริงที่ตรงกับเนื้อหาใน <code>cat.txt</code> พร้อมเลขอ้างอิงเช่น <code>[1]</code> ต่อท้าย</div>
+      <div class="step__check"><input type="checkbox" id="c3"><label for="c3">บอทตอบได้ถูกต้องตรงกับเนื้อหาใน cat.txt</label></div>
+    </div>
+  </section>
+
+  <section class="step" id="s4">
+    <div class="step__head">
+      <div class="step__badge">4</div>
+      <div><h2>เปิดดู "เส้นทางคำตอบ"</h2><div class="step__program">ในหน้าแชท คลิกที่ข้อความคำตอบเพื่อขยาย</div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <!-- <div class="explain-row"><span class="icon">🔍</span><span class="txt"><strong>ทำอะไร:</strong> <span class="sub">คำตอบทุกข้อความในแชทมีปุ่ม/ส่วนขยาย "เส้นทางคำตอบ" ให้กดดู — จะเห็นย่อหน้าต้นฉบับที่ระบบดึงมาใช้ตอบจริง ๆ ซึ่งควรเป็นข้อความเดียวกับที่คุณฝังไว้ในขั้นที่ 2 (จาก <code>cat.txt</code>) คำต่อคำ</span></span></div> -->
+        <!-- <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ทำไมต้องดู:</strong> <span class="sub">นี่คือหัวใจสำคัญที่พิสูจน์ว่าคำตอบไม่ได้ "ลอยมาจากอากาศ" แต่มาจากเอกสาร ข้อมูลจริง ตรวจสอบย้อนกลับได้ ซึ่งเป็นหัวใจของการใช้ AI ตอบข้อมูลระบบ chatbot</span></span></div> -->
+
+        <div class="explain-row">
+          <span class="icon">🔍</span>
+          <span class="txt">
+            <strong>ทำอะไร:</strong>
+            <span class="sub">
+              คำตอบทุกข้อความในแชทมีปุ่ม/ส่วนขยาย "เส้นทางคำตอบ" ให้กดดู —
+              จะเห็นข้อความต้นฉบับหรือ chunk ที่ระบบค้นพบและนำมาใช้เป็นบริบท
+              ในการสร้างคำตอบ ซึ่งควรตรงกับข้อมูลที่ฝังไว้ในขั้นที่ 2
+              (จาก <code>cat.txt</code>)
+            </span>
+          </span>
+        </div>
+        
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ทำไมต้องดู:</strong>
+            <span class="sub">
+              นี่คือหัวใจสำคัญที่แสดงให้เห็นว่าคำตอบไม่ได้เกิดจาก LLM
+              เพียงอย่างเดียว แต่มีข้อมูลจากเอกสารที่ระบบค้นพบมาเป็นบริบท
+              ทำให้สามารถตรวจสอบย้อนกลับได้ว่าคำตอบอ้างอิงจากข้อมูลส่วนใด
+            </span>
+          </span>
+        </div>
+
+      </div>
+      <div class="step__check"><input type="checkbox" id="c4"><label for="c4">เห็นย่อหน้าต้นฉบับตรงกับที่ฝังไว้</label></div>
+    </div>
+  </section>
+
+  <div class="partlabel">ขั้นที่ 3 — ลบทิ้งแล้วดูมัน "ลืม"</div>
+
+  <section class="step" id="s5">
+    <div class="step__head">
+      <div class="step__badge">5</div>
+      <div><h2>ลบข้อความที่เพิ่งฝังออกจากคลังความรู้</h2><div class="step__program">หน้าแอดมิน → แท็บ "ฐานความรู้" → แหล่งข้อมูลฐานความรู้ → หาแถวเรื่อง แมว ที่เพิ่งฝังเข้าไป → ลบ</div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🗑️</span><span class="txt"><strong>ทำอะไร:</strong> <span class="sub">ลบชิ้นข้อมูลนั้นออกจากตาราง <code>knowledge_base</code> ในฐานข้อมูลถาวร — เวกเตอร์ของข้อความนี้จะหายไป ทำให้ค้นหาไม่เจออีกต่อไป</span></span></div>
+      </div>
+      <div class="verify">✅ <strong>เช็ค:</strong> รายการในแท็บฐานความรู้ไม่มีข้อความเรื่องแมววิเชียรมาศอีกแล้ว</div>
+      <div class="step__check"><input type="checkbox" id="c5"><label for="c5">ลบสำเร็จแล้ว</label></div>
+    </div>
+  </section>
+
+  <section class="step" id="s6">
+    <div class="step__head">
+      <div class="step__badge">6</div>
+      <div><h2>ถามคำถามเดิมซ้ำอีกครั้ง</h2><div class="step__program">กลับไปหน้าแชท, refresh web, ถามคำถามเดิมซ้ำอีกครั้ง</div></div>
+    </div>
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>แมววิเชียรมาศมีลักษณะยังไง
+ดูแลแมวยังไง
+คนไทยมีความเชื่อเกี่ยวกับแมววิเชียรมาศยังไง</code></pre>
+        <button class="copy-btn" data-copy="แมววิเชียรมาศมีลักษณะยังไง
+ดูแลแมวยังไง
+คนไทยมีความเชื่อเกี่ยวกับแมววิเชียรมาศยังไง">คัดลอก</button>
+      </div>
+      <div class="explain">
+        <!-- <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>สิ่งที่ควรเกิดขึ้น:</strong> 
+        <span class="sub">  บอทควรตอบ<strong>ไม่มีข้อมูลเรื่องนี้อีกครั้ง</strong> เหมือนขั้นที่ 1 (ไม่ใช่พยายามตอบจากความรู้ทั่วไปเรื่องแมวที่ AI มีอยู่แล้ว) — ระบบมีกลไกที่เรียกว่า "no-data guard" ที่ปฏิเสธจะตอบทันทีเมื่อค้นเอกสารไม่เจออะไรที่เกี่ยวข้องพอ แทนที่จะปล่อยให้โมเดลภาษาพยายามเดาให้ดูดี</span></span></div>
+      </div>
+      <div class="verify">✅ <strong>นี่คือ "aha moment" ของทั้งการทดลอง:</strong> 
+        <br> ถ้าคำตอบเปลี่ยนจาก "มีคำตอบละเอียดพร้อมอ้างอิง [1]" (ขั้นที่ 3) กลับไปเป็น "ไม่มีข้อมูล" แบบเดียวกับขั้นที่ 1 ทันทีที่ลบเอกสารออก แปลว่าเราเพิ่งพิสูจน์ด้วยตัวเองว่า <strong>คำตอบทุกครั้งผูกกับเอกสารที่มีอยู่จริงในฐานข้อมูล ณ ขณะนั้น ไม่ใช่ความจำทั่วไปของ AI</strong> — ทั้งที่แมววิเชียรมาศเป็นเรื่องที่ AI "รู้จัก" อยู่แล้วโดยทั่วไป</div> -->
+      
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>สิ่งที่ควรเกิดขึ้น:</strong>
+            <span class="sub">
+              บอทควรตอบ<strong>ไม่มีข้อมูลเรื่องนี้อีกครั้ง</strong>
+              เหมือนขั้นที่ 1 (ไม่ใช่พยายามตอบจากความรู้ทั่วไปเรื่องแมว
+              ที่ AI อาจมีอยู่แล้ว) — ระบบมีกลไกที่เรียกว่า
+              "no-data guard" ที่ปฏิเสธจะตอบเมื่อค้นเอกสารที่เกี่ยวข้อง
+              ไม่พบหรือมีความเกี่ยวข้องไม่เพียงพอ
+              แทนที่จะปล่อยให้โมเดลภาษาพยายามสร้างคำตอบขึ้นมาเอง
+            </span>
+          </span>
+        </div>
+        
+        <div class="verify">
+          ✅ <strong>นี่คือ "aha moment" ของทั้งการทดลอง:</strong>
+          <br>
+          ถ้าคำตอบเปลี่ยนจาก "มีคำตอบละเอียดพร้อมอ้างอิง [1]"
+          (ขั้นที่ 3) กลับไปเป็น "ไม่มีข้อมูล" แบบเดียวกับขั้นที่ 1
+          ทันทีที่ลบเอกสารออก แสดงว่าเราได้เห็นหลักฐานเชิงประจักษ์ว่า
+          <strong>กลไก Retrieval และ no-data guard ของระบบกำลังทำงานตามที่ออกแบบไว้</strong>
+          — เมื่อมีเอกสาร ระบบสามารถค้นพบข้อมูลและนำมาใช้สร้างคำตอบ
+          แต่เมื่อลบเอกสารออก ระบบไม่สามารถค้นพบข้อมูลนั้นได้อีก
+          และกลับมาปฏิเสธการตอบ
+        </div>
+
+        <div class="step__check"><input type="checkbox" id="c6"><label for="c6">คำตอบเปลี่ยนกลับเป็น "ไม่มีข้อมูล" แล้ว</label></div>
+    </div>
+  </section>
+
+  <div class="partlabel">โบนัส (ไม่บังคับ) — ลองเส้นทาง PDF จริง</div>
+
+  <section class="step" id="s7">
+    <div class="step__head">
+      <div class="step__badge gold">＋</div>
+      <div><h2>อัปโหลด PDF 1 ไฟล์ ดูเส้นทาง OCR</h2><div class="step__program">ทำเมื่อพร้อม — ไม่จำเป็นต้องทำวันนี้ก็ได้</div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">📄</span><span class="txt"><strong>ต่างจากขั้นที่ 2 ยังไง:</strong> <span class="sub">การฝังข้อความตรง ๆ ข้ามขั้นตอน OCR ไป แต่เอกสารจริงในโปรเจกต์นี้ส่วนใหญ่เป็น PDF สแกน ต้องผ่าน Typhoon OCR อ่านตัวอักษรออกมาก่อน แล้วค่อยตัดเป็นชิ้น (chunk) และฝังเวกเตอร์ — ขั้นตอนนี้ใช้เวลานานกว่า (อาจหลายสิบวินาทีถึงหลายนาทีต่อไฟล์) และมีแถบสถานะให้ดูความคืบหน้าเป็น log ทีละบรรทัด</span></span></div>
+        <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ลองทำ:</strong> <span class="sub">ใช้ไฟล์ตัวอย่างที่เตรียมไว้แล้ว — เปิด <a href="../resource/palm1.pdf" target="_blank" rel="noopener"><code>resource/palm1.pdf</code></a> แล้วอัปโหลดผ่านแท็บเดิม 
+          <br>เลือกแบบ "อัปโหลดไฟล์ PDF"
+          <br>หมวดหมู่ : ปาล์มน้ำมัน
+          <br>หมวดหมู่ย่อย  การจัดการฟาร์ม
+          <br> แล้วดู log ที่ขึ้นทีละขั้น (OCR → ตัด chunk → ฝัง embedding) จะได้เห็นภาพเบื้องหลังที่ตรงกับสิ่งที่เกิดขึ้นจริงเวลาแอดมินใส่เอกสารจริงเข้าระบบ</span></span></div>
+        <div class="explain-row"><span class="icon">📚</span><span class="txt"><strong>ที่มาเอกสาร:</strong> <span class="sub">เอกสารตัวอย่างนี้เป็นส่วนหนึ่งของการค้นคว้าเรื่อง "การจัดการสวนปาล์มน้ำมันเพื่อความยั่งยืน" โดย สุดนัย เครือหลี มหาวิทยาลัยเทคโนโลยีราชมงคลศรีวิชัย
+       วิทยาเขตนครศรีธรรมราช</span></span></div>
+      </div>
+      <div class="step__check"><input type="checkbox" id="c7"><label for="c7">ลองอัปโหลด PDF จริงแล้ว (หรือข้ามไปก่อน)</label></div>
+    </div>
+  </section>
+
+  <section class="step" id="s8">
+    <div class="step__head">
+      <div class="step__badge gold">✓</div>
+      <!-- <div><h2>อธิบาย (Checkpoint ปิดท้าย)</h2></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🗣️</span><span class="txt"><strong>คำถาม:</strong> <span class="sub">"ทำไมขั้นตอนลบแล้วถามซ้ำ ถึงพิสูจน์ได้ว่าบอทตัวนี้ไม่ได้เดา" </span></span></div>
+      </div>
+
+    </div>
+  </section> -->
+  <section class="step" id="s8">
+    <div class="step__head">
+      <div class="step__badge gold">✓</div>
+      <div>
+        <h2>อธิบาย (Checkpoint ปิดท้าย)</h2>
+      </div>
+    </div>
+  
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">🗣️</span>
+          <span class="txt">
+            <strong>คำถาม:</strong>
+            <span class="sub">
+              "ทำไมการลบเอกสารแล้วถามซ้ำ
+              จึงเป็นหลักฐานว่า Retrieval และ no-data guard
+              ของระบบทำงานจริง?"
+            </span>
+          </span>
+        </div>
+      </div>
+  
+      <div class="conceptbox">
+        <h3>💡 คำตอบที่ควรอธิบายได้</h3>
+        <p>
+          ก่อนเพิ่ม <code>cat.txt</code> ระบบค้นข้อมูลเกี่ยวกับแมวไม่พบ
+          จึงปฏิเสธการตอบ
+        </p>
+  
+        <p>
+          เมื่อเพิ่ม <code>cat.txt</code> เข้า Knowledge Base
+          ระบบสามารถค้นพบข้อมูลที่เกี่ยวข้องและนำข้อมูลนั้นไปเป็นบริบท
+          ให้ LLM สร้างคำตอบ
+        </p>
+  
+        <p>
+          เมื่อเราลบ <code>cat.txt</code> ออก แล้วถามคำถามเดิมอีกครั้ง
+          ระบบไม่สามารถค้นพบข้อมูลนั้นได้ และกลับมาปฏิเสธการตอบ
+        </p>
+  
+        <p>
+          ดังนั้นการทดลองนี้แสดงให้เห็นว่า
+          <strong>ผลลัพธ์ของระบบขึ้นอยู่กับข้อมูลที่มีอยู่ใน Knowledge Base
+            และกลไก Retrieval/No-data guard</strong>
+          ไม่ได้ปล่อยให้ LLM ตอบจากความรู้ทั่วไปเพียงอย่างเดียว
+        </p>
+      </div>
+  
+    </div>
+  </section>
+
+  <div class="callout">
+    <span class="callout__label">ทำเสร็จครบแล้ว — ต่อไปคือขั้นที่ 3</span>
+    <p>ขั้นต่อไปคือ "ตามรอยคำถาม 1 ข้อในโค้ดจริง" — ใส่ <code>print()</code> ของตัวเองตามจุดสำคัญในโค้ด แล้วดู log จริงตอนถามคำถาม อยู่ใน <a href="step3_trace-question.html">ขั้นที่ 3 — ตามรอยคำถาม</a></p>
+  </div>
+</main>
+
+<footer>
+  <span>ความคืบหน้าถูกบันทึกไว้ในเบราว์เซอร์นี้เท่านั้น</span>
+  <button id="resetBtn" type="button">ล้างความคืบหน้าทั้งหมด</button>
+</footer>
+
+<script>
+  (function () {
+    var STORAGE_KEY = "OAE-first-test-progress-v2";
+    var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.step__check input[type="checkbox"]'));
+    var fill = document.getElementById("progressFill");
+    var label = document.getElementById("progressLabel");
+    var resetBtn = document.getElementById("resetBtn");
+
+    function loadState() {
+      try { return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}"); }
+      catch (e) { return {}; }
+    }
+    function saveState(state) {
+      try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+    function updateProgress() {
+      var total = checkboxes.length;
+      var done = checkboxes.filter(function (c) { return c.checked; }).length;
+      var pct = total ? Math.round((done / total) * 100) : 0;
+      fill.style.width = pct + "%";
+      label.textContent = done + "/" + total;
+    }
+
+    var state = loadState();
+    checkboxes.forEach(function (cb) {
+      if (state[cb.id]) { cb.checked = true; cb.closest(".step__check").classList.add("checked"); }
+      cb.addEventListener("change", function () {
+        cb.closest(".step__check").classList.toggle("checked", cb.checked);
+        var s = loadState(); s[cb.id] = cb.checked; saveState(s);
+        updateProgress();
+      });
+    });
+    updateProgress();
+
+    resetBtn.addEventListener("click", function () {
+      if (!window.confirm("ล้างความคืบหน้าทั้งหมด?")) return;
+      window.localStorage.removeItem(STORAGE_KEY);
+      checkboxes.forEach(function (cb) { cb.checked = false; cb.closest(".step__check").classList.remove("checked"); });
+      updateProgress();
+    });
+
+    Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        var done = function () {
+          var original = btn.textContent;
+          btn.textContent = "คัดลอกแล้ว ✓";
+          btn.classList.add("copied");
+          window.setTimeout(function () {
+            btn.textContent = original;
+            btn.classList.remove("copied");
+          }, 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); done(); });
+        } else {
+          fallbackCopy(text); done();
+        }
+      });
+    });
+    function fallbackCopy(text) {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  })();
+</script>

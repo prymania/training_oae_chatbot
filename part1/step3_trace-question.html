@@ -1,0 +1,811 @@
+<title>ตามรอยคำถาม OAE Chatbot</title>
+<style>
+  :root {
+    --bg: #f6f8f3; --surface: #ffffff; --surface-2: #eef2ea;
+    --ink: #17211a; --ink-muted: #4c5a4f; --ink-faint: #7c8a7d;
+    --line: #dee6da; --line-strong: #c4d0bf;
+    --accent: #266448; --accent-ink: #ffffff; --accent-soft: #e2efe4; --accent-soft-line: #bcdac4;
+    --gold: #9a6d12; --gold-soft: #fbf1dc; --gold-soft-line: #ecd28b;
+    --code-bg: #10231a; --code-ink: #d9ead9; --code-accent: #7fd7a0;
+    --diff-add: #1e3a2a; --diff-add-line: #3a6b4d;
+    --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
+    --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+      --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+      --line: #2b352a; --line-strong: #3a463790;
+      --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+      --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+      --code-bg: #0b1710; --code-ink: #cfe6d2; --code-accent: #8fe0ab;
+      --diff-add: #1c3324; --diff-add-line: #3a6b4d;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+    --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+    --line: #2b352a; --line-strong: #3a463790;
+    --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+    --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+    --code-bg: #0b1710; --code-ink: #cfe6d2; --code-accent: #8fe0ab;
+    --diff-add: #1c3324; --diff-add-line: #3a6b4d;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 700; color: var(--ink); }
+  p { text-wrap: pretty; }
+  code { font-family: var(--font-mono); font-size: 0.87em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.4em; }
+
+  .topbar { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .topbar__row { display: flex; align-items: center; gap: 12px; padding: 13px 24px; }
+  .topbar__mark { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 16px; flex: none; }
+  .topbar__title { font-weight: 700; font-size: 15px; }
+  .topbar__sub { font-size: 12.5px; color: var(--ink-faint); }
+  .topbar__progress { margin-inline-start: auto; display: flex; align-items: center; gap: 10px; }
+  .progress-track { width: 120px; height: 7px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; }
+  .progress-label { font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); white-space: nowrap; }
+
+  main { max-width: 820px; margin: 0 auto; padding: 40px clamp(20px, 4vw, 40px) 100px; }
+
+  .hero { margin-bottom: 26px; }
+  .hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+  .hero__eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .hero h1 { font-size: clamp(23px, 3.2vw, 30px); line-height: 1.3; margin: 0 0 12px; }
+  .hero p.lead { font-size: 15.5px; color: var(--ink-muted); margin: 0; }
+
+  .series-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 4px; }
+  .series-nav a { font-size: 12px; font-weight: 600; text-decoration: none; color: var(--ink-muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px; }
+  .series-nav a.current { color: var(--accent); border-color: var(--accent-soft-line); background: var(--accent-soft); font-weight: 700; }
+  .series-nav a:hover { border-color: var(--accent); }
+
+  .conceptbox { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 18px 20px; margin: 26px 0; box-shadow: var(--shadow); }
+  .conceptbox h3 { font-size: 14.5px; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+  .conceptbox p { font-size: 13.8px; color: var(--ink-muted); margin: 0 0 8px; }
+  .conceptbox p:last-child { margin-bottom: 0; }
+  .conceptbox code { font-size: 0.86em; }
+
+  .partlabel { display: flex; align-items: center; gap: 10px; margin: 36px 0 4px; font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+  .partlabel::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .partlabel:first-of-type { margin-top: 26px; }
+
+  .step { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); margin: 14px 0; overflow: hidden; scroll-margin-top: 90px; }
+  .step__head { display: flex; align-items: flex-start; gap: 13px; padding: 16px 20px 14px; border-bottom: 1px solid var(--line); }
+  .step__badge { flex: none; width: 32px; height: 32px; border-radius: 9px; background: var(--accent-soft); border: 1px solid var(--accent-soft-line); color: var(--accent); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 14px; }
+  .step__badge.gold { background: var(--gold-soft); border-color: var(--gold-soft-line); color: var(--gold); }
+  .step__head h2 { font-size: 16.5px; margin: 0; }
+  .step__program { font-size: 12.5px; color: var(--ink-faint); margin-top: 2px; }
+  .step__body { padding: 16px 20px 18px; }
+
+  .cmdblock { position: relative; margin: 4px 0 16px; }
+  .cmdblock pre { background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 13px 50px 13px 15px; overflow-x: auto; font-family: var(--font-mono); font-size: 12.6px; line-height: 1.55; margin: 0; white-space: pre-wrap; }
+  .cmdblock pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+  .copy-btn { position: absolute; top: 8px; right: 8px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.08); color: var(--code-ink); border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+  .copy-btn:hover { background: rgba(255,255,255,0.16); }
+  .copy-btn.copied { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  .findblock { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); margin: 12px 0 4px; }
+  .diffline-add { background: var(--diff-add); border-inline-start: 3px solid var(--diff-add-line); display: block; margin: 0 -15px 0 -18px; padding-inline-start: 15px; }
+
+  .explain { display: grid; gap: 10px; margin-top: 4px; }
+  .explain-row { display: flex; gap: 10px; }
+  .explain-row .icon { flex: none; width: 22px; text-align: center; font-size: 14px; padding-top: 1px; }
+  .explain-row .txt { font-size: 13.8px; color: var(--ink); }
+  .explain-row .txt strong { color: var(--ink); }
+  .explain-row .txt .sub { color: var(--ink-muted); }
+
+  .verify { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 12px; font-size: 13px; color: var(--ink-muted); }
+  .verify code { font-size: 0.92em; }
+
+  .step__check { display: flex; align-items: center; gap: 9px; margin-top: 14px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); }
+  .step__check input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; flex: none; }
+  .step__check label { font-size: 13.3px; cursor: pointer; color: var(--ink-muted); }
+  .step__check.checked { background: var(--accent-soft); border-color: var(--accent-soft-line); }
+  .step__check.checked label { color: var(--accent); font-weight: 600; }
+
+  .callout { border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 13px 16px; margin: 16px 0; }
+  .callout p { margin: 0; font-size: 13.6px; color: var(--ink); }
+  .callout__label { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 5px; }
+  .callout--gold { border-inline-start-color: var(--gold); background: var(--gold-soft); }
+  .callout--gold .callout__label { color: var(--gold); }
+
+  .tracegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 14px 0; }
+  .tracecell { background: var(--surface); padding: 12px 14px; text-align: center; }
+  .tracecell .n { font-family: var(--font-mono); font-size: 11px; color: var(--accent); font-weight: 700; }
+  .tracecell .f { font-family: var(--font-mono); font-size: 11.5px; margin-top: 4px; color: var(--ink); }
+
+  footer { max-width: 820px; margin: 0 auto; border-top: 1px solid var(--line); padding: 22px clamp(20px, 4vw, 40px) 40px; font-size: 12.5px; color: var(--ink-faint); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center; }
+  footer button { font-family: var(--font-ui); font-size: 12px; color: var(--ink-faint); background: none; border: 1px solid var(--line-strong); border-radius: 7px; padding: 5px 10px; cursor: pointer; }
+  footer button:hover { color: var(--ink); border-color: var(--ink-faint); }
+</style>
+
+<div class="topbar">
+  <div class="topbar__row">
+    <div class="topbar__mark">🧵</div>
+    <div>
+      <div class="topbar__title">ตามรอยคำถามในโค้ดจริง — OAE Chatbot</div>
+      <div class="topbar__sub">ขั้นที่ 3 ของสายผู้สนใจระบบ — ต่อจากเตรียมเครื่อง (ขั้นที่ 1) และทดสอบ RAG (ขั้นที่ 2)</div>
+    </div>
+    <div class="topbar__progress">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0/10</span>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="hero">
+    <div class="hero__eyebrow">ขั้นที่ 3 : trace การทำงานของระบบ</div>
+    <h1> Trace การทำงานของระบบ — ใส่ print() ดู log</h1>
+    <p class="lead">
+      ขั้นที่ 2 พิสูจน์แล้วว่าระบบตอบจากเอกสารจริง แต่ยังไม่รู้ว่า "ระหว่างทาง" คำถาม 1 ข้อ
+      วิ่งผ่านไฟล์ไหนบ้าง 
+      <br> เราจะเพิ่ม <code>print()</code> เอง 5 บรรทัดใน 5 จุดหลัก (4 ไฟล์ — จุดสร้างคำตอบมี 2 จุดซ้อนกันในไฟล์เดียว)
+      แล้วถามคำถาม 1 ข้อ ดู log ที่ขึ้นจริง
+    </p>
+    <nav class="series-nav">
+      <a href="step1_setup-full.html">🧰 เตรียมเครื่องพัฒนา (ขั้นที่ 1)</a>
+      <a href="step2_rag-test.html">🧪 ทดสอบ RAG (ขั้นที่ 2)</a>
+      <a class="current">🧵 ตามรอยคำถาม (ขั้นที่ 3) · กำลังอ่าน</a>
+      <a href="step4_line-oa-guide.html">💬 สร้างแชทบอท LINE (ขั้นที่ 4)</a>
+      <a href="step5_system-overview.html">📗 ภาพรวมระบบ (ขั้นที่ 5)</a>
+    </nav>
+  </div>
+
+  <div class="conceptbox">
+    <h3>🧭 5 จุดที่จะตามรอยวันนี้</h3>
+    <div class="tracegrid">
+      <div class="tracecell"><div class="n">TRACE 1</div><div class="f">intent_router.<br/>classify_intent()</div></div>
+      <div class="tracecell"><div class="n">TRACE 2</div><div class="f">tool_router.<br/>try_enrich()</div></div>
+      <div class="tracecell"><div class="n">TRACE 3</div><div class="f">rag.<br/>retrieve_expanded()</div></div>
+      <div class="tracecell"><div class="n">TRACE 4</div><div class="f">chat.<br/>generate_answer()</div></div>
+      <div class="tracecell"><div class="n">TRACE 5</div><div class="f">chat.<br/>chat_stream() generate()</div></div>
+    </div>
+    <p>เช็คคำถาม → เสริมข้อมูลจาก API → ค้นหาข้อมูลจากเอกสาร → สร้างคำตอบ ( canned / streamming)
+      <br> 4 จุดที่คำถามทุกข้อต้องผ่านตามหลักการ แต่ "จุดสร้างคำตอบ" ในโค้ดมี <strong>2 ที่ ไม่ใช่ 1 ที่ </strong> คือ (TRACE 4 กับ TRACE 5) นี่คือจุดที่ต้องการให้ทำความเข้าใจเส้นทางการตามหาคำตอบของบอท </p>
+  </div>
+
+  <div class="callout callout--gold">
+    <span class="callout__label">ทำไมต้องมี TRACE 5 แยกจาก TRACE 4</span>
+    <p><code>generate_answer()</code> (TRACE 4) ถูกเรียกเฉพาะตอนคำถามเป็น "canned" (ตอบสำเร็จรูปทันที เช่น ทักทาย) หรือเรียกผ่าน endpoint <code>/chat</code> แบบ JSON ธรรมดา 
+      <br> แต่หน้าแชทจริงที่เปิดใช้งานทุกวัน ใช้ <code>/chat/stream</code> เพื่อให้ตัวอักษรไหลออกมาทีละตัว ซึ่งมีโค้ดเรียก DeepSeek + บันทึก log เขียนแยกไว้ต่างหาก ไม่ได้เรียก <code>generate_answer()</code> เลย ถามคำถามปกติแบบ "ราคาข้าววันนี้เท่าไหร่" ผ่านหน้าแชท จะเห็น TRACE 5 ไม่ใช่ TRACE 4</p>
+  </div>
+
+  <div class="callout callout--gold">
+    <span class="callout__label">สิ่งสำคัญที่ต้องรู้ก่อนเริ่ม</span>
+    <p>โปรเจกต์นี้รันผ่าน Docker และ container <strong>ไม่ได้เชื่อมไฟล์โค้ดในเครื่องแบบเรียลไทม์</strong> (ไม่มี bind mount) แปลว่าแก้ไฟล์ <code>.py</code> ในเครื่องแล้ว container จะยังไม่เห็นการเปลี่ยนแปลงจนกว่าจะสั่ง <strong>build ใหม่</strong> ทุกครั้งที่แก้โค้ด ต้องรัน <code>docker compose up -d --build app</code> ไม่ใช่แค่ <code>up -d</code> เฉย ๆ</p>
+  </div>
+
+  <div class="partlabel">ตอนที่ 1 — เปิดหน้าต่าง log ค้างไว้</div>
+
+  <section class="step" id="s1">
+    <div class="step__head">
+      <div class="step__badge">1</div>
+      <div><h2>เปิด terminal ใหม่ ดู log แบบสด</h2><div class="step__program">เปิดค้างไว้ตลอดการทดลองนี้ อย่าปิด</div></div>
+    </div>
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>docker compose logs -f app</code></pre>
+        <button class="copy-btn" data-copy="docker compose logs -f app">คัดลอก</button>
+      </div>
+      <div class="explain">
+        <div class="explain-row"><span class="icon">📦</span><span class="txt"><strong>flag <code>-f</code> คืออะไร:</strong> <span class="sub">ย่อมาจาก "follow" — แทนที่จะแสดง log เก่าแล้วจบ คำสั่งนี้จะค้างรอและพิมพ์บรรทัดใหม่ทุกครั้งที่แอปสร้าง log ขึ้นมา เหมือนเปิดดูสด ๆ ตลอดเวลา (กด Ctrl+C เพื่อหยุดดู)</span></span></div>
+      </div>
+      <div class="step__check"><input type="checkbox" id="c1"><label for="c1">เปิด log ค้างไว้ในหน้าต่างแยกแล้ว</label></div>
+    </div>
+  </section>
+
+  <div class="partlabel">ตอนที่ 2 — เพิ่ม print() 5 จุด</div>
+
+  <section class="step" id="s2">
+    <div class="step__head">
+      <div class="step__badge">2</div>
+      <div><h2>TRACE 1 — จุดเช็กคำถาม</h2><div class="step__program">แก้ไฟล์ <code>app/services/intent_router.py</code></div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <!-- <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ฟังก์ชันนี้ทำอะไร:</strong> <span class="sub">เป็นด่านแรกสุดที่คำถามทุกข้อต้องผ่าน — เช็คว่าเป็นคำทักทาย ขอบคุณ ขอข้อมูลส่วนบุคคล หรือหลุดหัวข้อไหม ถ้าใช่จะตอบทันทีโดยไม่ค้นเอกสารเลย</span></span></div> -->
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ฟังก์ชันนี้ทำอะไร:</strong>
+            <span class="sub">ตรงนี้เป็นด่านแรกที่ทุกคำถามต้องผ่าน ก่อนที่ Chatbot จะไปค้นข้อมูลในเอกสาร
+              เราจะเช็กก่อนว่าผู้ใช้กำลังถามอะไร เช่น ทักทาย ขอบคุณ ขอข้อมูลส่วนตัว หรือถามเรื่องที่อยู่นอกหัวข้อหรือเปล่า
+              ถ้าเป็นกรณีเหล่านี้ เราสามารถตอบกลับได้เลย ไม่ต้องเสียเวลาไปค้นเอกสาร</span>
+          </span>
+        </div>
+      </div>
+      <div class="findblock">หาบรรทัดนี้ (ใกล้ต้นไฟล์ ฟังก์ชัน <code>classify_intent</code>)</div>
+      <div class="cmdblock">
+        <pre><code>def classify_intent(question: str) -> str:
+    """Return one of INTENTS. Never raises; unknown → in_scope."""
+    if not INTENT_ROUTER_ENABLED:</code></pre>
+      </div>
+      <div class="findblock">แล้วเพิ่มบรรทัดที่ไฮไลต์ไว้ตรงกลาง</div>
+      <div class="cmdblock">
+        <pre><code>def classify_intent(question: str) -> str:
+    """Return one of INTENTS. Never raises; unknown → in_scope."""
+    <span class="diffline-add">print(f"[TRACE 1] classify_intent ← {question!r}")</span>
+    if not INTENT_ROUTER_ENABLED:</code></pre>
+        <button class="copy-btn" data-copy="print(f&quot;[TRACE 1] classify_intent ← {question!r}&quot;)">คัดลอกแค่บรรทัดใหม่</button>
+      </div>
+      <div class="step__check"><input type="checkbox" id="c2"><label for="c2">เพิ่ม TRACE 1 แล้ว</label></div>
+    </div>
+  </section>
+
+  <section class="step" id="s3">
+    <div class="step__head">
+      <div class="step__badge">3</div>
+      <div><h2>TRACE 2 — จุดเสริมข้อมูลจาก API</h2><div class="step__program">แก้ไฟล์ <code>app/services/tool_router.py</code></div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <!-- <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ฟังก์ชันนี้ทำอะไร:</strong> <span class="sub">ให้ DeepSeek พิจารณาว่าคำถามต้องใช้ข้อมูลสดจาก API ภายนอกไหม (ราคาสินค้า อากาศ ระดับน้ำ ฯลฯ) แล้วเลือกเรียกเครื่องมือที่เกี่ยวข้อง — ไม่ใช่ทุกคำถามจะเรียกใช้จริง แต่ฟังก์ชันนี้ถูกเรียกทุกครั้งเพื่อ "พิจารณา"</span></span></div> -->
+      <div class="explain-row">
+        <span class="icon">🎯</span>
+        <span class="txt">
+          <strong>ฟังก์ชันนี้ทำอะไร:</strong>
+          <span class="sub">ตรงนี้ให้ DeepSeek ช่วยดูว่าคำถามนี้ต้องใช้ข้อมูลปัจจุบันจากภายนอกหรือเปล่า เช่น ราคาสินค้า
+            สภาพอากาศ หรือระดับน้ำ ถ้าจำเป็น ระบบก็จะเลือกเรียกเครื่องมือที่เหมาะสมมาใช้ แต่ไม่ใช่ทุกคำถามที่จะต้องเรียก API
+            จุดนี้จะทำหน้าที่แค่ “พิจารณาก่อน” ว่าจำเป็นหรือไม่</span>
+        </span>
+      </div>
+      </div>
+      <div class="findblock">หาบรรทัดนี้ (ท้ายฟังก์ชัน <code>try_enrich</code>)</div>
+      <div class="cmdblock">
+        <pre><code>    tools, or all selected tools return no data.
+    """
+    if not LLM_TOOL_ROUTING_ENABLED:</code></pre>
+      </div>
+      <div class="findblock">แล้วเพิ่มบรรทัดที่ไฮไลต์ไว้ตรงกลาง</div>
+      <div class="cmdblock">
+        <pre><code>    tools, or all selected tools return no data.
+    """
+    <span class="diffline-add">print(f"[TRACE 2] try_enrich ← question={question!r} domain={domain!r}")</span>
+    if not LLM_TOOL_ROUTING_ENABLED:</code></pre>
+        <button class="copy-btn" data-copy="print(f&quot;[TRACE 2] try_enrich ← question={question!r} domain={domain!r}&quot;)">คัดลอกแค่บรรทัดใหม่</button>
+      </div>
+      <div class="step__check"><input type="checkbox" id="c3"><label for="c3">เพิ่ม TRACE 2 แล้ว</label></div>
+    </div>
+  </section>
+
+  <section class="step" id="s4">
+    <div class="step__head">
+      <div class="step__badge">4</div>
+      <div><h2>TRACE 3 — จุดค้นหาข้อมูลที่เกี่ยวข้องด้วย Vector Search</h2><div class="step__program">แก้ไฟล์ <code>app/services/rag.py</code></div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <!-- <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ฟังก์ชันนี้ทำอะไร:</strong> <span class="sub">ขยายคำถามเป็นคำค้นหาย่อย แปลงเป็นเวกเตอร์ แล้วค้นเอกสารที่ใกล้เคียงที่สุดในฐานความรู้ — เป็นหัวใจของ RAG ที่ทดสอบไปแล้วใน Day 2</span></span></div> -->
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ฟังก์ชันนี้ทำอะไร:</strong>
+            <span class="sub">จุดนี้จะนำคำถามของผู้ใช้มาขยายเป็นคำค้นหาที่ละเอียดขึ้น จากนั้นแปลงคำค้นหาเป็นเวกเตอร์
+              แล้วนำไปค้นหาข้อมูลที่เกี่ยวข้องที่สุดจากฐานความรู้ ขั้นตอนนี้เป็นส่วนสำคัญของ RAG ที่เราได้ทดลองกันไปแล้วใน
+              ขั้นที่ 2</span>
+          </span>
+        </div>
+      </div>
+      <div class="findblock">หาบรรทัดนี้ (ท้ายฟังก์ชัน <code>retrieve_expanded</code>)</div>
+      <div class="cmdblock">
+        <pre><code>    one embed + one pgvector round-trip per request.
+    """
+    q_vec = embed_query(query)</code></pre>
+      </div>
+      <div class="findblock">แล้วเพิ่มบรรทัดที่ไฮไลต์ไว้ตรงกลาง</div>
+      <div class="cmdblock">
+        <pre><code>    one embed + one pgvector round-trip per request.
+    """
+    <span class="diffline-add">print(f"[TRACE 3] retrieve_expanded ← query={query!r} domain={domain!r}")</span>
+    q_vec = embed_query(query)</code></pre>
+        <button class="copy-btn" data-copy="print(f&quot;[TRACE 3] retrieve_expanded ← query={query!r} domain={domain!r}&quot;)">คัดลอกแค่บรรทัดใหม่</button>
+      </div>
+      <div class="step__check"><input type="checkbox" id="c4"><label for="c4">เพิ่ม TRACE 3 แล้ว</label></div>
+    </div>
+  </section>
+
+  <!-- <section class="step" id="s5">
+    <div class="step__head">
+      <div class="step__badge">5</div>
+      <div><h2>TRACE 4 — จุดสร้างคำตอบ (แบบไม่ stream / canned)</h2><div class="step__program">แก้ไฟล์ <code>app/routers/chat.py</code></div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ฟังก์ชันนี้ทำอะไร:</strong> <span class="sub">ส่งคำถาม + บริบทที่ค้นได้ทั้งหมดให้ DeepSeek เรียบเรียงเป็นคำตอบจริง แล้วบันทึกลง log ฐานข้อมูล — แต่ถูกเรียกเฉพาะตอนคำถามเป็น "canned" (ทักทาย/ขอบคุณ) หรือเรียกผ่าน endpoint <code>/chat</code> แบบ JSON ธรรมดา ไม่ใช่เส้นทางที่หน้าแชทปกติใช้ (ดู TRACE 5 ถัดไปสำหรับเส้นทางจริง)</span></span></div>
+        <div class="explain-row"><span class="icon">💡</span><span class="txt"><strong>ทำไม print ค่า <code>intent</code>/<code>coverage</code>:</strong> <span class="sub"><code>pc.intent</code> คือผลลัพธ์จาก TRACE 1 (เช็คคำถาม) และ <code>pc.coverage</code> คือผลจาก TRACE 3 (ค้นเอกสารเจอมากแค่ไหน) — เห็นค่าทั้งสองตรงนี้แปลว่าเห็น "ผลสรุป" ของสองขั้นตอนก่อนหน้าไหลมาถึงจุดสุดท้ายจริง ไม่ใช่แค่เห็นว่าฟังก์ชันถูกเรียก</span></span></div>
+      </div>
+      <div class="findblock">หาบรรทัดนี้ (ต้นฟังก์ชัน <code>generate_answer</code>)</div>
+      <div class="cmdblock">
+        <pre><code>    that answer in one shot (/chat JSON and the LINE webhook background task).
+    """
+    if pc.canned:</code></pre>
+      </div>
+      <div class="findblock">แล้วเพิ่มบรรทัดที่ไฮไลต์ไว้ตรงกลาง</div>
+      <div class="cmdblock">
+        <pre><code>    that answer in one shot (/chat JSON and the LINE webhook background task).
+    """
+    <span class="diffline-add">print(f"[TRACE 4] generate_answer ← intent={pc.intent!r} coverage={pc.coverage!r}")</span>
+    if pc.canned:</code></pre>
+        <button class="copy-btn" data-copy="print(f&quot;[TRACE 4] generate_answer ← intent={pc.intent!r} coverage={pc.coverage!r}&quot;)">คัดลอกแค่บรรทัดใหม่</button>
+      </div>
+      <div class="step__check"><input type="checkbox" id="c5"><label for="c5">เพิ่ม TRACE 4 แล้ว</label></div>
+    </div>
+  </section> -->
+
+  <section class="step" id="s5">
+    <div class="step__head">
+      <div class="step__badge">5</div>
+      <div>
+        <h2>TRACE 4 — จุดสร้างคำตอบ</h2>
+        <div class="step__program">แก้ไฟล์ <code>app/routers/chat.py</code></div>
+      </div>
+    </div>
+  
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ฟังก์ชันนี้ทำอะไร:</strong>
+            <span class="sub">ตรงนี้เป็นขั้นตอนที่ Chatbot นำคำถามและข้อมูลที่ค้นเจอมาให้ DeepSeek ช่วยเรียบเรียงเป็นคำตอบ
+              จากนั้นบันทึกผลการทำงานลง log ในฐานข้อมูล แต่ฟังก์ชันนี้จะถูกเรียกเฉพาะบางกรณี เช่น คำถามที่ตอบได้ทันที
+              หรือการเรียกผ่าน <code>/chat</code> แบบ JSON ส่วนเส้นทางที่หน้าแชทใช้งานจริงจะอยู่ใน TRACE 5</span>
+          </span>
+        </div>
+  
+        <div class="explain-row">
+          <span class="icon">💡</span>
+          <span class="txt">
+            <strong>ทำไมต้อง print ค่า <code>intent</code>/<code>coverage</code>:</strong>
+            <span class="sub"><code>pc.intent</code> คือผลจาก TRACE 1 ว่าคำถามนี้เข้าข่ายอะไร ส่วน
+              <code>pc.coverage</code> บอกว่าค้นข้อมูลจากเอกสารแล้วได้ข้อมูลครอบคลุมแค่ไหน
+              การแสดงค่าสองตัวนี้ช่วยให้เราเห็นว่า ผลจากขั้นตอนก่อนหน้าถูกส่งต่อมาถึงขั้นตอนสร้างคำตอบจริง</span>
+          </span>
+        </div>
+      </div>
+  
+      <div class="findblock">หาบรรทัดนี้ (ต้นฟังก์ชัน <code>generate_answer</code>)</div>
+  
+      <div class="cmdblock">
+        <pre><code>    that answer in one shot (/chat JSON and the LINE webhook background task).
+      """
+      if pc.canned:</code></pre>
+      </div>
+  
+      <div class="findblock">แล้วเพิ่มบรรทัดที่ไฮไลต์ไว้ตรงกลาง</div>
+  
+      <div class="cmdblock">
+        <pre><code>    that answer in one shot (/chat JSON and the LINE webhook background task).
+      """
+      <span class="diffline-add">print(f"[TRACE 4] generate_answer ← intent={pc.intent!r} coverage={pc.coverage!r}")</span>
+      if pc.canned:</code></pre>
+        <button class="copy-btn"
+          data-copy="print(f&quot;[TRACE 4] generate_answer ← intent={pc.intent!r} coverage={pc.coverage!r}&quot;)">คัดลอกแค่บรรทัดใหม่</button>
+      </div>
+  
+      <div class="step__check">
+        <input type="checkbox" id="c5">
+        <label for="c5">เพิ่ม TRACE 4 แล้ว</label>
+      </div>
+    </div>
+  </section>
+
+<!-- 
+  <section class="step" id="s5b">
+    <div class="step__head">
+      <div class="step__badge">5b</div>
+      <div><h2>TRACE 5 — จุดสร้างคำตอบ (แบบ streaming — เส้นทางจริงที่หน้าแชทใช้)</h2><div class="step__program">แก้ไฟล์เดิม <code>app/routers/chat.py</code> คนละฟังก์ชัน</div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ทำไมต้องมีจุดนี้แยกจาก TRACE 4:</strong> <span class="sub">หน้าแชท (localhost:8000) เรียก <code>/chat/stream</code> เพื่อให้ตัวอักษรไหลออกมาทีละตัว โค้ดในนี้เขียนตรรกะเรียก DeepSeek + บันทึก log แยกไว้ต่างหาก ไม่ได้เรียก <code>generate_answer()</code> เลย — เป็นโค้ดคนละก้อนที่ทำงานคล้ายกันแต่อยู่แยกไฟล์เดียวกัน</span></span></div>
+      </div>
+      <div class="findblock">หาบรรทัดนี้ (ในฟังก์ชัน <code>generate()</code> ภายใน <code>chat_stream</code>, หลังเช็ค <code>if pc.canned:</code>)</div>
+      <div class="cmdblock">
+        <pre><code>        full_answer_parts: list[str] = []
+        log_id: str | None = None</code></pre>
+      </div>
+      <div class="findblock">แล้วเพิ่มบรรทัดที่ไฮไลต์ไว้ตรงกลาง</div>
+      <div class="cmdblock">
+        <pre><code>        <span class="diffline-add">print(f"[TRACE 5] chat_stream ← intent={pc.intent!r} coverage={pc.coverage!r}")</span>
+        full_answer_parts: list[str] = []
+        log_id: str | None = None</code></pre>
+        <button class="copy-btn" data-copy="print(f&quot;[TRACE 5] chat_stream ← intent={pc.intent!r} coverage={pc.coverage!r}&quot;)">คัดลอกแค่บรรทัดใหม่</button>
+      </div>
+      <div class="verify">💡 <strong>สังเกต:</strong> ตอนนี้ไฟล์ <code>chat.py</code> ไฟล์เดียวมี 2 บรรทัด print (TRACE 4 และ TRACE 5) อยู่คนละฟังก์ชันกัน — ปกติคำถามทั่วไปผ่านหน้าแชทจะโชว์แค่ TRACE 5 เท่านั้น ลองพิมพ์ทักทายเช่น "สวัสดี" ดูอีกแบบ อาจได้เห็น TRACE 4 แทนเพราะเป็น canned</div>
+      <div class="step__check"><input type="checkbox" id="c5b"><label for="c5b">เพิ่ม TRACE 5 แล้ว</label></div>
+    </div>
+  </section> -->
+
+  <section class="step" id="s5b">
+    <div class="step__head">
+      <div class="step__badge">5b</div>
+      <div>
+        <h2>TRACE 5 — จุดสร้างคำตอบแบบ Streaming</h2>
+        <div class="step__program">แก้ไฟล์เดิม <code>app/routers/chat.py</code> คนละฟังก์ชัน</div>
+      </div>
+    </div>
+  
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ทำไมต้องมีจุดนี้แยกจาก TRACE 4:</strong>
+            <span class="sub">ตรงนี้คือเส้นทางที่หน้าแชทใช้งานจริง โดย <code>/chat/stream</code>
+              จะส่งคำตอบกลับมาให้เห็นทีละส่วน ทำให้ข้อความค่อย ๆ ปรากฏบนหน้าจอ โค้ดส่วนนี้มีการเรียก DeepSeek และบันทึก
+              log แยกจาก TRACE 4 แม้จะทำหน้าที่คล้ายกัน แต่เป็นคนละฟังก์ชันกัน</span>
+          </span>
+        </div>
+      </div>
+  
+      <div class="findblock">
+        หาบรรทัดนี้ (ในฟังก์ชัน <code>generate()</code> ภายใน <code>chat_stream</code> หลังเช็ค
+        <code>if pc.canned:</code>)
+      </div>
+  
+      <div class="cmdblock">
+        <pre><code>        full_answer_parts: list[str] = []
+          log_id: str | None = None</code></pre>
+      </div>
+  
+      <div class="findblock">แล้วเพิ่มบรรทัดที่ไฮไลต์ไว้ตรงกลาง</div>
+  
+      <div class="cmdblock">
+        <pre><code>        <span class="diffline-add">print(f"[TRACE 5] chat_stream ← intent={pc.intent!r} coverage={pc.coverage!r}")</span>
+          full_answer_parts: list[str] = []
+          log_id: str | None = None</code></pre>
+        <button class="copy-btn"
+          data-copy="print(f&quot;[TRACE 5] chat_stream ← intent={pc.intent!r} coverage={pc.coverage!r}&quot;)">คัดลอกแค่บรรทัดใหม่</button>
+      </div>
+  
+      <div class="verify">
+        💡 <strong>สังเกต:</strong>
+        ตอนนี้ในไฟล์ <code>chat.py</code> จะมีคำสั่ง <code>print</code> อยู่ 2 จุด คือ TRACE 4 และ TRACE 5
+        แต่ละจุดอยู่คนละฟังก์ชันกัน คำถามทั่วไปที่ส่งมาจากหน้าแชทจะผ่าน TRACE 5 ส่วนคำถามที่ตอบแบบ canned อาจเห็น TRACE 4
+        แทน ลองพิมพ์ <code>สวัสดี</code> เพื่อทดลองดูได้
+      </div>
+  
+      <div class="step__check">
+        <input type="checkbox" id="c5b">
+        <label for="c5b">เพิ่ม TRACE 5 แล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <!-- <div class="partlabel">ขั้นที่ 3 — รีสตาร์ท แล้วถามคำถามจริง</div>
+
+  <section class="step" id="s6">
+    <div class="step__head">
+      <div class="step__badge">6</div>
+      <div><h2>Build ใหม่ให้ container เห็นโค้ดที่แก้</h2><div class="step__program">รันในหน้าต่าง terminal ที่สอง (ไม่ใช่หน้าต่างที่เปิด log ค้างไว้)</div></div>
+    </div>
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>docker compose up -d --build app</code></pre>
+        <button class="copy-btn" data-copy="docker compose up -d --build app">คัดลอก</button>
+      </div>
+      <div class="explain">
+        <div class="explain-row"><span class="icon">📦</span><span class="txt"><strong>ทำไมต้อง <code>--build</code>:</strong> <span class="sub">ปกติ <code>docker compose up -d</code> แค่เริ่ม container จากอิมเมจที่มีอยู่แล้ว แต่โค้ด Python ถูก "อบ" เข้าไปในอิมเมจตอน build ตั้งแต่แรก การแก้ไฟล์ในเครื่องจะไม่ถูกเห็นจนกว่าจะสั่ง build ใหม่ทับอิมเมจเดิม — รอสักครู่ (เร็วกว่ารอบแรกมาก เพราะ layer ส่วนใหญ่ถูกแคชไว้แล้ว)</span></span></div>
+      </div>
+      <div class="verify">✅ <strong>เช็ค:</strong> กลับไปดูหน้าต่าง log (ขั้นที่ 1) ควรเห็นข้อความประมาณ "Server started" ขึ้นใหม่ แปลว่าแอปรีสตาร์ทเสร็จแล้ว</div>
+      <div class="step__check"><input type="checkbox" id="c6"><label for="c6">Build เสร็จ เห็นแอปรีสตาร์ทใน log แล้ว</label></div>
+    </div>
+  </section>
+
+  <section class="step" id="s7">
+    <div class="step__head">
+      <div class="step__badge">7</div>
+      <div><h2>ถามคำถามที่ครบทั้ง 4 เส้นทาง</h2><div class="step__program">เปิดหน้าแชท localhost:8000 อีกแท็บ</div></div>
+    </div>
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>ราคาข้าววันนี้เท่าไหร่</code></pre>
+        <button class="copy-btn" data-copy="ราคาข้าววันนี้เท่าไหร่">คัดลอก</button>
+      </div>
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ทำไมเลือกคำถามนี้:</strong> <span class="sub">ไม่ใช่คำทักทาย (ผ่าน TRACE 1 เป็น "in_scope") เป็นคำถามราคาสินค้าซึ่งมักกระตุ้นให้ระบบเรียกข้อมูลราคาสด (เข้า TRACE 2 อย่างชัดเจน) และยังต้องค้นเอกสารเรื่องข้าวเสริมด้วย (เข้า TRACE 3) แล้วจบที่การสร้างคำตอบ (TRACE 5 เพราะไม่ใช่ canned) — คำถามเดียวครบทั้ง 4 จุดที่ตามรอยไว้</span></span></div>
+      </div>
+      <div class="step__check"><input type="checkbox" id="c7"><label for="c7">ส่งคำถามแล้ว ได้คำตอบแล้ว</label></div>
+    </div>
+  </section>
+
+  <section class="step" id="s8">
+    <div class="step__head">
+      <div class="step__badge">8</div>
+      <div><h2>อ่าน log แล้ววาดเส้นทางด้วยมือ</h2><div class="step__program">กลับไปหน้าต่างที่เปิด log ค้างไว้ (ขั้นที่ 1)</div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">🔍</span><span class="txt"><strong>สิ่งที่ควรเห็น:</strong> <span class="sub">4 บรรทัด — <code>[TRACE 1]</code>, <code>[TRACE 2]</code>, <code>[TRACE 3]</code>, แล้วปิดท้ายด้วย <code>[TRACE 5]</code> (ไม่ใช่ TRACE 4 — เพราะคำถามราคาข้าวไม่ใช่ canned จึงวิ่งเข้าเส้นทาง streaming) เรียงขึ้นตามเลขตรง ๆ พร้อมค่าจริงที่ไหลผ่านแต่ละจุด</span></span></div>
+        <div class="explain-row"><span class="icon">✏️</span><span class="txt"><strong>ลองทำ:</strong> <span class="sub">หยิบกระดาษ (หรือเครื่องมือวาดไดอะแกรมออนไลน์) วาดกล่อง 4 กล่องเรียงตามลำดับที่เห็นใน log พร้อมลูกศรเชื่อม (กล่องสุดท้ายชื่อ "สร้างคำตอบ" เฉย ๆ พอ ไม่ต้องแยก TRACE 4/5) แล้วเทียบกับไดอะแกรม "ขั้นตอนตอบคำถาม" ในเอกสารภาพรวมระบบ — เหมือนกันไหม ต่างตรงไหน</span></span></div>
+      </div>
+      <div class="step__check"><input type="checkbox" id="c8"><label for="c8">เห็นครบ 4 บรรทัด (TRACE 1,2,3,5) และวาดเส้นทางด้วยมือแล้ว</label></div>
+    </div>
+  </section>
+
+  <div class="partlabel">ขั้นที่ 4 — เก็บกวาด</div>
+
+  <section class="step" id="s9">
+    <div class="step__head">
+      <div class="step__badge gold">🧹</div>
+      <div><h2>ลบ print() ที่เพิ่มออกให้หมด แล้ว build ใหม่</h2><div class="step__program">สำคัญมาก — ห้ามลืมขั้นนี้</div></div>
+    </div>
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row"><span class="icon">⚠️</span><span class="txt"><strong>ทำไมสำคัญ:</strong> <span class="sub">บรรทัด <code>print()</code> ที่เพิ่มไว้เป็นแค่เครื่องมือฝึกของวันนี้ ไม่ใช่โค้ดที่ควรอยู่ถาวร ถ้าเผลอ commit ขึ้น git จะกลายเป็น log รกในระบบจริง — ลบทั้ง 5 บรรทัดออกจาก 4 ไฟล์ให้ครบ (สังเกตว่า <code>chat.py</code> มี 2 บรรทัด คือ TRACE 4 และ TRACE 5)</span></span></div>
+      </div>
+      <div class="cmdblock">
+        <pre><code>git diff --stat</code></pre>
+        <button class="copy-btn" data-copy="git diff --stat">คัดลอก</button>
+      </div>
+      <div class="verify">✅ <strong>เช็คว่าลบครบ:</strong> คำสั่งด้านบนควรไม่ขึ้นไฟล์ไหนเลยที่ยังมีการแก้ไขค้างอยู่ (แปลว่าโค้ดกลับไปเหมือนก่อนเริ่มขั้นตอนนี้ทุกประการ) แล้วรัน <code>docker compose up -d --build app</code> อีกครั้งเพื่อให้ container ใช้โค้ดที่สะอาดแล้ว</div>
+      <div class="step__check"><input type="checkbox" id="c9"><label for="c9">ลบครบ 5 บรรทัด, <code>git diff --stat</code> ว่างแล้ว, build ใหม่แล้ว</label></div>
+    </div>
+  </section>
+
+  <div class="callout">
+    <span class="callout__label">Checkpoint ปิดท้าย</span>
+    <p>วาด flow คำถาม 1 ข้อจากความเข้าใจตัวเอง โดยไม่เปิด log หรือเอกสารช่วย — ถ้าวาดไม่ได้ ให้กลับไปทำขั้นที่ 6-8 ซ้ำอีกรอบด้วยคำถามอื่น ไม่ต้องรีบไปวันถัดไป</p>
+  </div>
+
+  <div class="callout callout--gold">
+    <span class="callout__label">ทำเสร็จแล้ว — ต่อไปคือ Day 4</span>
+    <p>ขั้นต่อไปคือ "ลงมือทำ 4 Labs เล็ก ๆ" — เพิ่มเอกสารจำนวนมาก, เพิ่ม API เครื่องมือปลอม, ทดสอบ LINE Webhook, และทำให้ fallback ทำงานให้เห็นจริง อยู่ใน <a href="00_chapter00_orientation.html#day4">เอกสารปฐมนิเทศ § Day 4</a></p>
+  </div> -->
+
+
+<div class="partlabel">ตอนที่ 3 — รีสตาร์ท แล้วลองถามคำถามจริง</div>
+
+<section class="step" id="s6">
+  <div class="step__head">
+    <div class="step__badge">6</div>
+    <div>
+      <h2>Build ใหม่ ให้ container ใช้โค้ดที่เราแก้</h2>
+      <div class="step__program">รันในหน้าต่าง terminal ที่สอง (ไม่ใช่หน้าต่างที่เปิด log ค้างไว้)</div>
+    </div>
+  </div>
+
+  <div class="step__body">
+    <div class="cmdblock">
+      <pre><code>docker compose up -d --build app</code></pre>
+      <button class="copy-btn" data-copy="docker compose up -d --build app">คัดลอก</button>
+    </div>
+
+    <div class="explain">
+      <div class="explain-row">
+        <span class="icon">📦</span>
+        <span class="txt">
+          <strong>ทำไมต้อง <code>--build</code>:</strong>
+          <span class="sub">หลังจากเราแก้โค้ดแล้ว container ยังใช้โค้ดชุดเดิมอยู่ ดังนั้นต้องสั่ง build ใหม่เพื่อให้
+            Docker สร้าง image ที่มีโค้ดล่าสุด แล้วจึงเริ่ม container ใหม่อีกครั้ง รอสักครู่
+            รอบนี้มักจะเร็วกว่าครั้งแรก เพราะ Docker มีบางส่วนที่ cache ไว้แล้ว</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="verify">
+      ✅ <strong>เช็ก:</strong> กลับไปดูหน้าต่าง log ในขั้นที่ 1 ควรเห็นข้อความประมาณ <code>Server started</code>
+      ขึ้นใหม่ แปลว่าแอปรีสตาร์ทเสร็จแล้ว
+    </div>
+
+    <div class="step__check">
+      <input type="checkbox" id="c6">
+      <label for="c6">Build เสร็จ เห็นแอปรีสตาร์ทใน log แล้ว</label>
+    </div>
+  </div>
+</section>
+
+
+<section class="step" id="s7">
+  <div class="step__head">
+    <div class="step__badge">7</div>
+    <div>
+      <h2>ลองถามคำถามที่วิ่งผ่านหลายขั้นตอน</h2>
+      <div class="step__program">เปิดหน้าแชท localhost:8000 อีกแท็บ</div>
+    </div>
+  </div>
+
+  <div class="step__body">
+    <div class="cmdblock">
+      <pre><code>ราคาข้าววันนี้เท่าไหร่</code></pre>
+      <button class="copy-btn" data-copy="ราคาข้าววันนี้เท่าไหร่">คัดลอก</button>
+    </div>
+
+    <div class="explain">
+      <div class="explain-row">
+        <span class="icon">🎯</span>
+        <span class="txt">
+          <strong>ทำไมเลือกคำถามนี้:</strong>
+          <span class="sub">คำถามนี้ไม่ใช่คำทักทาย จึงผ่านการเช็กคำถามใน TRACE 1 จากนั้นระบบมีโอกาสเรียก API
+            เพื่อเสริมข้อมูลใน TRACE 2 และค้นข้อมูลจากเอกสารใน TRACE 3 ก่อนนำข้อมูลทั้งหมดไปสร้างคำตอบใน TRACE 5
+            ลองใช้คำถามนี้เพื่อดูว่าแต่ละขั้นตอนทำงานต่อกันอย่างไร</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="step__check">
+      <input type="checkbox" id="c7">
+      <label for="c7">ส่งคำถามแล้ว ได้คำตอบแล้ว</label>
+    </div>
+  </div>
+</section>
+
+
+<section class="step" id="s8">
+  <div class="step__head">
+    <div class="step__badge">8</div>
+    <div>
+      <h2>ดู log แล้วลองวาดเส้นทางด้วยตัวเอง</h2>
+      <div class="step__program">กลับไปหน้าต่างที่เปิด log ค้างไว้ (ขั้นที่ 1)</div>
+    </div>
+  </div>
+
+  <div class="step__body">
+    <div class="explain">
+      <div class="explain-row">
+        <span class="icon">🔍</span>
+        <span class="txt">
+          <strong>สิ่งที่ควรเห็น:</strong>
+          <span class="sub">ลองดูใน log ว่าคำถามของเราผ่าน TRACE ไหนบ้าง โดยทั่วไปจะเห็น TRACE 1, TRACE 2, TRACE 3
+            และสุดท้าย TRACE 5 เพราะเป็นคำถามทั่วไปที่ใช้เส้นทาง Streaming ส่วน TRACE 4 จะใช้กับอีกเส้นทางหนึ่ง</span>
+        </span>
+      </div>
+
+      <div class="explain-row">
+        <span class="icon">✏️</span>
+        <span class="txt">
+          <strong>ลองคำถามทักทาย: </strong>
+          <span class="sub"> พิมพ์ข้อความ เช่น สวัสดี ลองดูใน log ว่าคำถามผ่าน TRACE 4 หรือไม่</span>
+          </span>
+      </div>
+    </div>
+
+    <div class="step__check">
+      <input type="checkbox" id="c8">
+      <label for="c8">ดู log และเข้าใจเส้นการทำงานแล้ว</label>
+    </div>
+  </div>
+</section>
+
+
+<div class="partlabel">ตอนที่ 4 — เก็บกวาด</div>
+
+<section class="step" id="s9">
+  <div class="step__head">
+    <div class="step__badge gold">🧹</div>
+    <div>
+      <h2>ลบ print() ที่เราเพิ่มออก แล้ว Build ใหม่</h2>
+      <div class="step__program">สำคัญมาก — ห้ามลืมขั้นนี้</div>
+    </div>
+  </div>
+
+  <div class="step__body">
+    <div class="explain">
+      <div class="explain-row">
+        <span class="icon">⚠️</span>
+        <span class="txt">
+          <strong>ทำไมต้องลบออก:</strong>
+          <span class="sub">print() ที่เราเพิ่มวันนี้มีไว้สำหรับดูเส้นทางการทำงานของ Chatbot เท่านั้น
+            ไม่ใช่โค้ดที่ต้องใช้จริง ดังนั้นก่อนจบการทดลอง อย่าลืมลบออกให้ครบทั้ง 5 บรรทัดจาก 4 ไฟล์ โดยใน
+            <code>chat.py</code> จะมี 2 บรรทัด คือ TRACE 4 และ TRACE 5</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="cmdblock">
+      <pre><code>git diff --stat</code></pre>
+      <button class="copy-btn" data-copy="git diff --stat">คัดลอก</button>
+    </div>
+
+    <div class="verify">
+      ✅ <strong>เช็กให้เรียบร้อย:</strong> หลังจากลบแล้ว ลองรัน <code>git diff --stat</code> ถ้าไม่แสดงรายการไฟล์
+      แสดงว่าเราไม่ได้ทิ้งการแก้ไขไว้ จากนั้นรัน <code>docker compose up -d --build app</code> อีกครั้ง เพื่อให้
+      container กลับมาใช้โค้ดที่สะอาดแล้ว
+    </div>
+
+    <div class="step__check">
+      <input type="checkbox" id="c9">
+      <label for="c9">ลบครบ 5 บรรทัด, <code>git diff --stat</code> ว่างแล้ว และ Build ใหม่แล้ว</label>
+    </div>
+  </div>
+</section>
+
+
+<!-- <div class="callout">
+  <span class="callout__label">Checkpoint ปิดท้าย</span>
+  <p>ลองวาด flow ของคำถาม 1 ข้อด้วยความเข้าใจของตัวเอง โดยไม่เปิด log หรือเอกสารช่วย ถ้ายังวาดไม่ได้ ไม่เป็นไร
+    ให้กลับไปลองทำขั้นที่ 6–8 อีกครั้งด้วยคำถามอื่น จนเห็นภาพว่าแต่ละขั้นตอนทำงานต่อกันอย่างไร</p>
+</div> -->
+
+
+<div class="callout callout--gold">
+  <span class="callout__label">ทำเสร็จแล้ว — ต่อไปคือขั้นที่ 4</span>
+  <p>ขั้นต่อไปคือ "สร้างแชทบอท LINE จากศูนย์" — คู่มือทั่วไปที่พาไปตั้งแต่สมัครบัญชี Official Account จนได้กุญแจครบสำหรับเอาไปเขียนบอทเอง อยู่ใน <a href="step4_line-oa-guide.html">ขั้นที่ 4 — สร้างแชทบอท LINE</a></p>
+</div>
+
+</main> 
+
+<footer>
+  <span>ความคืบหน้าถูกบันทึกไว้ในเบราว์เซอร์นี้เท่านั้น</span>
+  <button id="resetBtn" type="button">ล้างความคืบหน้าทั้งหมด</button>
+</footer>
+
+<script>
+  (function () {
+    var STORAGE_KEY = "oae-trace-request-progress-v1";
+    var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.step__check input[type="checkbox"]'));
+    var fill = document.getElementById("progressFill");
+    var label = document.getElementById("progressLabel");
+    var resetBtn = document.getElementById("resetBtn");
+
+    function loadState() {
+      try { return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}"); }
+      catch (e) { return {}; }
+    }
+    function saveState(state) {
+      try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+    function updateProgress() {
+      var total = checkboxes.length;
+      var done = checkboxes.filter(function (c) { return c.checked; }).length;
+      var pct = total ? Math.round((done / total) * 100) : 0;
+      fill.style.width = pct + "%";
+      label.textContent = done + "/" + total;
+    }
+
+    var state = loadState();
+    checkboxes.forEach(function (cb) {
+      if (state[cb.id]) { cb.checked = true; cb.closest(".step__check").classList.add("checked"); }
+      cb.addEventListener("change", function () {
+        cb.closest(".step__check").classList.toggle("checked", cb.checked);
+        var s = loadState(); s[cb.id] = cb.checked; saveState(s);
+        updateProgress();
+      });
+    });
+    updateProgress();
+
+    resetBtn.addEventListener("click", function () {
+      if (!window.confirm("ล้างความคืบหน้าทั้งหมด?")) return;
+      window.localStorage.removeItem(STORAGE_KEY);
+      checkboxes.forEach(function (cb) { cb.checked = false; cb.closest(".step__check").classList.remove("checked"); });
+      updateProgress();
+    });
+
+    Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        var done = function () {
+          var original = btn.textContent;
+          btn.textContent = "คัดลอกแล้ว ✓";
+          btn.classList.add("copied");
+          window.setTimeout(function () {
+            btn.textContent = original;
+            btn.classList.remove("copied");
+          }, 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); done(); });
+        } else {
+          fallbackCopy(text); done();
+        }
+      });
+    });
+    function fallbackCopy(text) {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  })();
+</script>

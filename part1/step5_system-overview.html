@@ -1,0 +1,1158 @@
+<title>คู่มือทางเทคนิค OAE Chatbot</title>
+<style>
+  :root {
+    --bg: #f6f8f3;
+    --surface: #ffffff;
+    --surface-2: #eef2ea;
+    --ink: #17211a;
+    --ink-muted: #4c5a4f;
+    --ink-faint: #7c8a7d;
+    --line: #dee6da;
+    --line-strong: #c4d0bf;
+    --accent: #266448;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2efe4;
+    --accent-soft-line: #bcdac4;
+    --warn: #9a5a12;
+    --warn-soft: #fbeedc;
+    --warn-soft-line: #ecc98b;
+    --code-bg: #10231a;
+    --code-ink: #d9ead9;
+    --code-accent: #7fd7a0;
+    --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
+    --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f;
+      --surface: #161f16;
+      --surface-2: #1c261b;
+      --ink: #e7ede4;
+      --ink-muted: #a7b6a5;
+      --ink-faint: #758574;
+      --line: #2b352a;
+      --line-strong: #3a463790;
+      --accent: #6fc492;
+      --accent-ink: #0c1a10;
+      --accent-soft: #1c2e21;
+      --accent-soft-line: #2f4a37;
+      --warn: #e3a763;
+      --warn-soft: #2e2314;
+      --warn-soft-line: #5a4322;
+      --code-bg: #0b1710;
+      --code-ink: #cfe6d2;
+      --code-accent: #8fe0ab;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f;
+    --surface: #161f16;
+    --surface-2: #1c261b;
+    --ink: #e7ede4;
+    --ink-muted: #a7b6a5;
+    --ink-faint: #758574;
+    --line: #2b352a;
+    --line-strong: #3a463790;
+    --accent: #6fc492;
+    --accent-ink: #0c1a10;
+    --accent-soft: #1c2e21;
+    --accent-soft-line: #2f4a37;
+    --warn: #e3a763;
+    --warn-soft: #2e2314;
+    --warn-soft-line: #5a4322;
+    --code-bg: #0b1710;
+    --code-ink: #cfe6d2;
+    --code-accent: #8fe0ab;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); }
+  a:hover { text-decoration-thickness: 2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 700; color: var(--ink); }
+  p { text-wrap: pretty; }
+
+  /* ── Top bar ─────────────────────────────────────────────────────────── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .topbar__mark {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: grid; place-items: center;
+    font-size: 17px;
+    flex: none;
+  }
+  .topbar__title { font-weight: 700; font-size: 15px; letter-spacing: 0.01em; }
+  .topbar__sub { font-size: 12.5px; color: var(--ink-faint); }
+  .topbar__meta {
+    margin-inline-start: auto;
+    display: flex; gap: 8px; flex-wrap: wrap;
+    font-size: 12px; color: var(--ink-muted);
+  }
+  .pill {
+    border: 1px solid var(--line-strong);
+    background: var(--surface-2);
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  /* ── Shell / sidebar ─────────────────────────────────────────────────── */
+  .shell {
+    display: grid;
+    grid-template-columns: 258px minmax(0, 1fr);
+    gap: 0;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  .sidenav {
+    position: sticky;
+    top: 63px;
+    align-self: start;
+    height: calc(100vh - 63px);
+    overflow-y: auto;
+    padding: 28px 18px 40px 24px;
+    border-inline-end: 1px solid var(--line);
+  }
+  .sidenav h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    margin: 18px 0 8px;
+    font-weight: 700;
+  }
+  .sidenav h3:first-child { margin-top: 0; }
+  .sidenav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+  .sidenav a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 7px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-size: 13.5px;
+    border-inline-start: 2px solid transparent;
+  }
+  .sidenav a:hover { background: var(--surface-2); color: var(--ink); }
+  .sidenav a.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-inline-start-color: var(--accent);
+    font-weight: 600;
+  }
+
+  main { min-width: 0; padding: 40px clamp(20px, 4vw, 56px) 100px; }
+
+  /* ── Hero ────────────────────────────────────────────────────────────── */
+  .hero { padding-bottom: 32px; border-bottom: 1px solid var(--line); margin-bottom: 40px; }
+  .hero__eyebrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12.5px; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.07em;
+    margin-bottom: 14px;
+  }
+  .hero__eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .hero h1 { font-size: clamp(26px, 3.4vw, 36px); line-height: 1.25; margin: 0 0 14px; }
+  .hero p.lead { font-size: 16.5px; color: var(--ink-muted); max-width: 68ch; margin: 0 0 20px; }
+  .series-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+  .series-nav a {
+    display: inline-flex; align-items: center; font-size: 12.6px; font-weight: 600; color: var(--ink-muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; text-decoration: none; background: var(--surface);
+  }
+  .series-nav a.current { color: var(--accent); border-color: var(--accent-soft-line); background: var(--accent-soft); font-weight: 700; }
+  .series-nav a:hover { border-color: var(--accent); }
+  .hero__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .hero__fact { background: var(--surface); padding: 12px 16px; }
+  .hero__fact dt { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); margin-bottom: 4px; }
+  .hero__fact dd { margin: 0; font-size: 14px; font-weight: 600; }
+
+  /* ── Sections ────────────────────────────────────────────────────────── */
+  .section { margin-bottom: 56px; scroll-margin-top: 78px; }
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 13px; font-weight: 700; color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-soft-line);
+    border-radius: 7px;
+    padding: 2px 8px;
+    flex: none;
+  }
+  .section h2 { font-size: 23px; margin: 0; }
+  .section > p.dek { color: var(--ink-muted); margin: 10px 0 22px; max-width: 70ch; }
+  .subsection { margin: 30px 0; scroll-margin-top: 78px; }
+  .subsection h3 { font-size: 17.5px; margin: 0 0 10px; }
+  .subsection h4 { font-size: 14.5px; margin: 18px 0 8px; color: var(--ink); }
+  .prose { max-width: 72ch; }
+  .prose p { margin: 0 0 12px; color: var(--ink); }
+  .prose ul, .prose ol { margin: 0 0 12px; padding-inline-start: 22px; }
+  .prose li { margin-bottom: 5px; }
+  .prose li::marker { color: var(--ink-faint); }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.87em;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.05em 0.4em;
+  }
+
+  .codeblock {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 10px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 14px 0;
+    box-shadow: var(--shadow);
+  }
+  .codeblock code { background: none; border: none; padding: 0; color: inherit; }
+  .codeblock .c-key { color: var(--code-accent); }
+  .codeblock .c-dim { color: #7f9482; }
+
+  /* ── Callouts ────────────────────────────────────────────────────────── */
+  .callout {
+    border: 1px solid var(--line);
+    border-inline-start: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    max-width: 76ch;
+  }
+  .callout p { margin: 0; color: var(--ink); }
+  .callout p + p { margin-top: 8px; }
+  .callout__label {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--accent); margin-bottom: 6px;
+  }
+  .callout--warn { border-inline-start-color: var(--warn); background: var(--warn-soft); }
+  .callout--warn .callout__label { color: var(--warn); }
+
+  /* ── Tables ──────────────────────────────────────────────────────────── */
+  .tablewrap { overflow-x: auto; margin: 14px 0 22px; border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.8px; min-width: 560px; }
+  caption { text-align: start; padding: 10px 14px 0; font-size: 12.5px; color: var(--ink-faint); }
+  th, td { text-align: start; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    background: var(--surface-2);
+    font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--ink-muted); font-weight: 700;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+  td.num, th.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  table.compact td, table.compact th { padding: 7px 12px; }
+
+  /* ── Cards / grids ───────────────────────────────────────────────────── */
+  .cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 16px 0 24px; }
+  .card {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+  .card h4 { margin: 0 0 6px; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+  .card p { margin: 0; font-size: 13.5px; color: var(--ink-muted); }
+  .card .tag {
+    font-family: var(--font-mono); font-size: 11px;
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 5px; padding: 1px 6px; color: var(--ink-muted);
+  }
+
+  .filecard { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 10px 0; background: var(--surface); }
+  .filecard summary {
+    cursor: pointer; font-family: var(--font-mono); font-size: 13.5px; font-weight: 600;
+    color: var(--ink); list-style: none; display: flex; align-items: center; gap: 10px;
+  }
+  .filecard summary::-webkit-details-marker { display: none; }
+  .filecard summary::before {
+    content: "▸"; color: var(--accent); font-size: 11px; transition: transform 0.15s ease;
+    flex: none;
+  }
+  .filecard[open] summary::before { transform: rotate(90deg); }
+  .filecard .desc { font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); font-weight: 400; }
+  .filecard .body { padding: 12px 2px 2px 21px; font-size: 13.8px; }
+  .filecard .body ul { margin: 6px 0 0; padding-inline-start: 18px; }
+  .filecard .body li { margin-bottom: 5px; }
+  .filecard .body code { font-size: 0.85em; }
+
+  /* ── Diagram ─────────────────────────────────────────────────────────── */
+  .diagram-frame {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 18px;
+    margin: 18px 0 24px;
+    overflow-x: auto;
+    box-shadow: var(--shadow);
+  }
+  .diagram-frame svg { display: block; min-width: 640px; }
+  .dg-box { fill: var(--surface-2); stroke: var(--line-strong); stroke-width: 1; }
+  .dg-box--accent { fill: var(--accent-soft); stroke: var(--accent); }
+  .dg-box--warn { fill: var(--warn-soft); stroke: var(--warn); }
+  .dg-text { fill: var(--ink); font-family: var(--font-ui); font-size: 12.5px; font-weight: 600; }
+  .dg-text-sm { fill: var(--ink-muted); font-family: var(--font-ui); font-size: 10.5px; }
+  .dg-line { stroke: var(--line-strong); stroke-width: 1.4; fill: none; }
+  .dg-arrow { fill: var(--line-strong); }
+  .dg-num {
+    fill: var(--accent); font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  }
+
+  /* ── Glossary ────────────────────────────────────────────────────────── */
+  .glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px 24px; }
+  .glossary dt { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+  .glossary dd { margin: 0 0 4px; font-size: 13.5px; color: var(--ink-muted); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 24px clamp(20px, 4vw, 56px) 40px;
+    font-size: 12.5px; color: var(--ink-faint);
+    max-width: 1280px; margin: 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidenav {
+      position: static; height: auto; border-inline-end: none;
+      border-bottom: 1px solid var(--line);
+      padding: 14px 20px; display: flex; flex-direction: row; gap: 18px; overflow-x: auto;
+    }
+    .sidenav h3 { display: none; }
+    .sidenav ul { flex-direction: row; gap: 4px; }
+    .sidenav a { white-space: nowrap; }
+    main { padding: 28px 20px 80px; }
+  }
+</style>
+
+<div class="topbar">
+  <div class="topbar__mark">🌾</div>
+  <div>
+    <div class="topbar__title">OAE Chatbot — คู่มือทางเทคนิค</div>
+    <div class="topbar__sub">ขั้นที่ 5 (สุดท้าย) ของสายผู้สนใจระบบ — เอกสารสำหรับนำเสนอต่อหน่วยงาน</div>
+  </div>
+  <div class="topbar__meta">
+    <span class="pill">RAG Chatbot</span>
+    <span class="pill">FastAPI + React</span>
+    <span class="pill">อัปเดต 17 ส.ค. 2569</span>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="sidenav" aria-label="สารบัญ">
+    <h3>เริ่มต้น</h3>
+    <ul>
+      <li><a href="#overview">ภาพรวมโครงการ</a></li>
+    </ul>
+    <h3>1 · แนวคิดการทำงาน</h3>
+    <ul>
+      <li><a href="#concept-rag">RAG คืออะไร</a></li>
+      <li><a href="#concept-arch">สถาปัตยกรรมระบบ</a></li>
+      <li><a href="#concept-flow">ขั้นตอนตอบคำถาม</a></li>
+      <li><a href="#concept-ingest">ขั้นตอนนำเข้าข้อมูล</a></li>
+      <li><a href="#concept-auth">ระบบผู้ใช้และสิทธิ์</a></li>
+      <li><a href="#concept-extra">ระบบเสริมรอบข้าง</a></li>
+    </ul>
+    <h3>2 · การตั้งค่า &amp; Tech Stack</h3>
+    <ul>
+      <li><a href="#stack-table">Tech stack</a></li>
+      <li><a href="#stack-layout">โครงสร้างโฟลเดอร์</a></li>
+      <li><a href="#stack-env">ตัวแปรสภาพแวดล้อม</a></li>
+    </ul>
+    <h3>3 · ขั้นตอนติดตั้ง</h3>
+    <ul>
+      <li><a href="#setup-docker">วิธีที่ 1 — Docker</a></li>
+      <li><a href="#setup-manual">วิธีที่ 2 — ติดตั้งเอง</a></li>
+      <li><a href="#setup-verify">ตรวจสอบว่าใช้งานได้</a></li>
+    </ul>
+    <h3>4 · Source Code เจาะลึก</h3>
+    <ul>
+      <li><a href="#src-backend">Backend (app/)</a></li>
+      <li><a href="#src-frontend">Frontend (src-react/)</a></li>
+      <li><a href="#src-db">โครงสร้างฐานข้อมูล</a></li>
+      <li><a href="#src-scripts">Scripts นำเข้าข้อมูล</a></li>
+      <li><a href="#src-deploy">การ Deploy</a></li>
+    </ul>
+    <h3>5 · พัฒนาต่อ</h3>
+    <ul>
+      <li><a href="#next-watch">จุดที่ต้องระวัง</a></li>
+      <li><a href="#next-security">ความปลอดภัยที่ต้องแก้ก่อนส่งมอบ</a></li>
+      <li><a href="#next-extend">ถ้าจะเพิ่มฟีเจอร์</a></li>
+    </ul>
+    <h3>ภาคผนวก</h3>
+    <ul>
+      <li><a href="#glossary">คำศัพท์เทคนิค</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="hero" id="overview">
+      <div class="hero__eyebrow">ภาพรวมโครงการ</div>
+      <h1>OAE Chatbot: แชทบอทตอบคำถามด้านเศรษฐกิจการเกษตร ด้วยเทคนิค RAG</h1>
+      <p class="lead">
+        ระบบนี้เป็นแชทบอทที่ตอบคำถามภาษาไทยเกี่ยวกับเศรษฐกิจการเกษตร (ปาล์มน้ำมัน โคนม
+        กุ้ง ทุเรียน ข้าว และข้อมูลจาก สศก. อีกหลายด้าน) โดยดึงคำตอบจาก
+        <strong>เอกสารราชการจริง</strong> ที่นำเข้าสู่ระบบไว้ล่วงหน้า แทนที่จะให้ AI
+        เดาคำตอบจากความรู้ทั่วไป เอกสารนี้อธิบายทุกชั้นของระบบ ตั้งแต่แนวคิด
+        เทคโนโลยีที่ใช้ ขั้นตอนติดตั้ง ไปจนถึงจุดที่ทีมพัฒนาต่อควรรู้
+      </p>
+      <nav class="series-nav">
+        <a href="step1_setup-full.html">🧰 เตรียมเครื่องพัฒนา (ขั้นที่ 1)</a>
+        <a href="step2_rag-test.html">🧪 ทดสอบ RAG (ขั้นที่ 2)</a>
+        <a href="step3_trace-question.html">🧵 ตามรอยคำถาม (ขั้นที่ 3)</a>
+        <a href="step4_line-oa-guide.html">💬 สร้างแชทบอท LINE (ขั้นที่ 4)</a>
+        <a class="current">📗 ภาพรวมระบบ (ขั้นที่ 5) · กำลังอ่าน</a>
+      </nav>
+      <dl class="hero__facts">
+        <div class="hero__fact"><dt>ประเภทระบบ</dt><dd>RAG Chatbot (Retrieval-Augmented Generation)</dd></div>
+        <div class="hero__fact"><dt>Backend</dt><dd>Python · FastAPI</dd></div>
+        <div class="hero__fact"><dt>Frontend</dt><dd>React 19 · TypeScript</dd></div>
+        <div class="hero__fact"><dt>ฐานข้อมูล</dt><dd>PostgreSQL + pgvector</dd></div>
+        <div class="hero__fact"><dt>โมเดลภาษา</dt><dd>DeepSeek (deepseek-v4-flash)</dd></div>
+        <div class="hero__fact"><dt>ผู้ให้บริการเดิม</dt><dd>สำนักงานเศรษฐกิจการเกษตร (สศก.)</dd></div>
+      </dl>
+    </div>
+
+    <!-- ══════════════════ SECTION 1 ══════════════════ -->
+    <section class="section" id="concept-rag">
+      <div class="section-head"><span class="section-num">1.1</span><h2>แนวคิดการทำงาน: RAG คืออะไร</h2></div>
+      <div class="prose">
+        <p>
+          ปัญหาของแชทบอท AI ทั่วไป (เช่น ChatGPT แบบเปล่า ๆ) คือมันตอบจาก
+          "ความจำ" ที่เรียนรู้มาตอนฝึกโมเดล ซึ่งอาจไม่มีข้อมูลล่าสุด ไม่มีข้อมูลเฉพาะของหน่วยงาน
+          และที่อันตรายที่สุดคือ <strong>สามารถ "มั่ว" ตัวเลขหรือข้อเท็จจริงขึ้นมาเองได้</strong>
+          (เรียกว่า hallucination) — ซึ่งยอมรับไม่ได้สำหรับข้อมูลราชการที่ต้องอ้างอิงได้
+        </p>
+        <p>
+          <strong>RAG (Retrieval-Augmented Generation)</strong> แก้ปัญหานี้ด้วยการ
+          "บังคับ" ให้ AI ตอบจากเอกสารจริงเท่านั้น โดยแบ่งการทำงานเป็น 2 ขั้นเสมอ:
+        </p>
+        <ol>
+          <li><strong>Retrieval (ค้นหา)</strong> — เมื่อผู้ใช้ถามคำถาม ระบบจะค้นหาย่อหน้า/ส่วนของเอกสารที่เกี่ยวข้องที่สุดจากคลังเอกสารที่นำเข้าไว้ล่วงหน้า</li>
+          <li><strong>Generation (สร้างคำตอบ)</strong> — ส่งย่อหน้าที่ค้นเจอ (เรียกว่า "context") ให้โมเดลภาษา (LLM) อ่าน แล้วให้เรียบเรียงเป็นคำตอบภาษาธรรมชาติ พร้อมอ้างอิงแหล่งที่มา</li>
+        </ol>
+        <p>
+          ผลลัพธ์คือคำตอบที่ <strong>ตรวจสอบย้อนกลับได้</strong> — ทุกคำตอบสามารถอ้างอิงกลับไปยังเอกสารต้นฉบับ
+          ข้อ [1] [2] [3] ที่ระบบใช้ประกอบคำตอบ และถ้าไม่มีข้อมูลในเอกสาร ระบบจะบอกตรง ๆ
+          ว่าไม่มีข้อมูล แทนที่จะเดา
+        </p>
+      </div>
+    </section>
+
+    <section class="section" id="concept-arch">
+      <div class="section-head"><span class="section-num">1.2</span><h2>สถาปัตยกรรมระบบโดยรวม</h2></div>
+      <p class="dek">ระบบประกอบด้วย 5 ส่วนหลักที่ทำงานร่วมกัน — ผู้ใช้ไม่เห็นความซับซ้อนนี้ เห็นแค่หน้าแชท</p>
+
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1160 420" role="img" aria-label="แผนภาพสถาปัตยกรรมระบบ แสดงผู้ใช้เชื่อมต่อผ่านเบราว์เซอร์ไปยัง Frontend React จากนั้นไปยัง FastAPI Backend ซึ่งเชื่อมต่อกับ PostgreSQL pgvector, Ollama bge-m3, DeepSeek LLM, Typhoon OCR และ API ภายนอก">
+          <!-- user -->
+          <rect class="dg-box" x="20" y="170" width="130" height="70" rx="10"/>
+          <text class="dg-text" x="85" y="200" text-anchor="middle">ผู้ใช้งาน</text>
+          <text class="dg-text-sm" x="85" y="216" text-anchor="middle">เว็บ / LINE / API</text>
+
+          <!-- arrow user -> frontend -->
+          <line class="dg-line" x1="150" y1="205" x2="196" y2="205"/>
+          <polygon class="dg-arrow" points="196,200 206,205 196,210"/>
+
+          <!-- frontend -->
+          <rect class="dg-box dg-box--accent" x="210" y="150" width="150" height="110" rx="10"/>
+          <text class="dg-text" x="285" y="185" text-anchor="middle">Frontend</text>
+          <text class="dg-text-sm" x="285" y="203" text-anchor="middle">React 19 + TypeScript</text>
+          <text class="dg-text-sm" x="285" y="219" text-anchor="middle">landing · chat · admin</text>
+          <text class="dg-text-sm" x="285" y="235" text-anchor="middle">portal · dashboard</text>
+
+          <!-- arrow frontend -> backend -->
+          <line class="dg-line" x1="360" y1="205" x2="406" y2="205"/>
+          <polygon class="dg-arrow" points="406,200 416,205 406,210"/>
+          <text class="dg-text-sm" x="383" y="196" text-anchor="middle">HTTP / SSE</text>
+
+          <!-- backend -->
+          <rect class="dg-box dg-box--accent" x="420" y="130" width="170" height="150" rx="10"/>
+          <text class="dg-text" x="505" y="163" text-anchor="middle">Backend</text>
+          <text class="dg-text-sm" x="505" y="181" text-anchor="middle">FastAPI (Python)</text>
+          <text class="dg-text-sm" x="505" y="199" text-anchor="middle">RAG pipeline</text>
+          <text class="dg-text-sm" x="505" y="215" text-anchor="middle">Auth · Admin API</text>
+          <text class="dg-text-sm" x="505" y="231" text-anchor="middle">/api/v1 public API</text>
+          <text class="dg-text-sm" x="505" y="247" text-anchor="middle">LINE webhook</text>
+          <text class="dg-text-sm" x="505" y="263" text-anchor="middle">app/ package</text>
+
+          <!-- 4 branches to services -->
+          <line class="dg-line" x1="590" y1="160" x2="636" y2="80"/>
+          <polygon class="dg-arrow" points="628,80 640,78 634,90"/>
+          <line class="dg-line" x1="590" y1="185" x2="636" y2="180"/>
+          <polygon class="dg-arrow" points="628,177 640,180 630,186"/>
+          <line class="dg-line" x1="590" y1="220" x2="636" y2="280"/>
+          <polygon class="dg-arrow" points="628,275 640,280 631,288"/>
+          <line class="dg-line" x1="590" y1="250" x2="636" y2="365"/>
+          <polygon class="dg-arrow" points="627,358 640,364 630,370"/>
+
+          <!-- postgres -->
+          <rect class="dg-box" x="650" y="45" width="180" height="70" rx="10"/>
+          <text class="dg-text" x="740" y="73" text-anchor="middle">PostgreSQL + pgvector</text>
+          <text class="dg-text-sm" x="740" y="90" text-anchor="middle">ฐานความรู้ (chunks) · ผู้ใช้ · logs</text>
+
+          <!-- ollama -->
+          <rect class="dg-box" x="650" y="150" width="180" height="60" rx="10"/>
+          <text class="dg-text" x="740" y="175" text-anchor="middle">Ollama · bge-m3</text>
+          <text class="dg-text-sm" x="740" y="192" text-anchor="middle">แปลงข้อความเป็นเวกเตอร์ (1024 มิติ)</text>
+
+          <!-- deepseek -->
+          <rect class="dg-box" x="650" y="255" width="180" height="60" rx="10"/>
+          <text class="dg-text" x="740" y="280" text-anchor="middle">DeepSeek LLM</text>
+          <text class="dg-text-sm" x="740" y="297" text-anchor="middle">deepseek-v4-flash — เรียบเรียงคำตอบ</text>
+
+          <!-- external apis -->
+          <rect class="dg-box" x="650" y="335" width="180" height="70" rx="10"/>
+          <text class="dg-text" x="740" y="362" text-anchor="middle">API ภายนอก + Typhoon OCR</text>
+          <text class="dg-text-sm" x="740" y="379" text-anchor="middle">ราคาสินค้า · อากาศ · น้ำ · OCR สแกน PDF</text>
+
+          <!-- outputs to app / connecting labels -->
+          <text class="dg-text-sm" x="960" y="80" text-anchor="middle">เก็บ/ค้นความรู้</text>
+          <text class="dg-text-sm" x="960" y="180" text-anchor="middle">Embedding</text>
+          <text class="dg-text-sm" x="960" y="280" text-anchor="middle">สร้างคำตอบ</text>
+          <text class="dg-text-sm" x="960" y="370" text-anchor="middle">ข้อมูลสด + นำเข้าเอกสาร</text>
+        </svg>
+      </div>
+
+      <div class="prose">
+        <p>หลักการออกแบบสำคัญ: <strong>ทุกส่วนเป็นบริการแยกกัน (loosely coupled)</strong> — ถ้า DeepSeek ล่ม ระบบยังค้นเอกสารได้ ถ้า API ภายนอกล่ม ระบบยัง fallback กลับไปตอบจากเอกสารอย่างเดียวได้ ไม่มีจุดใดจุดหนึ่งทำให้ทั้งระบบหยุดทำงาน (ยกเว้นฐานข้อมูลและ backend เอง)</p>
+      </div>
+
+      <div class="cardgrid">
+        <div class="card"><h4>🖥️ Frontend <span class="tag">src-react/</span></h4><p>React + TypeScript หน้าตาที่ผู้ใช้เห็น — แชท, แลนดิ้งเพจ, แดชบอร์ดแอดมิน, พอร์ทัลข้อมูล</p></div>
+        <div class="card"><h4>⚙️ Backend <span class="tag">app/</span></h4><p>FastAPI จัดการตรรกะทั้งหมด: รับคำถาม ค้นเอกสาร เรียก LLM ยืนยันตัวตน บันทึก log</p></div>
+        <div class="card"><h4>🗄️ ฐานข้อมูล <span class="tag">PostgreSQL</span></h4><p>เก็บทั้งข้อมูลทั่วไป (ผู้ใช้, ประวัติแชท) และเวกเตอร์ของเอกสาร (ผ่านส่วนขยาย pgvector) ในที่เดียว</p></div>
+        <div class="card"><h4>🧠 โมเดลภาษา <span class="tag">DeepSeek</span></h4><p>รับผิดชอบ "เรียบเรียงคำตอบ" และ "ขยายคำค้นหา" เท่านั้น — ไม่ได้เป็นแหล่งความรู้โดยตรง</p></div>
+        <div class="card"><h4>🔤 Embedding <span class="tag">Ollama bge-m3</span></h4><p>โมเดลรันในเครื่อง/เซิร์ฟเวอร์เอง แปลงข้อความไทยเป็นตัวเลข (เวกเตอร์) เพื่อเทียบความหมาย</p></div>
+        <div class="card"><h4>📄 OCR <span class="tag">Typhoon API</span></h4><p>อ่านตัวอักษรจาก PDF ที่เป็นภาพสแกนภาษาไทย ใช้ตอนนำเข้าเอกสารเข้าคลังความรู้</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="concept-flow">
+      <div class="section-head"><span class="section-num">1.3</span><h2>ขั้นตอนการทำงานเมื่อผู้ใช้ถามคำถาม</h2></div>
+      <p class="dek">นี่คือหัวใจของระบบ (<code>app/services/rag.py</code>, <code>app/routers/chat.py</code>) — คำถาม 1 ข้อ ผ่านกี่ขั้นตอนกว่าจะกลายเป็นคำตอบ</p>
+
+      <div class="diagram-frame">
+        <svg viewBox="0 0 1160 210" role="img" aria-label="แผนภาพลำดับขั้นตอน RAG ตั้งแต่รับคำถามจนถึงบันทึกคำตอบ 8 ขั้นตอน">
+          <!-- 8 step boxes in a row with connecting arrows, two rows -->
+          <!-- row 1: steps 1-4 -->
+          <rect class="dg-box" x="10" y="20" width="130" height="64" rx="9"/>
+          <text class="dg-num" x="22" y="38">1</text>
+          <text class="dg-text" x="75" y="50" text-anchor="middle">คัดกรองเจตนา</text>
+          <text class="dg-text-sm" x="75" y="66" text-anchor="middle">ทักทาย/นอกเรื่อง</text>
+          <text class="dg-text-sm" x="75" y="79" text-anchor="middle">ตอบทันที ไม่ค้น</text>
+
+          <line class="dg-line" x1="140" y1="52" x2="176" y2="52"/><polygon class="dg-arrow" points="176,47 186,52 176,57"/>
+
+          <rect class="dg-box" x="190" y="20" width="130" height="64" rx="9"/>
+          <text class="dg-num" x="202" y="38">2</text>
+          <text class="dg-text" x="255" y="50" text-anchor="middle">เลือกหมวดสินค้า</text>
+          <text class="dg-text-sm" x="255" y="66" text-anchor="middle">LLM จัดหมวดถ้าเลือก</text>
+          <text class="dg-text-sm" x="255" y="79" text-anchor="middle">"ทั้งหมด"</text>
+
+          <line class="dg-line" x1="320" y1="52" x2="356" y2="52"/><polygon class="dg-arrow" points="356,47 366,52 356,57"/>
+
+          <rect class="dg-box" x="370" y="20" width="130" height="64" rx="9"/>
+          <text class="dg-num" x="382" y="38">3</text>
+          <text class="dg-text" x="435" y="50" text-anchor="middle">ขยายคำค้นหา</text>
+          <text class="dg-text-sm" x="435" y="66" text-anchor="middle">LLM สร้าง 2-3</text>
+          <text class="dg-text-sm" x="435" y="79" text-anchor="middle">คำค้นหาย่อย</text>
+
+          <line class="dg-line" x1="500" y1="52" x2="536" y2="52"/><polygon class="dg-arrow" points="536,47 546,52 536,57"/>
+
+          <rect class="dg-box dg-box--accent" x="550" y="20" width="150" height="64" rx="9"/>
+          <text class="dg-num" x="562" y="38">4</text>
+          <text class="dg-text" x="625" y="50" text-anchor="middle">ค้นหาเวกเตอร์</text>
+          <text class="dg-text-sm" x="625" y="66" text-anchor="middle">bge-m3 + pgvector</text>
+          <text class="dg-text-sm" x="625" y="79" text-anchor="middle">คู่ขนานทุกคำค้นหาย่อย</text>
+
+          <!-- connector down to row 2 -->
+          <line class="dg-line" x1="625" y1="84" x2="625" y2="118"/><polygon class="dg-arrow" points="620,110 625,120 630,110"/>
+
+          <!-- row 2: steps 5-8, right to left visually but keep left-to-right for reading order -->
+          <rect class="dg-box" x="10" y="130" width="130" height="64" rx="9"/>
+          <text class="dg-num" x="22" y="148">5</text>
+          <text class="dg-text" x="75" y="160" text-anchor="middle">คัดกรอง + จัดอันดับ</text>
+          <text class="dg-text-sm" x="75" y="176" text-anchor="middle">ตัดคะแนนต่ำ, ให้น้ำหนัก</text>
+          <text class="dg-text-sm" x="75" y="189" text-anchor="middle">เอกสารใหม่/หน่วยงานทางการ</text>
+
+          <line class="dg-line" x1="140" y1="162" x2="176" y2="162"/><polygon class="dg-arrow" points="176,157 186,162 176,167"/>
+
+          <rect class="dg-box" x="190" y="130" width="140" height="64" rx="9"/>
+          <text class="dg-num" x="202" y="148">6</text>
+          <text class="dg-text" x="260" y="160" text-anchor="middle">เสริมข้อมูลสด</text>
+          <text class="dg-text-sm" x="260" y="176" text-anchor="middle">LLM เลือกเรียก API</text>
+          <text class="dg-text-sm" x="260" y="189" text-anchor="middle">ราคา/อากาศ/น้ำ ฯลฯ</text>
+
+          <line class="dg-line" x1="330" y1="162" x2="366" y2="162"/><polygon class="dg-arrow" points="366,157 376,162 366,167"/>
+
+          <rect class="dg-box dg-box--accent" x="380" y="130" width="150" height="64" rx="9"/>
+          <text class="dg-num" x="392" y="148">7</text>
+          <text class="dg-text" x="455" y="160" text-anchor="middle">สร้างคำตอบ</text>
+          <text class="dg-text-sm" x="455" y="176" text-anchor="middle">DeepSeek + บริบทที่ค้นได้</text>
+          <text class="dg-text-sm" x="455" y="189" text-anchor="middle">สตรีมทีละคำ</text>
+
+          <line class="dg-line" x1="530" y1="162" x2="566" y2="162"/><polygon class="dg-arrow" points="566,157 576,162 566,167"/>
+
+          <rect class="dg-box" x="580" y="130" width="130" height="64" rx="9"/>
+          <text class="dg-num" x="592" y="148">8</text>
+          <text class="dg-text" x="645" y="160" text-anchor="middle">บันทึก + สรุปคำถาม</text>
+          <text class="dg-text-sm" x="645" y="176" text-anchor="middle">qa_logs, chip แนะนำ</text>
+          <text class="dg-text-sm" x="645" y="189" text-anchor="middle">คำถามต่อไป (background)</text>
+
+          <line class="dg-line" x1="750" y1="55" x2="820" y2="55"/>
+          <text class="dg-text" x="900" y="50" text-anchor="middle">ผลลัพธ์:</text>
+          <text class="dg-text-sm" x="900" y="66" text-anchor="middle">คำตอบ + เลขอ้างอิง</text>
+          <text class="dg-text-sm" x="900" y="80" text-anchor="middle">[1][2][3] + ลิงก์ที่มา</text>
+        </svg>
+      </div>
+
+      <div class="prose">
+        <p><strong>รายละเอียดแต่ละขั้นตอน (ไฟล์อ้างอิง):</strong></p>
+        <ol>
+          <li><strong>คัดกรองเจตนา (Intent Router)</strong> — <code>app/services/intent_router.py</code>. คำถามประเภททักทาย ขอบคุณ ขอข้อมูลส่วนบุคคล หรือหลุดหัวข้อ จะถูกตอบด้วยข้อความสำเร็จรูปทันที ไม่ต้องเสียเวลาค้นเอกสารหรือเรียก LLM คำถามเชิงขอคำแนะนำยังค้นเอกสารได้แต่ระบบจะเลี่ยงการ "สั่งยา/สั่งวิธีรักษา" ตรง ๆ</li>
+          <li><strong>เลือกหมวดสินค้า (Domain Router)</strong> — <code>app/services/domain_router.py</code>. ทำงานเฉพาะเมื่อผู้ใช้เลือกหมวด "ทั้งหมด" — LLM จะวิเคราะห์คำถามแล้วเดาว่าควรค้นเฉพาะหมวดไหน (เช่น กุ้ง, โคนม) เพื่อความแม่นยำ ถ้าเดาไม่ได้ก็ค้นทั้งหมดตามเดิม (ไม่แย่ไปกว่าการไม่ทำเลย)</li>
+          <li><strong>ขยายคำค้นหา (Query Expansion)</strong> — <code>expand_query()</code> ใน <code>rag.py</code>. คำถาม 1 ข้อ อาจมีหลายแง่มุม LLM จะช่วยแตกออกเป็น 2-3 คำค้นหาย่อยที่ครอบคลุมมุมต่าง ๆ (เช่น "อาการของโรค" + "วิธีป้องกัน")</li>
+          <li><strong>ค้นหาเวกเตอร์ (Vector Retrieval)</strong> — คำค้นหาแต่ละคำถูกแปลงเป็นเวกเตอร์ด้วย bge-m3 แล้วค้นใน PostgreSQL/pgvector ด้วย <em>cosine similarity</em> (ความคล้ายเชิงมุม) หาย่อหน้าที่ใกล้เคียงที่สุด 10 อันดับต่อคำค้นหาย่อย ทำงาน<strong>คู่ขนาน</strong>ทุกคำค้นหาย่อยพร้อมกันเพื่อความเร็ว</li>
+          <li><strong>คัดกรอง + จัดอันดับใหม่ (Rerank)</strong> — <code>rerank_chunks()</code>. ตัดย่อหน้าที่คะแนนต่ำกว่า 0.35 ทิ้ง แล้วให้คะแนนพิเศษกับเอกสารที่ <em>ใหม่กว่า</em> และมาจาก<em>หน่วยงานทางการ</em> (สศก., กรมปศุสัตว์ ฯลฯ) เพื่อไม่ให้เอกสารเก่าที่ OCR ไว้แย่งที่เอกสารทางการฉบับล่าสุด</li>
+          <li><strong>เสริมข้อมูลสด (Tool Routing)</strong> — <code>app/services/tool_router.py</code>. ก่อนตอบ DeepSeek จะพิจารณาว่าคำถามต้องใช้ "ข้อมูลสด" หรือไม่ (ราคาสินค้าล่าสุด, พยากรณ์อากาศ, ระดับน้ำ, ศัตรูพืชระบาด ฯลฯ) แล้วเลือกเรียก API ภายนอกที่เกี่ยวข้องแบบคู่ขนาน ผลลัพธ์ถูกผสมเข้ากับบริบทก่อนส่งให้ LLM ตอบ — ถ้าเรียกไม่สำเร็จ ระบบ fallback กลับไปใช้กติกาคำสำคัญแบบเดิม ไม่กระทบการตอบ</li>
+          <li><strong>สร้างคำตอบ (Answer Generation)</strong> — DeepSeek อ่านคำถาม + ประวัติการสนทนา + บริบทที่ค้นได้ทั้งหมด แล้วเรียบเรียงคำตอบพร้อมอ้างอิงหมายเลข [1][2][3] ตอบแบบสตรีมทีละคำ (คล้าย ChatGPT พิมพ์ทีละตัวอักษร) ผ่าน Server-Sent Events</li>
+          <li><strong>บันทึกและงานเบื้องหลัง</strong> — คำถาม/คำตอบถูกบันทึกลง <code>qa_logs</code> เพื่อใช้วิเคราะห์ในแดชบอร์ดแอดมิน ส่วนคำถามแนะนำต่อยอด (follow-up chips) จะถูกสร้างแบบ background หลังตอบเสร็จแล้ว เพื่อไม่ให้ผู้ใช้ต้องรอ</li>
+        </ol>
+      </div>
+
+      <div class="callout">
+        <span class="callout__label">หลักการสำคัญ</span>
+        <p>ถ้าระบบค้นไม่เจอเอกสารที่เกี่ยวข้องเลย (coverage = "none") ระบบจะ<strong>ไม่</strong>ปล่อยให้ DeepSeek ตอบแบบเดา แต่จะตอบข้อความสำเร็จรูปว่าไม่มีข้อมูลในเอกสารทันที — นี่คือกลไกป้องกัน hallucination ที่สำคัญที่สุดของระบบ</p>
+      </div>
+    </section>
+
+    <section class="section" id="concept-ingest">
+      <div class="section-head"><span class="section-num">1.4</span><h2>ขั้นตอนการนำเข้าข้อมูลเข้าคลังความรู้ (Ingestion)</h2></div>
+      <p class="dek">ก่อนแชทบอทจะตอบอะไรได้ ต้อง "ป้อน" เอกสารเข้าระบบก่อน — สคริปต์หลักคือ <code>scripts/batch_ingest.py</code></p>
+      <div class="prose">
+        <ol>
+          <li>เตรียมโฟลเดอร์ PDF ไว้ที่ <code>pdf/&lt;หมวดสินค้า&gt;/</code> พร้อมไฟล์ <code>index.json</code> ที่ระบุ หมวดหมู่ ปี หน่วยงานเจ้าของเอกสาร และ URL ต้นฉบับ</li>
+          <li>ระบบส่งแต่ละหน้า PDF ไปให้ <strong>Typhoon OCR</strong> อ่านตัวอักษรภาษาไทยออกมาเป็นข้อความ (ทำเป็นชุด ๆ เพื่อเลี่ยงโดนจำกัดอัตราการเรียก API)</li>
+          <li>ข้อความที่ OCR ได้ถูกแคชไว้ที่ <code>data/ocr_output/</code> — ถ้าต้องรันซ้ำ ระบบจะข้ามขั้นตอน OCR ได้ (ประหยัดเวลา/ค่าใช้จ่าย)</li>
+          <li>ตัดข้อความเป็นชิ้นย่อย (chunk) ขนาด ~1,500 ตัวอักษร ทับซ้อนกัน 200 ตัวอักษร (กันบริบทขาดตรงรอยตัด)</li>
+          <li>แต่ละชิ้นถูกแปลงเป็นเวกเตอร์ด้วย Ollama bge-m3 แล้วบันทึกลงตาราง <code>knowledge_base</code></li>
+        </ol>
+        <p>มีสคริปต์ย่อยสำหรับสถานการณ์ต่าง ๆ:</p>
+        <ul>
+          <li><code>scripts/ingest_missing.py</code> — นำเข้าเฉพาะ PDF ใหม่ที่ยังไม่มีในระบบ (ไม่ต้องรันใหม่ทั้งหมด)</li>
+          <li><code>scripts/reingest_from_ocr.py</code> — สร้าง embedding ใหม่จากข้อความ OCR ที่แคชไว้แล้ว (เช่น ตอนปรับขนาด chunk ใหม่)</li>
+          <li><code>scripts/ingest_oae_sheet.py</code> — ดึงเอกสารจำนวนมากจาก Google Sheet ของสำนักงานเศรษฐกิจการเกษตร (OAE) แบบสตรีม ทีละไฟล์ ทำงานต่อได้แม้หยุดกลางคัน</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="concept-auth">
+      <div class="section-head"><span class="section-num">1.5</span><h2>ระบบผู้ใช้งานและสิทธิ์การเข้าถึง</h2></div>
+      <div class="cardgrid">
+        <div class="card"><h4>👤 ผู้ใช้ทั่วไป (Guest)</h4><p>เข้าใช้แชทได้ทันทีไม่ต้องสมัคร ระบุตัวตนด้วย UUID ชั่วคราว บทสนทนาเก็บแบบ sliding window (10 ข้อความล่าสุด)</p></div>
+        <div class="card"><h4>🔐 ผู้ใช้ลงทะเบียน</h4><p>สมัครด้วยอีเมล + รหัส OTP 6 หลัก (ส่งผ่าน SMTP) เข้าสู่ระบบด้วยอีเมล/รหัสผ่าน ยืนยันตัวตนด้วย JWT (หมดอายุ 8 ชม.) ประวัติแชทถูกบันทึกถาวร</p></div>
+        <div class="card"><h4>🛡️ ผู้ดูแลระบบ (Admin)</h4><p>ล็อกอินแยกต่างหาก จัดการคลังความรู้ ดูสถิติ วิเคราะห์คำถามที่ตอบไม่ได้ จัดการหมวดหมู่สินค้า</p></div>
+        <div class="card"><h4>💬 LINE</h4><p>ผู้ใช้ LINE ถามผ่าน Rich Menu ได้เช่นกัน ระบบยืนยันด้วยลายเซ็น HMAC ของ LINE แล้วใช้ RAG pipeline เดียวกับหน้าเว็บ</p></div>
+      </div>
+      <div class="prose">
+        <p>รหัสผ่านทุกบัญชีถูกแฮชด้วย PBKDF2 (ไม่เก็บรหัสผ่านจริง) การพิสูจน์ตัวตน API ใช้ JWT มาตรฐาน (HS256) ปุ่มล็อกอินผ่าน Google/Facebook/LINE ถูกถอดออกแล้ว เหลือเฉพาะอีเมล/รหัสผ่านเพื่อความง่ายในการดูแล</p>
+      </div>
+    </section>
+
+    <section class="section" id="concept-extra">
+      <div class="section-head"><span class="section-num">1.6</span><h2>ระบบเสริมรอบข้าง</h2></div>
+      <div class="prose">
+        <p>นอกจากแชทหลัก ระบบยังมีชั้นข้อมูลและหน้าจอเพิ่มเติมที่สร้างมูลค่าให้หน่วยงาน:</p>
+        <ul>
+          <li><strong>API สาธารณะ (<code>/api/v1</code>)</strong> — ให้หน่วยงาน/นักพัฒนาภายนอกดึงข้อมูลราคาสินค้า สถิติ และผลตอบคำถามผ่าน API มาตรฐาน มีระบบกุญแจ API และจำกัดอัตราการเรียก</li>
+          <li><strong>พอร์ทัลข้อมูล (<code>/portal</code>)</strong> — หน้าแสดงราคาสินค้าสด ความลึกของคลังความรู้ และลิงก์ต่อไปยังแชทโดยตรง</li>
+          <li><strong>แดชบอร์ดผู้บริหาร (<code>/dashboard</code>)</strong> — สรุปตัวชี้วัดตามมิติการตัดสินใจ (การผลิต/ตลาด/ความเสี่ยง/การเงิน/ฟาร์ม) แนวโน้ม 30 วัน และช่องว่างของข้อมูล</li>
+          <li><strong>แบบสำรวจความพึงพอใจ (<code>/survey</code>)</strong> — เก็บความคิดเห็นผู้ใช้ แยกอัตโนมัติว่ามาจากเว็บหรือ LINE</li>
+          <li><strong>เว็บผลการทดสอบ (Benchmarks)</strong> — เว็บไซต์แยกที่สรุปผลทดสอบคุณภาพคำตอบ (150 คำถามต่อหมวดสินค้า) เผยแพร่ที่ OAE-chatbot-benchmarks.netlify.app</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ══════════════════ SECTION 2 ══════════════════ -->
+    <section class="section" id="stack-table">
+      <div class="section-head"><span class="section-num">2</span><h2>การตั้งค่าโปรเจกต์และ Tech Stack</h2></div>
+      <p class="dek">เทคโนโลยีที่เลือกใช้ในแต่ละชั้นของระบบ และเหตุผลคร่าว ๆ ที่เลือก</p>
+
+      <div class="tablewrap">
+        <table>
+          <caption>ตารางสรุปเทคโนโลยีหลัก</caption>
+          <thead><tr><th>ชั้นระบบ</th><th>เทคโนโลยี</th><th>บทบาท</th></tr></thead>
+          <tbody>
+            <tr><td>ภาษา Backend</td><td>Python ≥ 3.12</td><td>ตรรกะเซิร์ฟเวอร์ทั้งหมด</td></tr>
+            <tr><td>Web Framework</td><td>FastAPI + Uvicorn</td><td>รับ HTTP request, สตรีมคำตอบแบบ SSE</td></tr>
+            <tr><td>ตัวจัดการแพ็กเกจ Python</td><td>uv</td><td>ติดตั้ง/ล็อกเวอร์ชันไลบรารีตาม <code>pyproject.toml</code></td></tr>
+            <tr><td>ฐานข้อมูล</td><td>PostgreSQL 16 + pgvector</td><td>เก็บข้อมูลเชิงสัมพันธ์และเวกเตอร์ในที่เดียว — ลดความซับซ้อนของระบบ (ไม่ต้องมี vector DB แยก)</td></tr>
+            <tr><td>โมเดลภาษา (LLM)</td><td>DeepSeek — <code>deepseek-v4-flash</code></td><td>เรียบเรียงคำตอบ, ขยายคำค้นหา, เลือกเครื่องมือ (ผ่าน OpenAI-compatible API)</td></tr>
+            <tr><td>Embedding</td><td>Ollama — <code>bge-m3</code> (1024 มิติ)</td><td>รันเองในเซิร์ฟเวอร์ ไม่เสียค่า API ต่อครั้ง รองรับภาษาไทย</td></tr>
+            <tr><td>OCR</td><td>Typhoon API</td><td>อ่านตัวอักษรไทยจาก PDF สแกน</td></tr>
+            <tr><td>Frontend Framework</td><td>React 19 + TypeScript</td><td>หน้าเว็บทั้งหมด (แชท/แอดมิน/แลนดิ้ง/พอร์ทัล)</td></tr>
+            <tr><td>Build Tool</td><td>Vite-plus (คำสั่ง <code>vp</code>) + Tailwind CSS 4</td><td>คอมไพล์/บันเดิลโค้ดหน้าเว็บ</td></tr>
+            <tr><td>กราฟแดชบอร์ด</td><td>ECharts 6</td><td>กราฟในหน้าแอดมิน/แดชบอร์ด</td></tr>
+            <tr><td>Auth</td><td>JWT (PyJWT) + PBKDF2</td><td>ยืนยันตัวตนผู้ใช้/แอดมิน</td></tr>
+            <tr><td>Container</td><td>Docker + Docker Compose</td><td>รันทั้งสแตก (app+DB+Ollama) ด้วยคำสั่งเดียว</td></tr>
+            <tr><td>Reverse proxy (Production)</td><td>nginx</td><td>รันบนโฮสต์จริงหน้า container ตอน deploy</td></tr>
+            <tr><td>Messaging</td><td>LINE Messaging API</td><td>ช่องทางแชทเพิ่มเติมนอกเว็บไซต์</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="prose">
+        <p><strong>เหตุผลที่เลือกภาพรวม:</strong> สแตกนี้เน้น "ต้นทุนต่ำ ดูแลง่าย" — ใช้ PostgreSQL ตัวเดียวเก็บทั้งข้อมูลปกติและเวกเตอร์แทนการมีฐานข้อมูลสองระบบ, ใช้ Ollama รัน embedding เองแทนการจ่ายค่า API ทุกครั้งที่มีคนถามคำถาม, และ DeepSeek เป็น LLM ราคาประหยัดเทียบกับ GPT-4/Claude ระดับเดียวกัน แลกมาด้วยการต้องดูแล mitigation บางอย่างเอง (ดูหัวข้อ 5.1)</p>
+      </div>
+    </section>
+
+    <section class="section subsection" id="stack-layout">
+      <div class="section-head"><span class="section-num">2.1</span><h2>โครงสร้างโฟลเดอร์หลัก</h2></div>
+      <div class="codeblock"><pre><code>rag_server.py         <span class="c-dim"># จุดเริ่มรันเซิร์ฟเวอร์ (~40 บรรทัด re-export app.main.app)</span>
+<span class="c-key">app/</span>                   <span class="c-dim"># โค้ด Backend ทั้งหมด (ดูหัวข้อ 4.1)</span>
+<span class="c-key">src-react/</span>             <span class="c-dim"># โค้ด Frontend ทั้งหมด (ดูหัวข้อ 4.2)</span>
+src/                   <span class="c-dim"># โมดูล TypeScript ที่ frontend ใช้ร่วมกัน (auth, chat, geo, types)</span>
+db/init.sql            <span class="c-dim"># โครงสร้างฐานข้อมูล PostgreSQL + pgvector</span>
+<span class="c-key">scripts/</span>               <span class="c-dim"># สคริปต์นำเข้าข้อมูล + งานดูแลระบบ (ดูหัวข้อ 4.4)</span>
+tests/                 <span class="c-dim"># สคริปต์ทดสอบ (รันตรง ๆ ไม่ใช้ pytest)</span>
+benchmarks/            <span class="c-dim"># ผลทดสอบคุณภาพคำตอบ (Q/A transcripts)</span>
+pdf/                   <span class="c-dim"># เอกสารต้นฉบับที่รอนำเข้าคลังความรู้</span>
+data/                  <span class="c-dim"># ไฟล์ runtime: uploads, แคช OCR (ไม่ commit)</span>
+docs/                  <span class="c-dim"># เอกสารการ deploy/ดูแลระบบ</span>
+deploy/                <span class="c-dim"># ค่าคอนฟิก production (nginx ฯลฯ)</span>
+docker-compose.yml      <span class="c-dim"># สแตกสำหรับพัฒนา: app + postgres + ollama</span>
+docker-compose.prod.yml <span class="c-dim"># สแตกสำหรับ production</span>
+Dockerfile             <span class="c-dim"># multi-stage: build frontend (node) + backend (python)</span></code></pre></div>
+    </section>
+
+    <section class="section subsection" id="stack-env">
+      <div class="section-head"><span class="section-num">2.2</span><h2>ตัวแปรสภาพแวดล้อม (Environment Variables) ที่สำคัญ</h2></div>
+      <p class="prose">ค่าที่จำเป็นต้องตั้งค่าเองก่อนใช้งานจริง เก็บไว้ในไฟล์ <code>.env</code> (ไม่ commit เข้า git) — ดูเทมเพลตเต็มที่ <code>.env.example</code></p>
+      <div class="tablewrap">
+        <table class="compact">
+          <thead><tr><th>ตัวแปร</th><th>ใช้ทำอะไร</th><th>ค่าเริ่มต้น/หมายเหตุ</th></tr></thead>
+          <tbody>
+            <tr><td><code>DATABASE_URL</code></td><td>สตริงเชื่อมต่อ PostgreSQL</td><td>ไม่มีค่าเริ่มต้นที่ปลอดภัย ต้องตั้งเอง</td></tr>
+            <tr><td><code>DEEPSEEK_API_KEY</code></td><td>กุญแจเรียกใช้โมเดลภาษา DeepSeek</td><td class="num">— ดูคำเตือนหัวข้อ 5.2</td></tr>
+            <tr><td><code>TYPHOON_API_KEY</code></td><td>กุญแจเรียกใช้ Typhoon OCR</td><td class="num">— ดูคำเตือนหัวข้อ 5.2</td></tr>
+            <tr><td><code>OLLAMA_HOST</code></td><td>ที่อยู่เซิร์ฟเวอร์ Ollama</td><td><code>http://localhost:11434</code></td></tr>
+            <tr><td><code>JWT_SECRET</code></td><td>กุญแจเซ็นโทเคนผู้ใช้</td><td>ต้องสุ่มเอง เช่น <code>openssl rand -hex 32</code></td></tr>
+            <tr><td><code>ADMIN_USERNAME</code> / <code>ADMIN_PASSWORD</code></td><td>บัญชีแอดมินเริ่มต้น</td><td>เปลี่ยนรหัสผ่านก่อนใช้งานจริงเสมอ</td></tr>
+            <tr><td><code>OTP_ENABLED</code> / <code>SMTP_*</code></td><td>ส่งรหัส OTP ยืนยันอีเมลตอนสมัคร</td><td>ไม่ตั้ง SMTP = โหมดพัฒนา (โค้ดโผล่ใน log)</td></tr>
+            <tr><td><code>LINE_CHANNEL_SECRET</code> / <code>LINE_CHANNEL_ACCESS_TOKEN</code></td><td>เปิดใช้ช่องทาง LINE</td><td>เว้นว่าง = endpoint ปิดใช้งาน (503)</td></tr>
+            <tr><td><code>API_V1_KEYS</code></td><td>กุญแจสำหรับ endpoint ที่ล็อกไว้ใน /api/v1</td><td>รูปแบบ <code>ชื่อ:คีย์,ชื่อ2:คีย์2</code></td></tr>
+            <tr><td><code>DB_POOL_MINCONN</code> / <code>MAXCONN</code></td><td>ขนาด connection pool ฐานข้อมูล</td><td class="num">5 / 50</td></tr>
+            <tr><td><code>RAG_RERANK_ENABLED</code> ฯลฯ</td><td>สวิตช์เปิด/ปิดฟีเจอร์ RAG แต่ละอย่าง</td><td>ปรับพฤติกรรมได้โดยไม่ต้องแก้โค้ด (ดูหัวข้อ 5.3)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout--warn">
+        <span class="callout__label">ข้อควรระวัง</span>
+        <p><code>DEEPSEEK_API_KEY</code> และ <code>TYPHOON_API_KEY</code> มี <strong>ค่าสำรอง (fallback) ที่ฝังอยู่ในโค้ดจริง</strong> ทั้งใน <code>app/config.py</code> และ <code>docker-compose.yml</code> — หมายความว่าถ้าไม่ตั้ง <code>.env</code> ระบบจะยังทำงานได้โดยใช้กุญแจที่ผูกกับบัญชีเดิม รายละเอียดและวิธีแก้ไขอยู่ในหัวข้อ 5.2</p>
+      </div>
+    </section>
+
+    <!-- ══════════════════ SECTION 3 ══════════════════ -->
+    <section class="section" id="setup-docker">
+      <div class="section-head"><span class="section-num">3</span><h2>ขั้นตอนการติดตั้งระบบตั้งแต่ต้นจนใช้งานได้</h2></div>
+      <p class="dek">มี 2 วิธี — เลือกวิธี Docker ถ้าต้องการติดตั้งเร็วและรบกวนเครื่องน้อยที่สุด (แนะนำสำหรับ demo/ทดสอบ), เลือกวิธีติดตั้งเองถ้าต้องการพัฒนาโค้ดต่อ</p>
+
+      <div class="subsection">
+        <h3>วิธีที่ 1 — ใช้ Docker (ง่ายที่สุด)</h3>
+        <div class="prose">
+          <ol>
+            <li>ติดตั้ง <strong>Docker Desktop</strong></li>
+            <li>คัดลอกไฟล์ <code>.env.example</code> เป็น <code>.env</code> แล้วกรอกค่าจริง (อย่างน้อย: <code>DEEPSEEK_API_KEY</code>, <code>TYPHOON_API_KEY</code>, <code>JWT_SECRET</code>, <code>ADMIN_PASSWORD</code>)</li>
+            <li>รันคำสั่งเดียว:</li>
+          </ol>
+          <div class="codeblock"><pre><code>docker compose up -d</code></pre></div>
+          <p>คำสั่งนี้จะเริ่ม 3 บริการพร้อมกัน: แอปหลัก (FastAPI), PostgreSQL+pgvector, และ Ollama (พร้อมดึงโมเดล bge-m3 อัตโนมัติผ่านบริการ <code>ollama-pull</code>)</p>
+          <ol start="4">
+            <li>นำเข้าเอกสารเข้าคลังความรู้ครั้งแรก (ต้องมี PDF อยู่ในโฟลเดอร์ <code>pdf/</code> ก่อน):</li>
+          </ol>
+          <div class="codeblock"><pre><code>docker compose run --rm batch-ingest</code></pre></div>
+          <ol start="5">
+            <li>เปิดเบราว์เซอร์ไปที่ <code>http://localhost:8000</code></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="subsection" id="setup-manual">
+        <h3>วิธีที่ 2 — ติดตั้งเองบนเครื่อง (สำหรับพัฒนาโค้ด)</h3>
+        <div class="prose">
+          <h4>ก) เตรียมเครื่องมือพื้นฐาน</h4>
+          <ul>
+            <li><strong>Python ≥ 3.12</strong> และ <strong>uv</strong> (ตัวจัดการแพ็กเกจ Python ที่โปรเจกต์นี้ใช้แทน pip)</li>
+            <li><strong>Node.js 20+</strong> และ <strong>npm</strong> (สำหรับ frontend)</li>
+            <li><strong>PostgreSQL 16</strong> พร้อมส่วนขยาย <strong>pgvector</strong> (หรือใช้ image <code>pgvector/pgvector:pg16</code> ผ่าน Docker เฉพาะฐานข้อมูล)</li>
+            <li><strong>Ollama</strong> ติดตั้งในเครื่อง แล้วดึงโมเดล embedding:</li>
+          </ul>
+          <div class="codeblock"><pre><code>ollama pull bge-m3</code></pre></div>
+
+          <h4>ข) ติดตั้ง Backend</h4>
+          <div class="codeblock"><pre><code><span class="c-dim"># ติดตั้งไลบรารีตาม pyproject.toml / uv.lock</span>
+uv sync
+
+<span class="c-dim"># สร้างไฟล์ .env จาก .env.example แล้วกรอกค่าจริง</span>
+cp .env.example .env
+
+<span class="c-dim"># รันเซิร์ฟเวอร์ (สร้างตารางในฐานข้อมูลอัตโนมัติตอนเริ่มทำงานครั้งแรก)</span>
+uv run rag_server.py    <span class="c-dim"># http://localhost:8000</span></code></pre></div>
+
+          <h4>ค) ติดตั้ง Frontend</h4>
+          <div class="codeblock"><pre><code>npm install
+npm run build   <span class="c-dim"># คอมไพล์ไปที่ dist/ — FastAPI เสิร์ฟไฟล์นี้โดยตรง</span>
+<span class="c-dim"># หรือระหว่างพัฒนา ใช้โหมด hot-reload แทน:</span>
+npm run dev</code></pre></div>
+
+          <h4>ง) นำเข้าเอกสารเข้าคลังความรู้</h4>
+          <div class="codeblock"><pre><code>uv run scripts/batch_ingest.py</code></pre></div>
+        </div>
+      </div>
+
+      <div class="subsection" id="setup-verify">
+        <h3>ตรวจสอบว่าใช้งานได้แล้ว</h3>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>URL</th><th>ใช้ตรวจสอบอะไร</th></tr></thead>
+            <tbody>
+              <tr><td><code>GET /health</code></td><td>เซิร์ฟเวอร์และฐานข้อมูลพร้อมใช้งาน</td></tr>
+              <tr><td><code>/</code></td><td>หน้าแชทหลัก — ลองพิมพ์คำถามทดสอบ</td></tr>
+              <tr><td><code>/admin</code></td><td>แดชบอร์ดแอดมิน — ล็อกอินด้วย <code>ADMIN_USERNAME</code>/<code>ADMIN_PASSWORD</code></td></tr>
+              <tr><td><code>/docs</code></td><td>เอกสาร API แบบ Swagger UI (สร้างอัตโนมัติโดย FastAPI)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ SECTION 4 ══════════════════ -->
+    <section class="section" id="src-backend">
+      <div class="section-head"><span class="section-num">4</span><h2>Source Code เจาะลึก แยกตามส่วน</h2></div>
+      <p class="dek">อธิบายไฟล์และฟังก์ชันสำคัญ ไล่ตามโฟลเดอร์ — คลิกเพื่อขยายรายละเอียดแต่ละส่วน</p>
+
+      <h3>4.1 Backend — โฟลเดอร์ <code>app/</code></h3>
+      <div class="prose"><p>Backend เขียนด้วย FastAPI แบ่งเป็น 4 ชั้นตามหน้าที่: <code>routers</code> (รับ request), <code>services</code> (ตรรกะทางธุรกิจ), <code>db</code> (คุยกับฐานข้อมูล), และไฟล์ระดับบนสุดสำหรับตั้งค่า/พิสูจน์ตัวตน/ประกอบแอป</p></div>
+
+      <details class="filecard">
+        <summary>app/main.py <span class="desc">— จุดประกอบแอป (Application Factory)</span></summary>
+        <div class="body">
+          <p>สร้างอินสแตนซ์ FastAPI, ตั้งค่า CORS, mount โฟลเดอร์ static (frontend ที่ build แล้ว), และลงทะเบียนทุก router ในฟังก์ชัน <code>lifespan()</code> ที่ทำงานตอนเซิร์ฟเวอร์เริ่ม:</p>
+          <ul>
+            <li>สร้าง connection pool ของฐานข้อมูลและตารางทั้งหมด (ถ้ายังไม่มี)</li>
+            <li>สร้างข้อมูลตั้งต้น (seed) เช่น หมวดสินค้าเริ่มต้น, บัญชีแอดมินคนแรกจากค่าใน <code>.env</code></li>
+            <li>"อุ่นเครื่อง" โมเดล bge-m3 ผ่าน Ollama ให้พร้อมตอบก่อนรับ request แรก</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="filecard">
+        <summary>app/config.py <span class="desc">— ค่าคงที่และตัวแปรสภาพแวดล้อมทั้งหมด</span></summary>
+        <div class="body">
+          <p>อ่านค่าจาก <code>.env</code> ครั้งเดียวตอนเริ่มโปรแกรม เก็บ system prompt ของบอท (บุคลิก, กติกาการตอบ) และค่าปรับแต่งพฤติกรรม RAG ทั้งหมด เช่น:</p>
+          <ul>
+            <li><code>TOP_K = 10</code> — จำนวนย่อหน้าที่ดึงมาต่อคำค้นหาย่อย</li>
+            <li><code>RETRIEVE_MIN_SCORE = 0.35</code> — คะแนนความคล้ายขั้นต่ำที่ยอมรับ</li>
+            <li><code>CHUNK_CHARS = 1500</code> — ขนาดชิ้นเอกสารตอนนำเข้า</li>
+            <li>สวิตช์เปิด/ปิดฟีเจอร์ต่าง ๆ เช่น <code>DOMAIN_ROUTER_ENABLED</code>, <code>RAG_RERANK_ENABLED</code>, <code>LLM_TOOL_ROUTING_ENABLED</code></li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="filecard">
+        <summary>app/auth.py <span class="desc">— การพิสูจน์ตัวตนและสิทธิ์</span></summary>
+        <div class="body">
+          <p>แฮชรหัสผ่านด้วย PBKDF2, ออก/ตรวจสอบ JWT, และมี dependency สำหรับ FastAPI สามแบบที่ router อื่นเรียกใช้: <code>require_admin</code> (ต้องเป็นแอดมิน), <code>require_user</code> (ต้องล็อกอิน), <code>optional_user</code> (ล็อกอินหรือไม่ก็ได้ — ใช้กับแชทที่รองรับทั้ง guest และสมาชิก)</p>
+        </div>
+      </details>
+
+      <details class="filecard">
+        <summary>app/models.py <span class="desc">— รูปแบบข้อมูล Request/Response (Pydantic)</span></summary>
+        <div class="body">
+          <p>นิยามโครงสร้างข้อมูลทุกชนิดที่ API รับ-ส่ง เช่น <code>ChatRequest</code>, <code>LoginRequest</code> — FastAPI ใช้สิ่งนี้ตรวจสอบความถูกต้องของข้อมูลที่ส่งเข้ามาอัตโนมัติ และสร้างเอกสาร API ที่ <code>/docs</code></p>
+        </div>
+      </details>
+
+      <details class="filecard">
+        <summary>app/db/ <span class="desc">— ชั้นเข้าถึงฐานข้อมูล (psycopg2 + pgvector)</span></summary>
+        <div class="body">
+          <ul>
+            <li><code>pool.py</code> — จัดการ connection pool และคำสั่งสร้างตารางเริ่มต้น</li>
+            <li><code>users.py</code> — ตาราง users, user_profiles</li>
+            <li><code>conversations.py</code> — ประวัติแชท (guest sessions, ประวัติผู้ใช้, บทสนทนาแบบเต็ม)</li>
+            <li><code>knowledge_base.py</code> — เพิ่ม/ค้น/ลบ ชิ้นเอกสารในคลังความรู้ (ฟังก์ชันค้นหาเวกเตอร์หลักอยู่ที่นี่)</li>
+            <li><code>price_facts.py</code> — ราคาสินค้าเกษตรรายสัปดาห์ที่ซิงก์มาจาก NABC</li>
+            <li><code>qa_logs.py</code> — บันทึกคำถาม-คำตอบ พร้อมจัดหมวดหมู่/จังหวัด/ฤดูกาลอัตโนมัติ</li>
+            <li><code>domains.py</code> — ทะเบียนหมวดสินค้า/หมวดย่อยที่แอดมินสร้างเองได้</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="filecard">
+        <summary>app/services/ <span class="desc">— ตรรกะทางธุรกิจ (แกนหลักของระบบ)</span></summary>
+        <div class="body">
+          <ul>
+            <li><code>rag.py</code> — หัวใจของ RAG: ขยายคำค้นหา, ค้นหาเวกเตอร์, จัดอันดับใหม่ (อธิบายละเอียดในหัวข้อ 1.3)</li>
+            <li><code>clients.py</code> — สร้าง client เชื่อมต่อ DeepSeek/Ollama แบบ <em>singleton</em> ใช้ซ้ำได้ทุก request (ไม่สร้างใหม่ทุกครั้ง — เร็วกว่าและประหยัดทรัพยากร)</li>
+            <li><code>embedding.py</code> — เรียก Ollama แปลงข้อความเป็นเวกเตอร์</li>
+            <li><code>intent_router.py</code> / <code>domain_router.py</code> — คัดกรองคำถามและเลือกหมวดสินค้า (หัวข้อ 1.3 ขั้นที่ 1-2)</li>
+            <li><code>tool_router.py</code> — ให้ LLM เลือกเรียก API ภายนอกที่เกี่ยวข้องกับคำถาม (ราคา/อากาศ/น้ำ/ศัตรูพืช ฯลฯ)</li>
+            <li><code>web_search.py</code> — ค้นหาเว็บเสริม (DuckDuckGo) เมื่อเอกสารในคลังไม่ครอบคลุม</li>
+            <li><code>ocr.py</code> — ประมวลผล OCR สำหรับไฟล์ที่แอดมินอัปโหลดผ่านหน้าเว็บ</li>
+            <li><code>followups.py</code> — สร้างคำถามแนะนำต่อยอด (chips) หลังตอบเสร็จ</li>
+            <li><code>nabc.py</code>, <code>doa_pest.py</code>, <code>ckan_enrich.py</code>, <code>api_catalog.py</code> — ตัวเชื่อมต่อ API ข้อมูลเกษตรภายนอกแต่ละแหล่ง</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="filecard">
+        <summary>app/routers/ <span class="desc">— จุดรับ HTTP request (API endpoints)</span></summary>
+        <div class="body">
+          <div class="tablewrap">
+            <table class="compact">
+              <thead><tr><th>ไฟล์</th><th>Endpoint หลัก</th><th>หน้าที่</th></tr></thead>
+              <tbody>
+                <tr><td><code>chat.py</code></td><td><code>POST /chat</code>, <code>/chat/stream</code></td><td>แชทหลัก (JSON หรือสตรีม), ฟีดแบ็ก, follow-up</td></tr>
+                <tr><td><code>auth.py</code></td><td><code>/auth/*</code>, <code>/user/*</code></td><td>สมัคร/ล็อกอิน/OTP/ประวัติผู้ใช้</td></tr>
+                <tr><td><code>admin.py</code></td><td><code>/admin/*</code></td><td>จัดการคลังความรู้ สถิติ ผู้ใช้ (ต้องเป็นแอดมิน)</td></tr>
+                <tr><td><code>api_v1.py</code></td><td><code>/api/v1/*</code></td><td>API สาธารณะแบบอ่านอย่างเดียว มีกุญแจ + rate limit</td></tr>
+                <tr><td><code>conversations.py</code></td><td><code>/conversations/*</code></td><td>จัดการบทสนทนาที่บันทึกไว้</td></tr>
+                <tr><td><code>line_webhook.py</code></td><td><code>POST /webhook/line</code></td><td>รับข้อความจาก LINE แล้วตอบผ่าน pipeline เดียวกับเว็บ</td></tr>
+                <tr><td><code>public.py</code></td><td><code>/</code>, <code>/health</code>, <code>/categories</code></td><td>หน้าเว็บ static + ตรวจสุขภาพระบบ</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>เพิ่ม endpoint ใหม่ได้โดยสร้างฟังก์ชันใน router ที่เหมาะสม แล้วมันจะถูกเสิร์ฟอัตโนมัติผ่าน <code>include_router()</code> ใน <code>main.py</code> — ไม่ต้องแก้ที่อื่น</p>
+        </div>
+      </details>
+
+      <div class="subsection" id="src-frontend">
+        <h3>4.2 Frontend — โฟลเดอร์ <code>src-react/</code></h3>
+        <div class="prose">
+          <p>เป็นแอป React เดียวที่มีหลายจุดเข้า (entry points) แยกกันตามหน้าที่ — คอมไพล์ด้วย Vite-plus แล้วนำไปวางที่ <code>dist/</code> ให้ FastAPI เสิร์ฟตรง ๆ</p>
+        </div>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>โฟลเดอร์</th><th>หน้า</th><th>Entry file</th></tr></thead>
+            <tbody>
+              <tr><td><code>landing/</code></td><td>หน้าแรก/แนะนำระบบ</td><td><code>landing-main.tsx</code></td></tr>
+              <tr><td><code>components/</code> (webapp)</td><td>หน้าแชทหลัก</td><td><code>main.tsx</code></td></tr>
+              <tr><td><code>admin/</code></td><td>แดชบอร์ดแอดมิน + กราฟ ECharts</td><td><code>admin-main.tsx</code></td></tr>
+              <tr><td><code>portal/</code></td><td>พอร์ทัลข้อมูลราคา/คลังความรู้</td><td>—</td></tr>
+              <tr><td><code>dashboard/</code></td><td>แดชบอร์ดผู้บริหาร</td><td>—</td></tr>
+              <tr><td><code>survey/</code></td><td>แบบสำรวจความพึงพอใจ</td><td>—</td></tr>
+              <tr><td><code>gis/</code>, <code>api-docs/</code>, <code>privacy/</code></td><td>แผนที่/เอกสาร API/นโยบายความเป็นส่วนตัว</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="prose">
+          <p>โมดูลที่ใช้ร่วมกันทุกหน้า (เรียก API, จัดการ auth, ตัวแปร type) อยู่ที่ <code>src/</code> ระดับบนสุด (<code>auth.ts</code>, <code>chat.ts</code>, <code>geo.ts</code>, <code>types.ts</code>) เพื่อไม่ให้แต่ละหน้าต้องเขียน logic เรียก API ซ้ำกัน</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="src-db">
+        <h3>4.3 โครงสร้างฐานข้อมูล (<code>db/init.sql</code>)</h3>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>ตาราง</th><th>เก็บอะไร</th></tr></thead>
+            <tbody>
+              <tr><td><code>knowledge_base</code></td><td>ชิ้นเอกสาร + เวกเตอร์ 1024 มิติ — หัวใจของการค้นหา RAG (ดัชนี HNSW/IVFFlat)</td></tr>
+              <tr><td><code>users</code>, <code>user_profiles</code></td><td>บัญชีผู้ใช้ + รหัสผ่านที่แฮชแล้ว</td></tr>
+              <tr><td><code>qa_logs</code></td><td>ทุกคำถาม-คำตอบ พร้อมหมวดหมู่/จังหวัด/สถานะ — แหล่งข้อมูลของแดชบอร์ดวิเคราะห์</td></tr>
+              <tr><td><code>conv_sessions</code></td><td>ความจำบทสนทนาชั่วคราวของผู้ใช้ guest</td></tr>
+              <tr><td><code>user_conversations</code>, <code>user_histories</code></td><td>ประวัติแชทถาวรของสมาชิก</td></tr>
+              <tr><td><code>kb_domains</code>, <code>kb_subdomains</code></td><td>ทะเบียนหมวดสินค้า/หมวดย่อยที่ตั้งค่าได้จากหน้าแอดมิน</td></tr>
+              <tr><td><code>fact_price_market</code>, <code>fact_production</code></td><td>ข้อมูลราคา/ผลผลิตที่ซิงก์มาจากแหล่งภายนอก (NABC, CKAN)</td></tr>
+              <tr><td><code>email_otps</code></td><td>รหัส OTP ชั่วคราวสำหรับยืนยันอีเมล</td></tr>
+              <tr><td><code>api_links</code></td><td>ทะเบียน API ภายนอกที่ระบบเชื่อมต่ออยู่ (จัดการผ่านแอดมิน)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="subsection" id="src-scripts">
+        <h3>4.4 Scripts นำเข้าและดูแลข้อมูล (<code>scripts/</code>)</h3>
+        <div class="prose">
+          <p>สคริปต์เหล่านี้รันแยกจากเว็บเซิร์ฟเวอร์ (ผ่าน <code>uv run scripts/&lt;ชื่อไฟล์&gt;.py</code>) ใช้สำหรับงานที่ทำเป็นครั้งคราว ไม่ใช่ทุก request:</p>
+          <ul>
+            <li><strong>นำเข้าข้อมูล</strong> — <code>batch_ingest.py</code>, <code>ingest_missing.py</code>, <code>ingest_oae_sheet.py</code>, <code>reingest_from_ocr.py</code></li>
+            <li><strong>ซิงก์ข้อมูลสด</strong> — <code>sync_price_facts.py</code> (ราคาสินค้ารายวัน, รันผ่าน cron บนเซิร์ฟเวอร์จริง), <code>sync_ckan_production.py</code></li>
+            <li><strong>บำรุงรักษา</strong> — <code>migrate_ivfflat_to_hnsw.py</code> (ปรับปรุงดัชนีค้นหาเวกเตอร์ให้แม่นยำขึ้น), <code>tag_dimensions.py</code></li>
+            <li><strong>รายงาน/ผลทดสอบ</strong> — <code>build_results_site.py</code>, <code>run_eval.py</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="subsection" id="src-deploy">
+        <h3>4.5 การ Deploy สู่ Production</h3>
+        <div class="prose">
+          <p>
+            ระบบ production รันบน VPS (เซิร์ฟเวอร์เสมือน) แยกจากเครื่องพัฒนา — โค้ดต้นทางเก็บที่ GitHub
+            (<code>huack123/chatbot-OAE</code> สาขา <code>main</code> เป็นตัวหลัก, มี GitLab เป็นสำเนาสำรอง)
+            ขั้นตอนอัปเดตระบบจริงคือ:
+          </p>
+          <div class="codeblock"><pre><code><span class="c-dim"># บนเซิร์ฟเวอร์ /opt/chatbot-OAE</span>
+git pull
+docker compose -f docker-compose.prod.yml up -d --build app</code></pre></div>
+          <p><strong>ห้ามแก้โค้ดตรงบนเซิร์ฟเวอร์จริง</strong> — ทุกการเปลี่ยนแปลงต้อง commit เข้า git แล้ว pull ลงมาเท่านั้น เพื่อให้โค้ดบน production กับใน repository ตรงกันเสมอ ค่าลับ (API keys, รหัสผ่าน) เก็บเฉพาะในไฟล์ <code>.env</code> บนเซิร์ฟเวอร์ (ไม่ commit เข้า git) ส่วน nginx ทำหน้าที่ reverse proxy รันอยู่บนโฮสต์จริง (ไม่ได้อยู่ใน container)</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ SECTION 5 ══════════════════ -->
+    <section class="section" id="next-watch">
+      <div class="section-head"><span class="section-num">5</span><h2>สิ่งที่ทีมพัฒนาต่อของหน่วยงานต้องรู้</h2></div>
+      <p class="dek">ถ้าต้องส่งต่องานให้ทีม programmer ของหน่วยงานพัฒนาต่อ นี่คือจุดที่ควรอ่านก่อนแตะโค้ด</p>
+
+      <div class="subsection">
+        <h3>5.1 จุดที่ต้องระวังเป็นพิเศษ (Gotchas)</h3>
+        <div class="cardgrid">
+          <div class="card">
+            <h4>⚠️ Route handler ต้องเป็น <code>def</code> ธรรมดา</h4>
+            <p>ฐานข้อมูลและ LLM client ในระบบนี้เป็นแบบ <em>blocking</em> (ไม่ async) ถ้าประกาศ endpoint เป็น <code>async def</code> โดยไม่มี <code>await</code> จริง จะทำให้ทั้งเซิร์ฟเวอร์ค้างระหว่างรอ request นั้น ใช้ <code>def</code> ธรรมดาเสมอ ยกเว้นมีการ <code>await</code> จริง ๆ (เช่น อ่านไฟล์อัปโหลด)</p>
+          </div>
+          <div class="card">
+            <h4>⚠️ ต้องปิด "thinking mode" ของ DeepSeek</h4>
+            <p>โมเดล deepseek-v4-flash มีโหมดคิดแบบ chain-of-thought ที่ใช้โควตา token ร่วมกับคำตอบจริง เคยทำให้คำตอบว่างเปล่าประมาณ 10% ของครั้ง ระบบปิดโหมดนี้ไว้แล้วสำหรับทุกจุดที่ตอบผู้ใช้จริง — อย่าเปิดกลับโดยไม่เข้าใจผลกระทบ</p>
+          </div>
+          <div class="card">
+            <h4>⚠️ เทสต์เป็นสคริปต์ ไม่ใช่ pytest</h4>
+            <p>รันทีละไฟล์ด้วย <code>uv run tests/&lt;ชื่อไฟล์&gt;.py</code> แต่ละไฟล์บันทึกผลเต็มไว้ที่ <code>benchmarks/&lt;ชื่อ&gt;.md</code></p>
+          </div>
+          <div class="card">
+            <h4>⚠️ ต้องใช้ <code>vp</code> ไม่ใช่ Vite ตรง ๆ</h4>
+            <p>โปรเจกต์ใช้ Vite-plus ผ่านคำสั่ง <code>vp</code> (เรียกผ่าน npm scripts เท่านั้น) ห้ามเรียก <code>vite</code> ตรง ๆ นอก npm scripts</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection" id="next-security">
+        <h3>5.2 ความปลอดภัยที่ควรแก้ไขก่อนส่งมอบใช้งานจริง</h3>
+        <div class="callout callout--warn">
+          <span class="callout__label">พบในโค้ดปัจจุบัน — ควรแก้ก่อนส่งมอบ</span>
+          <p><strong>กุญแจ API ของ DeepSeek และ Typhoon OCR ถูกฝัง (hardcode) เป็นค่าสำรองไว้ในซอร์สโค้ดจริง</strong> ทั้งที่ <code>app/config.py</code> (บรรทัดตั้งค่า <code>DEEPSEEK_API_KEY</code> / <code>TYPHOON_API_KEY</code>) และ <code>docker-compose.yml</code> (รูปแบบ <code>${VAR:-sk-...}</code>) ถึงแม้ไฟล์เหล่านี้จะไม่ใช่ <code>.env</code> จริง แต่เป็นไฟล์ที่ถูก commit เข้า git repository ซึ่งหมายความว่า:</p>
+          <p>1) ใครก็ตามที่เข้าถึง repository เห็นกุญแจนี้ได้ 2) ถ้าไม่ได้ตั้งค่า <code>.env</code> เอง ระบบจะใช้กุญแจนี้โดยอัตโนมัติโดยไม่รู้ตัว</p>
+          <p><strong>ควรดำเนินการ:</strong> ขอกุญแจ API ชุดใหม่จากผู้ให้บริการ (DeepSeek, Typhoon), ลบค่าสำรองที่ฝังไว้ในทั้งสองไฟล์ออก (ให้ระบบ error ทันทีถ้าไม่ได้ตั้งค่า แทนที่จะทำงานเงียบ ๆ ด้วยกุญแจเก่า), และตรวจสอบว่ากุญแจเดิมยังถูกใช้อยู่ที่ไหนก่อนเพิกถอน</p>
+        </div>
+        <div class="prose">
+          <p>ข้อควรตรวจสอบเพิ่มเติมก่อนส่งมอบ:</p>
+          <ul>
+            <li>เปลี่ยน <code>ADMIN_PASSWORD</code> จากค่าเริ่มต้น — ระบบจะแสดงคำเตือนใน log ถ้ายังใช้ค่า default</li>
+            <li>ตั้งค่า <code>JWT_SECRET</code> เป็นค่าสุ่มใหม่ อย่าใช้ค่า placeholder</li>
+            <li>ยืนยันว่าไฟล์ <code>.env</code> จริงไม่ถูก commit เข้า git (ตรวจสอบ <code>.gitignore</code>)</li>
+            <li>ทบทวนสิทธิ์การเข้าถึง GitHub/GitLab repository ว่าใครมีสิทธิ์เข้าถึงประวัติ commit เก่าที่อาจมีกุญแจฝังอยู่</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="subsection" id="next-extend">
+        <h3>5.3 ถ้าจะเพิ่มฟีเจอร์หรือปรับพฤติกรรมระบบ</h3>
+        <div class="prose">
+          <ul>
+            <li><strong>เพิ่ม endpoint ใหม่</strong> — สร้างฟังก์ชันในไฟล์ที่เหมาะสมใต้ <code>app/routers/</code> ระบบจะเสิร์ฟให้อัตโนมัติ ไม่ต้องแก้ <code>main.py</code></li>
+            <li><strong>เพิ่มหมวดสินค้าใหม่ (เช่น สินค้าเกษตรชนิดใหม่)</strong> — สร้างผ่านหน้าแอดมิน (ทะเบียน <code>kb_domains</code>/<code>kb_subdomains</code>) ก่อน แล้วค่อยนำเข้าเอกสารด้วยสคริปต์ ingest โดยระบุหมวดที่สร้างไว้</li>
+            <li><strong>ปรับพฤติกรรม RAG โดยไม่ต้องแก้โค้ด</strong> — ค่าคงที่ส่วนใหญ่ใน <code>app/config.py</code> อ่านจากตัวแปรสภาพแวดล้อม ปรับผ่าน <code>.env</code> ได้เลย เช่น เปิด/ปิด rerank, ปรับความยาวคำตอบ, ปรับ context budget</li>
+            <li><strong>ก่อน commit ทุกครั้ง</strong> — รัน <code>npm run build</code> (ตรวจ type error) และอย่างน้อยหนึ่งใน <code>uv run tests/test_chat*.py</code> (ตรวจว่า RAG ยังตอบได้ปกติ)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ GLOSSARY ══════════════════ -->
+    <section class="section" id="glossary">
+      <div class="section-head"><span class="section-num">A</span><h2>ภาคผนวก: คำศัพท์เทคนิคที่ควรรู้</h2></div>
+      <dl class="glossary">
+        <div><dt>RAG (Retrieval-Augmented Generation)</dt><dd>เทคนิคให้ AI ตอบโดยอ้างอิงเอกสารจริงที่ค้นเจอ แทนที่จะตอบจากความจำล้วน ๆ</dd></div>
+        <div><dt>Embedding (เวกเตอร์)</dt><dd>การแปลงข้อความเป็นชุดตัวเลขที่แทนความหมาย ข้อความที่ความหมายใกล้กันจะมีเวกเตอร์ใกล้กัน</dd></div>
+        <div><dt>Cosine similarity</dt><dd>วิธีวัดความคล้ายระหว่างเวกเตอร์สองชุดโดยดูมุมระหว่างกัน ใช้หาเอกสารที่เกี่ยวข้องกับคำถาม</dd></div>
+        <div><dt>pgvector</dt><dd>ส่วนขยายของ PostgreSQL ที่เพิ่มความสามารถเก็บและค้นหาเวกเตอร์ได้ในตัว</dd></div>
+        <div><dt>LLM (Large Language Model)</dt><dd>โมเดลภาษาขนาดใหญ่ที่เรียบเรียงข้อความได้เป็นธรรมชาติ (เช่น DeepSeek, GPT, Claude)</dd></div>
+        <div><dt>Token</dt><dd>หน่วยย่อยของข้อความที่ LLM ใช้นับความยาวและคิดค่าใช้จ่าย (โดยประมาณ 1 token ≈ คำ/พยางค์สั้น ๆ)</dd></div>
+        <div><dt>Chunk (ชิ้นเอกสาร)</dt><dd>ส่วนย่อยของเอกสารที่ตัดมาเก็บแยกเป็นแถวในฐานข้อมูล เพื่อให้ค้นหาและอ้างอิงเฉพาะจุดได้</dd></div>
+        <div><dt>OCR (Optical Character Recognition)</dt><dd>เทคโนโลยีอ่านตัวอักษรจากภาพ/เอกสารสแกน แปลงเป็นข้อความที่คอมพิวเตอร์ประมวลผลได้</dd></div>
+        <div><dt>JWT (JSON Web Token)</dt><dd>โทเคนยืนยันตัวตนที่เข้ารหัสข้อมูลผู้ใช้ไว้ในตัวเอง ไม่ต้องเช็คฐานข้อมูลทุกครั้งที่ยืนยันสิทธิ์</dd></div>
+        <div><dt>SSE (Server-Sent Events)</dt><dd>วิธีให้เซิร์ฟเวอร์ส่งข้อมูลมาทีละส่วนแบบต่อเนื่อง ใช้ทำให้คำตอบแชทค่อย ๆ พิมพ์ทีละคำ</dd></div>
+        <div><dt>Hallucination</dt><dd>อาการที่ AI สร้างข้อมูล/ตัวเลขที่ไม่มีอยู่จริงขึ้นมาเอง — ปัญหาหลักที่ RAG ถูกออกแบบมาเพื่อลด</dd></div>
+      </dl>
+    </section>
+  </main>
+</div>
+
+<footer>
+  เอกสารนี้สรุปจากซอร์สโค้ดจริงของโปรเจกต์ (<code>AGENTS.md</code>, <code>app/</code>, <code>db/init.sql</code>, <code>docker-compose.yml</code> และไฟล์ตั้งค่าอื่น ๆ) ณ วันที่จัดทำ — หากมีการแก้ไขโค้ดในภายหลัง ควรตรวจทานเอกสารนี้ซ้ำให้ตรงกับระบบจริงก่อนนำไปอ้างอิงต่อ
+</footer>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.sidenav a'));
+    var sections = links
+      .map(function (a) { return document.querySelector(a.getAttribute('href')); })
+      .filter(Boolean);
+    if (!('IntersectionObserver' in window) || sections.length === 0) return;
+
+    var byId = {};
+    links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = byId[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          links.forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+
+    sections.forEach(function (s) { observer.observe(s); });
+  })();
+</script>

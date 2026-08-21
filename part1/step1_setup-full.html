@@ -1,0 +1,1087 @@
+<title>เตรียมเครื่องพัฒนา OAE Chatbot</title>
+<style>
+  :root {
+    --bg: #f6f8f3; --surface: #ffffff; --surface-2: #eef2ea;
+    --ink: #17211a; --ink-muted: #4c5a4f; --ink-faint: #7c8a7d;
+    --line: #dee6da; --line-strong: #c4d0bf;
+    --accent: #266448; --accent-ink: #ffffff; --accent-soft: #e2efe4; --accent-soft-line: #bcdac4;
+    --gold: #9a6d12; --gold-soft: #fbf1dc; --gold-soft-line: #ecd28b;
+    --code-bg: #10231a; --code-ink: #d9ead9; --code-accent: #7fd7a0;
+    
+/* --code-bg: #10231a; */
+/* --code-ink: red; */
+/* --code-accent: #7fd7a0; */
+    --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
+    --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+      --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+      --line: #2b352a; --line-strong: #3a463790;
+      --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+      --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+      --code-bg: #0b1710; --code-ink: #cfe6d2; --code-accent: #8fe0ab;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+    --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+    --line: #2b352a; --line-strong: #3a463790;
+    --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+    --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+    --code-bg: #0b1710; --code-ink: #cfe6d2; --code-accent: #8fe0ab;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 700; color: var(--ink); }
+  p { text-wrap: pretty; }
+  code { font-family: var(--font-mono); font-size: 0.87em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.4em; }
+
+  /* ── Top bar ─────────────────────────────────────────────────────────── */
+  .topbar { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .topbar__row { display: flex; align-items: center; gap: 12px; padding: 13px 24px; }
+  .topbar__mark { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 16px; flex: none; }
+  .topbar__title { font-weight: 700; font-size: 15px; }
+  .topbar__sub { font-size: 12.5px; color: var(--ink-faint); }
+  .topbar__progress { margin-inline-start: auto; display: flex; align-items: center; gap: 10px; }
+  .progress-track { width: 120px; height: 7px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s ease; }
+  .progress-label { font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); white-space: nowrap; }
+
+  main { max-width: 800px; margin: 0 auto; padding: 40px clamp(20px, 4vw, 40px) 100px; }
+
+  .hero { margin-bottom: 30px; }
+  .hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+  .hero__eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .hero h1 { font-size: clamp(23px, 3.2vw, 30px); line-height: 1.3; margin: 0 0 12px; }
+  .hero p.lead { font-size: 15.5px; color: var(--ink-muted); margin: 0; }
+  .series-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 4px; }
+  .series-nav a {
+    display: inline-flex; align-items: center; font-size: 12.6px; font-weight: 600; color: var(--ink-muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; text-decoration: none; background: var(--surface);
+  }
+  .series-nav a.current { color: var(--accent); border-color: var(--accent-soft-line); background: var(--accent-soft); font-weight: 700; }
+  .series-nav a:hover { border-color: var(--accent); }
+
+  .flagbox { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 16px 20px; margin: 22px 0 6px; box-shadow: var(--shadow); }
+  .flagbox h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); margin: 0 0 12px; }
+  .flagrow { display: flex; gap: 12px; align-items: baseline; padding: 5px 0; font-size: 13.5px; }
+  .flagrow code { flex: none; min-width: 108px; }
+  .flagrow span { color: var(--ink-muted); }
+
+  .partlabel {
+    display: flex; align-items: center; gap: 10px; margin: 40px 0 4px;
+    font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint);
+  }
+  .partlabel::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .partlabel:first-of-type { margin-top: 30px; }
+
+  /* ── Step cards ──────────────────────────────────────────────────────── */
+  .step {
+    border: 1px solid var(--line); border-radius: 14px; background: var(--surface);
+    box-shadow: var(--shadow); margin: 14px 0; overflow: hidden; scroll-margin-top: 90px;
+  }
+  .step__head { display: flex; align-items: flex-start; gap: 13px; padding: 16px 20px 14px; border-bottom: 1px solid var(--line); }
+  .step__badge {
+    flex: none; width: 32px; height: 32px; border-radius: 9px; background: var(--accent-soft);
+    border: 1px solid var(--accent-soft-line); color: var(--accent);
+    display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 14px;
+  }
+  .step__head h2 { font-size: 16.5px; margin: 0; }
+  .step__program { font-size: 12.5px; color: var(--ink-faint); margin-top: 2px; }
+  .step__body { padding: 16px 20px 18px; }
+
+  .cmdblock { position: relative; margin: 4px 0 16px; }
+  .cmdblock pre {
+    background: var(--code-bg); color: var(--code-ink); border-radius: 10px;
+    padding: 13px 50px 13px 15px; overflow-x: auto; font-family: var(--font-mono);
+    font-size: 13px; line-height: 1.55; margin: 0;
+  }
+  .cmdblock pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+
+
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+    background: rgba(255,255,255,0.08); color: var(--code-ink);
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 6px;
+    padding: 4px 9px; cursor: pointer;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.16); }
+  .copy-btn.copied { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  .explain { display: grid; gap: 10px; margin-top: 4px; }
+  .explain-row { display: flex; gap: 10px; }
+  .explain-row .icon { flex: none; width: 22px; text-align: center; font-size: 14px; padding-top: 1px; }
+  .explain-row .txt { font-size: 13.8px; color: var(--ink); }
+  .explain-row .txt strong { color: var(--ink); }
+  .explain-row .txt .sub { color: var(--ink-muted); }
+
+  .verify {
+    margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 12px;
+    font-size: 13px; color: var(--ink-muted);
+  }
+  .verify code { font-size: 0.92em; }
+
+  .step__check {
+    display: flex; align-items: center; gap: 9px; margin-top: 14px;
+    padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2);
+  }
+  .step__check input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; flex: none; }
+  .step__check label { font-size: 13.3px; cursor: pointer; color: var(--ink-muted); }
+  .step__check.checked { background: var(--accent-soft); border-color: var(--accent-soft-line); }
+  .step__check.checked label { color: var(--accent); font-weight: 600; }
+
+  .callout {
+    border: 1px solid var(--line); border-inline-start: 3px solid var(--accent);
+    background: var(--accent-soft); border-radius: 10px; padding: 13px 16px; margin: 16px 0;
+  }
+  .callout p { margin: 0; font-size: 13.6px; color: var(--ink); }
+  .callout__label { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 5px; }
+  .callout--gold { border-inline-start-color: var(--gold); background: var(--gold-soft); }
+  .callout--gold .callout__label { color: var(--gold); }
+
+  footer {
+    max-width: 800px; margin: 0 auto; border-top: 1px solid var(--line);
+    padding: 22px clamp(20px, 4vw, 40px) 40px; font-size: 12.5px; color: var(--ink-faint);
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: center;
+  }
+  footer button {
+    font-family: var(--font-ui); font-size: 12px; color: var(--ink-faint);
+    background: none; border: 1px solid var(--line-strong); border-radius: 7px; padding: 5px 10px; cursor: pointer;
+  }
+  footer button:hover { color: var(--ink); border-color: var(--ink-faint); }
+</style>
+<title>เตรียมเครื่องพัฒนา OAE Chatbot</title>
+
+<div class="topbar">
+  <div class="topbar__row">
+    <div class="topbar__mark">🧰</div>
+    <div>
+      <div class="topbar__title">เตรียมเครื่องพัฒนา — OAE Chatbot</div>
+      <div class="topbar__sub">ขั้นที่ 1 ของสายผู้สนใจระบบ — ค่อย ๆ ติดตั้งไปทีละตัว สำหรับเครื่อง Windows ที่ยังไม่ได้เตรียมอะไรไว้
+      </div>
+    </div>
+    <div class="topbar__progress">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span class="progress-label" id="progressLabel">0/13</span>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="hero">
+    <div class="hero__eyebrow">ขั้นที่ 1 ของสายผู้สนใจระบบ</div>
+    <h1>ติดตั้งทีละขั้น พร้อมรู้ว่าแต่ละเครื่องมือทำอะไร และทำไมเราต้องใช้</h1>
+    <p class="lead">
+      12 ขั้นตอน ตั้งแต่เครื่อง Windows ที่ยังไม่ได้ติดตั้งเครื่องมือ
+      จนสามารถเปิด <code>http://localhost:8000</code> และเห็นหน้าแชทได้จริง<br>
+      แต่ละขั้นมีคำสั่งให้คัดลอก พร้อมคำอธิบายแบบง่าย ๆ ว่าเครื่องมือนั้นคืออะไร และโปรเจกต์นี้ใช้มันทำอะไร
+    </p>
+    <nav class="series-nav">
+      <a class="current">🧰 เตรียมเครื่องพัฒนา (ขั้นที่ 1) · กำลังอ่าน</a>
+      <a href="step2_rag-test.html">🧪 ทดสอบ RAG (ขั้นที่ 2)</a>
+      <a href="step3_trace-question.html">🧵 ตามรอยคำถาม (ขั้นที่ 3)</a>
+      <a href="step4_line-oa-guide.html">💬 สร้างแชทบอท LINE (ขั้นที่ 4)</a>
+      <a href="step5_system-overview.html">📗 ภาพรวมระบบ (ขั้นที่ 5)</a>
+    </nav>
+  </div>
+
+  <div class="callout callout--gold">
+    <span class="callout__label">เครื่องมือที่จะติดตั้งในขั้นนี้</span>
+    <p>
+      ขั้นนี้จะพาไล่ดูทีละตัวว่า
+      <strong>Git, Node.js, Docker, Ollama และ uv</strong> คืออะไร และแต่ละตัวมีหน้าที่อะไรในโปรเจกต์นี้
+      <br>
+      ไม่ใช่แค่ “ติดตั้งตาม ๆ กัน” แต่เข้าใจด้วยว่าแต่ละตัวทำงานอยู่ตรงไหนของระบบ
+    </p>
+  </div>
+
+  <div class="flagbox">
+    <h3>รู้จัก flag ที่จะเจอบ่อยในคำสั่ง</h3>
+    <div class="flagrow">
+      <code>--id</code>
+      <span>ระบุชื่อแพ็กเกจที่ต้องการติดตั้งแบบชัดเจน เพื่อไม่ให้ winget สับสนกับโปรแกรมชื่อใกล้เคียงกัน</span>
+    </div>
+    <div class="flagrow">
+      <code>-e</code>
+      <span>(exact) บอก winget ให้จับคู่ชื่อแพ็กเกจแบบตรงกันเป๊ะ ๆ</span>
+    </div>
+    <div class="flagrow">
+      <code>-d</code>
+      <span>(detached) ให้โปรแกรมทำงานอยู่เบื้องหลัง ปิดหน้าต่าง terminal ได้โดยโปรแกรมยังทำงานต่อ</span>
+    </div>
+  </div>
+
+  <!-- ══════════════ PART A ══════════════ -->
+  <div class="partlabel">Part A — เตรียมข้อมูลก่อนเริ่ม</div>
+
+  <section class="step" id="s0">
+    <div class="step__head">
+      <div class="step__badge">0</div>
+      <div>
+        <h2>ติดตั้งโปรแกรมที่จำเป็นในการทำงาน</h2>
+        <div class="step__program">โปรแกรม: VS Code (แก้ไฟล์โค้ด) + เครื่องมือจัดการฐานข้อมูล</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>winget install --id Microsoft.VisualStudioCode -e</code></pre>
+        <button class="copy-btn" data-copy="winget install --id Microsoft.VisualStudioCode -e">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ลงอะไร:</strong>
+            <span class="sub">
+              VS Code (Visual Studio Code) คือโปรแกรมแก้ไขโค้ด (code editor) — ใช้เปิดโฟลเดอร์โปรเจกต์
+              แก้ไฟล์ และรันคำสั่งใน terminal ในตัวเดียวกันได้ตลอดการอบรม
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="cmdblock">
+        <pre><code>winget install --id dbeaver.dbeaver -e</code></pre>
+        <button class="copy-btn" data-copy="winget install --id dbeaver.dbeaver -e">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ลงอะไร:</strong>
+            <span class="sub">
+              DBeaver คือโปรแกรมดูและจัดการฐานข้อมูลแบบมีหน้าจอ (ไม่ต้องพิมพ์ SQL เองก็ดูตาราง/ข้อมูลได้)
+              ใช้ตัวอื่นแทนได้ถ้าถนัดกว่า เช่น pgAdmin, TablePlus, DataGrip — ขอแค่เชื่อมต่อ PostgreSQL ได้
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ทำไมต้องใช้:</strong>
+            <span class="sub">
+              โปรเจกต์นี้เก็บข้อมูลใน PostgreSQL (+ pgvector) การมีเครื่องมือดูฐานข้อมูลช่วยให้เช็คได้เองว่า
+              เอกสารที่อัปโหลด/ผู้ใช้/ประวัติแชท ถูกบันทึกลงตารางจริงหรือไม่ โดยไม่ต้องรอถามคนอื่น
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็ค:</strong> เปิด VS Code ได้ และเปิดโปรแกรมจัดการฐานข้อมูลที่เลือกได้
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c0">
+        <label for="c0">ติดตั้ง VS Code และเครื่องมือจัดการฐานข้อมูลแล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s1">
+    <div class="step__head">
+      <div class="step__badge">1</div>
+      <div>
+        <h2>สมัคร Typhoon API</h2>
+        <div class="step__program">สร้าง API Key ของตัวเอง — ทำผ่านเบราว์เซอร์ได้เลย</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ทำอะไร:</strong>
+            <span class="sub">
+              เข้าไปที่
+              <a href="https://playground.opentyphoon.ai/auth/sign-in" target="_blank"
+                rel="noopener">playground.opentyphoon.ai/auth/sign-in</a>
+              <br>
+              สมัครบัญชีด้วยอีเมลของตัวเอง จากนั้นเข้าไปที่หน้า <strong>API Keys</strong> แล้วสร้างกุญแจ API ใหม่ 1 ตัว
+              <br>
+              เราจะนำกุญแจนี้ไปใช้ในขั้นตอนที่ 11
+              <br>
+              รูปแบบ API Key จะประมาณนี้: <code>sk-.....</code>
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ทำไมต้องมี:</strong>
+            <span class="sub">
+              OAE Chatbot ใช้ Typhoon เป็นหนึ่งในโมเดลภาษาในการสร้างคำตอบ
+              ดังนั้นผู้เข้าอบรมแต่ละคนต้องมี API Key ของตัวเอง
+              ไม่ควรนำ Key ของคนอื่นมาใช้ร่วมกัน
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็ค:</strong> มี Typhoon API Key ของตัวเอง และพร้อมนำไปกรอกในขั้นตอนที่ 11
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c1">
+        <label for="c1">สมัครและได้ Typhoon API Key แล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ PART B ══════════════ -->
+  <div class="partlabel">Part B — เปิดใช้งาน WSL2 สำหรับ Docker</div>
+
+  <section class="step" id="s2">
+    <div class="step__head">
+      <div class="step__badge">2</div>
+      <div>
+        <h2>เปิด Windows Subsystem for Linux (WSL2)</h2>
+        <div class="step__program">
+          เปิด PowerShell แบบ <strong>Administrator</strong> ก่อน
+          (คลิกขวาที่ PowerShell → Run as administrator)
+        </div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>wsl --install</code></pre>
+        <button class="copy-btn" data-copy="wsl --install">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>คำสั่งนี้ทำอะไร:</strong>
+            <span class="sub">
+              WSL คือฟีเจอร์ของ Windows ที่ช่วยให้เรารัน Linux อยู่ภายใน Windows ได้
+              คำสั่งนี้จะเปิดใช้งาน WSL และติดตั้ง Ubuntu ให้ด้วย
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ทำไมต้องใช้:</strong>
+            <span class="sub">
+              Docker Desktop บน Windows ใช้ WSL2 เป็นสภาพแวดล้อม Linux เบื้องหลังสำหรับรัน container
+              ดังนั้นเราต้องเตรียม WSL2 ให้พร้อมก่อนใช้งาน Docker
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็คว่าสำเร็จ:</strong>
+        หลังติดตั้งเสร็จให้ <strong>restart เครื่อง 1 ครั้ง</strong>
+        จากนั้นเปิด PowerShell ใหม่ แล้วพิมพ์ <code>wsl --status</code>
+        ถ้าไม่ขึ้น error เกี่ยวกับ WSL แสดงว่าพร้อมใช้งานแล้ว
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c2">
+        <label for="c2">ทำขั้นตอนนี้แล้ว และ restart เครื่องแล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ PART C ══════════════ -->
+  <div class="partlabel">Part C — ติดตั้งเครื่องมือหลัก</div>
+
+  <p style="font-size:13.5px;color:var(--ink-muted);margin:0 0 4px;">
+    winget คือตัวจัดการโปรแกรมที่มีมากับ Windows อยู่แล้ว
+    คิดง่าย ๆ ว่าเป็นเหมือน App Store แต่เราใช้คำสั่งแทนการคลิก
+    เปิด PowerShell ธรรมดา (ไม่ต้องเปิดแบบ Administrator) แล้วค่อย ๆ รันทีละคำสั่ง
+  </p>
+
+  <section class="step" id="s3">
+    <div class="step__head">
+      <div class="step__badge">3</div>
+      <div>
+        <h2>ติดตั้ง Git</h2>
+        <div class="step__program">โปรแกรม: Git — เครื่องมือจัดการเวอร์ชันของโค้ด</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>winget install --id Git.Git -e</code></pre>
+        <button class="copy-btn" data-copy="winget install --id Git.Git -e">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ลงอะไร:</strong>
+            <span class="sub">
+              Git คือเครื่องมือสำหรับเก็บประวัติการแก้ไขโค้ด
+              ทำให้เราย้อนกลับไปดูเวอร์ชันก่อนหน้าได้ และช่วยให้หลายคนทำงานกับโค้ดชุดเดียวกันได้โดยไม่ทับงานกัน
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ทำไมต้องใช้:</strong>
+            <span class="sub">
+              ซอร์สโค้ดของ OAE Chatbot อยู่บน GitHub
+              เราจึงต้องใช้ Git เพื่อดึงโปรเจกต์ลงมาไว้ในเครื่อง
+              และใช้บันทึกการแก้ไขของเราด้วย <code>commit</code>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็ค:</strong> พิมพ์ <code>git --version</code> แล้วต้องเห็นหมายเลขเวอร์ชัน
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c3">
+        <label for="c3">ติดตั้ง Git แล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s4">
+    <div class="step__head">
+      <div class="step__badge">4</div>
+      <div>
+        <h2>ติดตั้ง Node.js LTS</h2>
+        <div class="step__program">โปรแกรม: Node.js — ใช้รัน JavaScript/TypeScript</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>winget install --id OpenJS.NodeJS.LTS -e</code></pre>
+        <button class="copy-btn" data-copy="winget install --id OpenJS.NodeJS.LTS -e">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ลงอะไร:</strong>
+            <span class="sub">
+              Node.js คือสภาพแวดล้อมที่ทำให้ JavaScript/TypeScript สามารถรันนอกเบราว์เซอร์ได้
+              และติดตั้ง <code>npm</code> ซึ่งเป็นตัวจัดการแพ็กเกจมาด้วย
+              โดยเราเลือกใช้รุ่น LTS ซึ่งเป็นรุ่นที่เน้นความเสถียรและมีการสนับสนุนระยะยาว
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ทำไมต้องใช้:</strong>
+            <span class="sub">
+              ส่วนหน้าเว็บของ OAE Chatbot ใช้ React + TypeScript
+              จึงต้องใช้ Node.js และ <code>npm</code> สำหรับติดตั้งไลบรารีและ build หน้าเว็บ
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็ค:</strong>
+        <code>node --version</code> และ <code>npm --version</code>
+        ต้องแสดงหมายเลขเวอร์ชันทั้งคู่
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c4">
+        <label for="c4">ติดตั้ง Node.js แล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s5">
+    <div class="step__head">
+      <div class="step__badge">5</div>
+      <div>
+        <h2>ติดตั้ง Docker Desktop</h2>
+        <div class="step__program">โปรแกรม: Docker Desktop — ใช้จัดการ container ของระบบ</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>winget install --id Docker.DockerDesktop -e</code></pre>
+        <button class="copy-btn" data-copy="winget install --id Docker.DockerDesktop -e">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ลงอะไร:</strong>
+            <span class="sub">
+              Docker Desktop คือโปรแกรมสำหรับสร้างและจัดการ <strong>container</strong>
+              ซึ่งเป็นเหมือนกล่องที่รวมโปรแกรมและสิ่งที่โปรแกรมต้องใช้ไว้ด้วยกัน
+              ทำให้โปรเจกต์เดียวกันสามารถรันบนเครื่องของแต่ละคนได้ใกล้เคียงกันมาก
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ทำไมต้องใช้:</strong>
+            <span class="sub">
+              OAE Chatbot เตรียมไฟล์ Docker Compose ไว้ให้แล้ว
+              เราจึงสามารถสั่งเปิดระบบหลายส่วนพร้อมกันได้ด้วยคำสั่งเดียว
+              เช่น FastAPI, PostgreSQL + pgvector และ Ollama
+              ไม่ต้องติดตั้งและตั้งค่าแต่ละส่วนแยกกันเอง
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็ค:</strong>
+        หลังติดตั้งเสร็จ ให้เปิด Docker Desktop ขึ้นมาอย่างน้อย 1 ครั้ง
+        และรอจน Docker พร้อมใช้งาน จากนั้นลองพิมพ์ <code>docker --version</code>
+        ใน terminal
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c5">
+        <label for="c5">ติดตั้งแล้ว และเปิด Docker Desktop จนพร้อมใช้งานแล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s6">
+    <div class="step__head">
+      <div class="step__badge">6</div>
+      <div>
+        <h2>ติดตั้ง Ollama</h2>
+        <div class="step__program">โปรแกรม: Ollama — ใช้รันโมเดล AI บนเครื่อง</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>winget install --id Ollama.Ollama -e</code></pre>
+        <button class="copy-btn" data-copy="winget install --id Ollama.Ollama -e">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ลงอะไร:</strong>
+            <span class="sub">
+              Ollama คือโปรแกรมที่ช่วยให้เราดาวน์โหลดและรันโมเดล AI บนเครื่องของเราเอง
+              โดยไม่จำเป็นต้องส่งข้อมูลทุกอย่างไปประมวลผลผ่าน API ภายนอก
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ทำไมต้องใช้:</strong>
+            <span class="sub">
+              OAE Chatbot ใช้โมเดล <code>bge-m3</code> ผ่าน Ollama
+              เพื่อแปลงคำถามให้เป็นเวกเตอร์ แล้วนำเวกเตอร์นั้นไปค้นหาเอกสารที่เกี่ยวข้องในระบบ RAG
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็ค:</strong> พิมพ์ <code>ollama --version</code> แล้วต้องเห็นหมายเลขเวอร์ชัน
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c6">
+        <label for="c6">ติดตั้ง Ollama แล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s7">
+    <div class="step__head">
+      <div class="step__badge">7</div>
+      <div>
+        <h2>ติดตั้ง uv</h2>
+        <div class="step__program">โปรแกรม: uv — ใช้จัดการ Python และแพ็กเกจของโปรเจกต์</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code></pre>
+        <button class="copy-btn"
+          data-copy="powershell -ExecutionPolicy ByPass -c &quot;irm https://astral.sh/uv/install.ps1 | iex&quot;">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ลงอะไร:</strong>
+            <span class="sub">
+              uv คือเครื่องมือสำหรับจัดการ Python, แพ็กเกจ และสภาพแวดล้อมของโปรเจกต์
+              ทำหน้าที่หลายอย่างที่เดิมเราอาจต้องใช้ pip และ venv หลายตัวร่วมกัน
+              และทำงานได้เร็วมาก
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ทำไมต้องใช้:</strong>
+            <span class="sub">
+              Backend ของ OAE Chatbot เขียนด้วย Python และใช้ FastAPI
+              คำสั่งสำหรับรันเซิร์ฟเวอร์ รวมถึงคำสั่งสำหรับติดตั้งแพ็กเกจ
+              และรันสคริปต์ต่าง ๆ ของโปรเจกต์ ใช้ <code>uv</code> เป็นตัวจัดการ
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">💡</span>
+          <span class="txt">
+            <strong>ทำไมไม่ใช้ winget:</strong>
+            <span class="sub">
+              สำหรับการอบรมนี้ เราติดตั้ง uv ผ่านสคริปต์ติดตั้งของผู้พัฒนาโดยตรง
+              คำสั่งด้านบนจะดาวน์โหลดและติดตั้ง uv ให้โดยอัตโนมัติ
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็ค:</strong>
+        พิมพ์ <code>uv --version</code> แล้วต้องเห็นหมายเลขเวอร์ชัน
+        ถ้ายังไม่เจอ ให้ลองปิดแล้วเปิด terminal ใหม่ในขั้นตอนถัดไป
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c7">
+        <label for="c7">ติดตั้ง uv แล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ PART D ══════════════ -->
+  <div class="partlabel">Part D — ตรวจสอบเครื่องมือและเตรียมโมเดล AI</div>
+
+  <section class="step" id="s8">
+    <div class="step__head">
+      <div class="step__badge">8</div>
+      <div>
+        <h2>ปิด-เปิด terminal ใหม่ แล้วตรวจสอบอีกครั้ง</h2>
+        <div class="step__program">ไม่ใช่การติดตั้ง — แค่ให้ terminal รู้จักโปรแกรมที่เพิ่งติดตั้ง</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">💡</span>
+          <span class="txt">
+            <strong>ทำไมต้องปิด-เปิดใหม่:</strong>
+            <span class="sub">
+              ตอนติดตั้งโปรแกรมใหม่ Windows อาจเพิ่มตำแหน่งของโปรแกรมนั้นเข้าไปใน <strong>PATH</strong>
+              แต่ terminal ที่เปิดค้างอยู่ก่อนติดตั้งยังไม่เห็นข้อมูลใหม่นี้
+              การปิดแล้วเปิด terminal ใหม่จะทำให้มันโหลด PATH ล่าสุด
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="cmdblock">
+        <pre><code>git --version
+node --version
+docker --version
+ollama --version
+uv --version</code></pre>
+        <button class="copy-btn" data-copy="git --version
+node --version
+docker --version
+ollama --version
+uv --version">คัดลอก</button>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็ค:</strong>
+        ทั้ง 5 คำสั่งต้องแสดงหมายเลขเวอร์ชัน
+        และไม่ควรมีคำว่า <code>not recognized</code>
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c8">
+        <label for="c8">ตรวจสอบครบทั้ง 5 ตัวแล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s9">
+    <div class="step__head">
+      <div class="step__badge">9</div>
+      <div>
+        <h2>ดาวน์โหลดโมเดล embedding</h2>
+        <div class="step__program">ดาวน์โหลดโมเดล AI จริงลงเครื่อง (~1.2 GB)</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>ollama pull bge-m3</code></pre>
+        <button class="copy-btn" data-copy="ollama pull bge-m3">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ทำอะไร:</strong>
+            <span class="sub">
+              ตอนติดตั้ง Ollama เราได้แค่ “โปรแกรมสำหรับรันโมเดล”
+              แต่ยังไม่ได้มีตัวโมเดลอยู่ในเครื่อง
+              คำสั่งนี้จะดาวน์โหลดโมเดล <code>bge-m3</code> มาไว้ในเครื่องจริง ๆ
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็ค:</strong>
+        พิมพ์ <code>ollama list</code>
+        แล้วต้องเห็น <code>bge-m3</code> อยู่ในรายการ
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c9">
+        <label for="c9">ดาวน์โหลด bge-m3 แล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ PART E ══════════════ -->
+  <div class="partlabel">Part E — เตรียมโปรเจกต์ให้พร้อมรัน</div>
+
+  <section class="step" id="s10">
+    <div class="step__head">
+      <div class="step__badge">10</div>
+      <div>
+        <h2>โคลนโปรเจกต์</h2>
+        <div class="step__program">ดึงซอร์สโค้ดจาก GitHub มาไว้ในเครื่อง</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>git clone https://github.com/prymania/oae_chatbot.git
+cd oae-chatbot</code></pre>
+        <button class="copy-btn" data-copy="git clone https://github.com/prymania/oae_chatbot.git
+cd oae-chatbot">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ทำอะไร:</strong>
+            <span class="sub">
+              <code>git clone</code> จะดึงซอร์สโค้ดของโปรเจกต์จาก GitHub
+              มาไว้ในเครื่อง พร้อมประวัติการแก้ไขของ Git
+              ส่วน <code>cd</code> ใช้สำหรับเข้าไปในโฟลเดอร์ของโปรเจกต์
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c10">
+        <label for="c10">โคลนโปรเจกต์เรียบร้อยแล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s11">
+    <div class="step__head">
+      <div class="step__badge">11</div>
+      <div>
+        <h2>สร้างไฟล์ตั้งค่า .env</h2>
+        <div class="step__program">ใส่ API Key และค่าตั้งค่าที่ใช้เฉพาะเครื่องนี้</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>copy .env.example .env
+notepad .env</code></pre>
+        <button class="copy-btn" data-copy="copy .env.example .env
+notepad .env">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ทำอะไร:</strong>
+            <span class="sub">
+              <code>.env.example</code> เป็นไฟล์ตัวอย่างที่เตรียมค่าไว้ให้
+              แต่ไม่มี API Key จริง
+              คำสั่ง <code>copy</code> จะสร้างไฟล์ <code>.env</code> จากไฟล์ตัวอย่าง
+              แล้ว <code>notepad .env</code> จะเปิดไฟล์ให้เราแก้ไข
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>ต้องกรอกอะไร:</strong>
+            <span class="sub">
+              คัดลอกค่าด้านล่างไปใส่ในไฟล์ <code>.env</code>
+              แล้วแทนที่ <code>TYPHOON_API_KEY</code> ด้วย API Key ของตัวเองจากขั้นตอนที่ 1
+              <br>
+              <strong>สำคัญ:</strong> ไฟล์ <code>.env</code> ห้าม commit หรือ push ขึ้น GitHub
+              เพราะมี API Key จริงอยู่ข้างใน
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="cmdblock">
+        <pre><code>ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin1234
+TYPHOON_API_KEY= (API Key ของผู้เข้าอบรม)
+DEEPSEEK_API_KEY=(API Key ได้รับวันอบรม (temporary key))</code></pre>
+        <button class="copy-btn" data-copy="ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin1234
+TYPHOON_API_KEY= (API Key ของผู้เข้าอบรม)
+DEEPSEEK_API_KEY=(API Key ได้รับวันอบรม (temporary key))">คัดลอก</button>
+      </div>
+
+      <div class="callout callout--gold">
+        <span class="callout__label">หมายเหตุสำคัญ</span>
+        <p>
+          <code>DEEPSEEK_API_KEY</code> ด้านบนเป็น <strong>กุญแจชั่วคราวสำหรับการอบรมเท่านั้น</strong>
+          ไม่ใช่กุญแจสำหรับระบบจริง
+          <br>
+          <code>TYPHOON_API_KEY</code> ให้ใช้ API Key ของตัวเองที่สมัครไว้ในขั้นตอนที่ 1
+          <br>
+          <strong>อย่าลืมลบค่าตัวอย่างเดิมของ TYPHOON_API_KEY และ DEEPSEEK_API_KEY
+            ก่อนใส่ค่าของตัวเอง</strong>
+        </p>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">🔑</span>
+          <span class="txt">
+            <strong>แล้ว ADMIN_USERNAME / ADMIN_PASSWORD มีไว้ทำไม?</strong>
+            <span class="sub">
+              ระบบใช้ database เป็นหลักในการเก็บบัญชีผู้ใช้และรหัสผ่าน
+              แต่ค่าใน <code>.env</code> ทำหน้าที่เป็นข้อมูลสำหรับการเข้าสู่ระบบในกรณีพิเศษ
+              <br><br>
+              <strong>(1) ใช้สำหรับเริ่มระบบครั้งแรก</strong> —
+              ตอนเริ่มต้น database อาจยังไม่มีบัญชีผู้ใช้
+              ระบบจึงต้องมีบัญชีสำหรับเริ่มต้นเข้าไปจัดการระบบ
+              <br>
+              <strong>(2) ใช้เป็นทางเข้าสำรอง</strong> —
+              หากบัญชีใน database มีปัญหา ค่าใน <code>.env</code> ยังสามารถใช้เป็นข้อมูลสำรองสำหรับเข้าสู่ระบบได้
+              <br><br>
+              ถ้าอยากดูว่าระบบทำงานส่วนนี้อย่างไร ลองเปิด
+              <code>app/routers/admin.py</code> และดูฟังก์ชัน <code>admin_login</code>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c11">
+        <label for="c11">กรอกค่าใน .env ครบ และบันทึกไฟล์แล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s12">
+    <div class="step__head">
+      <div class="step__badge">12</div>
+      <div>
+        <h2>รันระบบทั้งหมด</h2>
+        <div class="step__program">เปิดส่วนประกอบของระบบพร้อมกันด้วยคำสั่งเดียว</div>
+      </div>
+    </div>
+
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>docker compose up -d</code></pre>
+        <button class="copy-btn" data-copy="docker compose up -d">คัดลอก</button>
+      </div>
+
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">📦</span>
+          <span class="txt">
+            <strong>ทำอะไร:</strong>
+            <span class="sub">
+              Docker จะอ่านไฟล์ <code>docker-compose.yml</code>
+              แล้วเปิด container ต่าง ๆ ตามที่กำหนดไว้ในไฟล์
+              เช่น ตัวแอป FastAPI, PostgreSQL + pgvector และ Ollama
+              <code>-d</code> หมายถึงให้ทำงานอยู่เบื้องหลัง
+              เราจึงสามารถปิด terminal ได้โดย container ยังทำงานต่อ
+            </span>
+          </span>
+        </div>
+
+        <div class="explain-row">
+          <span class="icon">🎯</span>
+          <span class="txt">
+            <strong>เช็คใน Docker Desktop:</strong>
+            <span class="sub">
+              เปิด Docker Desktop แล้วควรเห็นชุด container ของโปรเจกต์
+              <code>chatbot-oae</code> ทำงานอยู่
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="verify">
+        ✅ <strong>เช็คว่าสำเร็จ:</strong>
+        รอประมาณ 1–2 นาทีในครั้งแรก เพราะ Docker อาจต้องดาวน์โหลด image
+        จากนั้นเปิดเบราว์เซอร์ไปที่ <code>http://localhost:8000</code>
+        ถ้าเห็นหน้าแชท แสดงว่าระบบพร้อมใช้งานแล้ว
+      </div>
+
+      <div class="cmdblock">
+        <pre><code>http://localhost:8000</code></pre>
+        <button class="copy-btn" data-copy="http://localhost:8000">คัดลอก</button>
+      </div>
+
+      <div class="step__check">
+        <input type="checkbox" id="c12">
+        <label for="c12">เปิด localhost:8000 แล้วเห็นหน้าแชท</label>
+      </div>
+    </div>
+  </section>
+
+  <div class="callout callout--gold">
+    <span class="callout__label">ถ้าติดปัญหา</span>
+    <p>
+      ปัญหาที่เจอบ่อยคือ Docker Desktop ยังไม่พร้อมใช้งาน
+      หรือ terminal ยังไม่รู้จักโปรแกรมที่เพิ่งติดตั้ง
+      <br>
+      ลองปิดแล้วเปิด terminal ใหม่ และตรวจสอบว่า Docker Desktop เปิดอยู่และพร้อมใช้งาน
+      จากนั้นลองคำสั่งในขั้นตอนนั้นอีกครั้ง
+    </p>
+  </div>
+
+  <div class="callout">
+    <span class="callout__label">ทำครบทั้ง 12 ขั้นตอนแล้ว 🎉</span>
+    <p>
+      ตอนนี้เครื่องพร้อมสำหรับการทดลอง OAE Chatbot แล้ว
+      ขั้นต่อไปคือ <strong>ขั้นที่ 2 — อัปโหลดเอกสารและทดลองถาม-ตอบด้วย RAG</strong> (<a href="step2_rag-test.html">เปิดขั้นที่ 2</a>)
+    </p>
+  </div>
+</main>
+
+<footer>
+  <span>ความคืบหน้าจะถูกเก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น</span>
+  <button id="resetBtn" type="button">ล้างความคืบหน้าทั้งหมด</button>
+</footer>
+
+<script>
+  (function () {
+    var STORAGE_KEY = "OAE-machine-setup-progress-v2";
+    var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.step__check input[type="checkbox"]'));
+    var fill = document.getElementById("progressFill");
+    var label = document.getElementById("progressLabel");
+    var resetBtn = document.getElementById("resetBtn");
+
+    function loadState() {
+      try { return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}"); }
+      catch (e) { return {}; }
+    }
+    function saveState(state) {
+      try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+    function updateProgress() {
+      var total = checkboxes.length;
+      var done = checkboxes.filter(function (c) { return c.checked; }).length;
+      var pct = total ? Math.round((done / total) * 100) : 0;
+      fill.style.width = pct + "%";
+      label.textContent = done + "/" + total;
+    }
+
+    var state = loadState();
+    checkboxes.forEach(function (cb) {
+      if (state[cb.id]) { cb.checked = true; cb.closest(".step__check").classList.add("checked"); }
+      cb.addEventListener("change", function () {
+        cb.closest(".step__check").classList.toggle("checked", cb.checked);
+        var s = loadState(); s[cb.id] = cb.checked; saveState(s);
+        updateProgress();
+      });
+    });
+    updateProgress();
+
+    resetBtn.addEventListener("click", function () {
+      if (!window.confirm("ล้างความคืบหน้าทั้งหมด?")) return;
+      window.localStorage.removeItem(STORAGE_KEY);
+      checkboxes.forEach(function (cb) { cb.checked = false; cb.closest(".step__check").classList.remove("checked"); });
+      updateProgress();
+    });
+
+    // Copy-to-clipboard buttons.
+    Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = btn.getAttribute("data-copy") || "";
+        var done = function () {
+          var original = btn.textContent;
+          btn.textContent = "คัดลอกแล้ว ✓";
+          btn.classList.add("copied");
+          window.setTimeout(function () {
+            btn.textContent = original;
+            btn.classList.remove("copied");
+          }, 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(function () {
+            fallbackCopy(text); done();
+          });
+        } else {
+          fallbackCopy(text); done();
+        }
+      });
+    });
+    function fallbackCopy(text) {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  })();
+</script>

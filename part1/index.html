@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>พาร์ท 1 — สำหรับผู้สนใจระบบ LLM Chatbot</title>
+<style>
+  :root {
+    --bg: #f6f8f3; --surface: #ffffff; --surface-2: #eef2ea;
+    --ink: #17211a; --ink-muted: #4c5a4f; --ink-faint: #7c8a7d;
+    --line: #dee6da; --line-strong: #c4d0bf;
+    --accent: #266448; --accent-ink: #ffffff; --accent-soft: #e2efe4; --accent-soft-line: #bcdac4;
+    --gold: #9a6d12; --gold-soft: #fbf1dc; --gold-soft-line: #ecd28b;
+    --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
+    --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+      --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+      --line: #2b352a; --line-strong: #3a463790;
+      --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+      --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+    --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+    --line: #2b352a; --line-strong: #3a463790;
+    --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+    --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  h1, h2, h3 { text-wrap: balance; font-weight: 700; color: var(--ink); margin: 0; }
+  p { text-wrap: pretty; margin: 0; }
+  code { font-family: var(--font-mono); font-size: 0.86em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.4em; }
+
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--surface); }
+  .topbar__mark { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 17px; flex: none; }
+  .topbar__title { font-weight: 700; font-size: 15px; }
+  .topbar__sub { font-size: 12.5px; color: var(--ink-faint); }
+  .topbar__back { margin-inline-start: auto; font-size: 12.6px; font-weight: 600; color: var(--ink-muted); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; }
+  .topbar__back:hover { border-color: var(--accent); color: var(--accent); }
+
+  main { max-width: 880px; margin: 0 auto; padding: 48px clamp(24px, 5vw, 64px) 80px; }
+  .hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+  .hero__eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .hero h1 { font-size: clamp(26px, 3.6vw, 36px); line-height: 1.28; margin-bottom: 14px; }
+  .hero p.lead { font-size: 16px; color: var(--ink-muted); max-width: 68ch; margin-bottom: 30px; }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .step {
+    display: flex; gap: 16px; align-items: flex-start; border: 1px solid var(--line); background: var(--surface);
+    border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); text-decoration: none; color: var(--ink);
+  }
+  .step:hover { border-color: var(--accent-soft-line); }
+  .step__n {
+    flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); color: var(--accent);
+    display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 14px;
+    border: 1px solid var(--accent-soft-line);
+  }
+  .step__em { font-size: 18px; margin-inline-end: 6px; }
+  .step__t { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .step__d { font-size: 13.3px; color: var(--ink-muted); margin-top: 3px; }
+  .step__arrow { margin-inline-start: auto; align-self: center; color: var(--ink-faint); font-size: 15px; flex: none; }
+  .step.last { border-color: var(--gold-soft-line); background: var(--gold-soft); }
+  .step.last .step__n { background: var(--gold-soft); color: var(--gold); border-color: var(--gold-soft-line); }
+
+  .connector { width: 1px; height: 12px; background: var(--line-strong); margin-inline-start: 17px; }
+
+  .callout {
+    border: 1px solid var(--accent-soft-line); border-inline-start: 3px solid var(--accent);
+    background: var(--accent-soft); border-radius: 10px; padding: 15px 18px; margin: 30px 0 0;
+  }
+  .callout__label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 5px; }
+  .callout p { font-size: 13.8px; color: var(--ink); }
+
+  footer { font-size: 12px; color: var(--ink-faint); margin-top: 40px; max-width: 880px; margin-inline: auto; padding: 0 clamp(24px, 5vw, 64px) 40px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar__mark">🎓</div>
+  <div>
+    <div class="topbar__title">พาร์ท 1 — เรียนรู้ระบบ LLM Chatbot</div>
+    <div class="topbar__sub">ทำความเข้าใจ OAE Chatbot ตั้งแต่ติดตั้งจนเห็นภาพรวมทั้งระบบ</div>
+  </div>
+  <a class="topbar__back" href="../index.html">← กลับหน้ารวมเอกสาร</a>
+</div>
+
+<!-- <main>
+  <div class="hero__eyebrow">สาย 1 จาก 3 — ผู้สนใจระบบทั่วไป</div>
+  <h1>เดิน 5 ขั้น จากติดตั้งเครื่องเปล่า จนเข้าใจภาพรวมทั้งระบบ</h1>
+  <p class="lead">
+    ไม่ต้องมีพื้นฐานเขียนโปรแกรมมาก่อนก็เริ่มได้ — แต่ละขั้นต่อเนื่องจากขั้นก่อนหน้า แนะนำให้ไล่ตามลำดับ 1 → 5
+    ไม่ต้องรีบข้าม ทำแต่ละขั้นให้ผ่าน checklist ก่อนไปขั้นถัดไป
+  </p>
+
+  <ol class="steps">
+    <li>
+      <a class="step" href="../training/02_chapter02_setup-full.html">
+        <div class="step__n">1</div>
+        <div><div class="step__t"><span class="step__em">🧰</span>เตรียมเครื่องพัฒนา</div><div class="step__d">12 ขั้นตอน ลงเครื่องมือทีละตัวจากเครื่องเปล่า จนเห็นหน้าแชทที่ localhost:8000</div></div>
+        <div class="step__arrow">→</div>
+      </a>
+    </li>
+    <div class="connector"></div>
+    <li>
+      <a class="step" href="../training/03_chapter03_rag-test.html">
+        <div class="step__n">2</div>
+        <div><div class="step__t"><span class="step__em">🧪</span>ทดสอบ RAG ครั้งแรก</div><div class="step__d">พิสูจน์ด้วยมือว่าบอทตอบจากเอกสารจริง ไม่ได้เดาจากความรู้ทั่วไปของ AI</div></div>
+        <div class="step__arrow">→</div>
+      </a>
+    </li>
+    <div class="connector"></div>
+    <li>
+      <a class="step" href="../training/04_chapter04_trace-question.html">
+        <div class="step__n">3</div>
+        <div><div class="step__t"><span class="step__em">🧵</span>ตามรอยคำถาม</div><div class="step__d">ใส่ print() เอง 5 จุด แล้วดู log จริงตอนถามคำถาม 1 ข้อ เพื่อเห็นว่าระบบทำงานยังไง</div></div>
+        <div class="step__arrow">→</div>
+      </a>
+    </li>
+    <div class="connector"></div>
+    <li>
+      <a class="step" href="../reference/LINE-OA-Chatbot-Guide.html">
+        <div class="step__n">4</div>
+        <div><div class="step__t"><span class="step__em">💬</span>สร้างแชทบอท LINE จากศูนย์</div><div class="step__d">คู่มือทั่วไป (ไม่ผูกกับโปรเจกต์นี้เฉพาะ) — สมัครบัญชี LINE Official Account จนได้กุญแจครบ</div></div>
+        <div class="step__arrow">→</div>
+      </a>
+    </li>
+    <div class="connector"></div>
+    <li>
+      <a class="step last" href="../reference/system-overview.html">
+        <div class="step__n">5</div>
+        <div><div class="step__t"><span class="step__em">📗</span>ภาพรวมระบบ (ปิดท้าย)</div><div class="step__d">ตอนนี้เข้าใจการทำงานของระบบแล้ว — มาดูภาพรวมสถาปัตยกรรม แนวคิด และ tech stack ทั้งหมดอีกครั้ง</div></div>
+        <div class="step__arrow">→</div>
+      </a>
+    </li>
+  </ol>
+
+  <div class="callout">
+    <span class="callout__label">อยากรู้ลึกกว่านี้</span>
+    <p>ถ้าจบขั้นที่ 5 แล้วอยากดูรายละเอียดระดับไฟล์/ฟังก์ชัน/การ deploy จริง เอกสารเหล่านั้นอยู่ในพาร์ท 3 (สำหรับโปรแกรมเมอร์ที่รับช่วงต่อระบบ) — ดูได้ที่ <a href="../part3/index.html">หน้ารวมพาร์ท 3</a></p>
+  </div>
+</main> -->
+
+<main>
+  <div class="hero__eyebrow">พาร์ท 1 จาก 3 — เรียนรู้ระบบ LLM Chatbot</div>
+  <h1>5 ขั้นตอน จากเครื่องเปล่า จนเข้าใจภาพรวมของระบบ</h1>
+  <p class="lead">
+    ไม่จำเป็นต้องมีพื้นฐานการเขียนโปรแกรมมาก่อนก็เริ่มได้
+    แต่ละขั้นต่อเนื่องกัน แนะนำให้เรียนตามลำดับ 1 → 5
+    และทำ checklist ของแต่ละขั้นให้ครบก่อนเข้าสู่ขั้นถัดไป
+  </p>
+
+  <ol class="steps">
+    <li>
+      <a class="step" href="step1_setup-full.html">
+        <div class="step__n">1</div>
+        <div>
+          <div class="step__t">
+            <span class="step__em">🧰</span>เตรียมเครื่องพัฒนา
+          </div>
+          <div class="step__d">
+            12 ขั้นตอน ตั้งแต่เครื่องเปล่าจนติดตั้งเครื่องมือครบและเปิดหน้าแชทที่ localhost:8000 ได้
+          </div>
+        </div>
+        <div class="step__arrow">→</div>
+      </a>
+    </li>
+
+    <div class="connector"></div>
+
+    <li>
+      <a class="step" href="step2_rag-test.html">
+        <div class="step__n">2</div>
+        <div>
+          <div class="step__t">
+            <span class="step__em">🧪</span>ทดลอง RAG ครั้งแรก
+          </div>
+          <div class="step__d">
+            ทดลองเพิ่มและลบเอกสาร เพื่อดูด้วยตัวเองว่าบอทตอบจากข้อมูลในฐานความรู้
+          </div>
+        </div>
+        <div class="step__arrow">→</div>
+      </a>
+    </li>
+
+    <div class="connector"></div>
+
+    <li>
+      <a class="step" href="step3_trace-question.html">
+        <div class="step__n">3</div>
+        <div>
+          <div class="step__t">
+            <span class="step__em">🧵</span>ตามรอยคำถามในโค้ด
+          </div>
+          <div class="step__d">
+            ใส่ print() ในจุดสำคัญ แล้วดู log จริงขณะถามคำถาม เพื่อเห็นว่าคำถามเดินทางผ่านระบบอย่างไร
+          </div>
+        </div>
+        <div class="step__arrow">→</div>
+      </a>
+    </li>
+
+    <div class="connector"></div>
+
+    <li>
+      <a class="step" href="step4_line-oa-guide.html">
+        <div class="step__n">4</div>
+        <div>
+          <div class="step__t">
+            <span class="step__em">💬</span>สร้างแชทบอท LINE จากศูนย์
+          </div>
+          <div class="step__d">
+            คู่มือทั่วไปสำหรับสร้าง LINE Chatbot ตั้งแต่สมัคร LINE Official Account จนตั้งค่าการเชื่อมต่อได้ครบ
+          </div>
+        </div>
+        <div class="step__arrow">→</div>
+      </a>
+    </li>
+
+    <div class="connector"></div>
+
+    <li>
+      <a class="step last" href="step5_system-overview.html">
+        <div class="step__n">5</div>
+        <div>
+          <div class="step__t">
+            <span class="step__em">📗</span>ภาพรวมระบบ
+          </div>
+          <div class="step__d">
+            สรุปภาพรวมสถาปัตยกรรม แนวคิด และเทคโนโลยีที่ใช้ เพื่อเชื่อมโยงสิ่งที่เรียนมาทั้งหมดเข้าด้วยกัน
+          </div>
+        </div>
+        <div class="step__arrow">→</div>
+      </a>
+    </li>
+  </ol>
+
+  <!-- <div class="callout">
+    <span class="callout__label">อยากรู้ลึกกว่านี้</span>
+    <p>
+      ถ้าจบขั้นที่ 5 แล้วและต้องการลงรายละเอียดระดับไฟล์ ฟังก์ชัน API
+      การ Deploy และการดูแลระบบต่อ
+      ให้ไปต่อที่ <strong>พาร์ท 3 — โปรแกรมเมอร์ผู้รับช่วงต่อ</strong>
+      ได้ที่ <a href="../part3/index.html">หน้ารวมพาร์ท 3</a>
+    </p>
+  </div> -->
+</main>
+
+<footer>เอกสารพาร์ท 1 ทั้งหมดอยู่ในโฟลเดอร์ <code>part1/</code> นี้ที่เดียว</footer>
+</body>
+</html>
