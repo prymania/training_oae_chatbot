@@ -155,8 +155,7 @@
       <a href="step1_setup-full.html">🧰 เตรียมเครื่องพัฒนา (ขั้นที่ 1)</a>
       <a class="current">🧪 ทดสอบ RAG (ขั้นที่ 2) · กำลังอ่าน</a>
       <a href="step3_trace-question.html">🧵 ตามรอยคำถาม (ขั้นที่ 3)</a>
-      <a href="step4_line-oa-guide.html">💬 สร้างแชทบอท LINE (ขั้นที่ 4)</a>
-      <a href="step5_system-overview.html">📗 ภาพรวมระบบ (ขั้นที่ 5)</a>
+      <a href="step4_system-overview.html">📗 ภาพรวมระบบ (ขั้นที่ 4)</a>
     </nav>
   </div>
 
@@ -195,11 +194,12 @@
     <div class="step__body">
       <div class="explain">
         <div class="explain-row"><span class="icon">🔑</span><span class="txt"><strong>ทำอะไร:</strong> <span class="sub">เปิด <code>http://localhost:8000/admin</code> แล้วล็อกอินด้วยค่าที่กรอกไว้ใน <code>.env</code> ตอนติดตั้ง (<code>ADMIN_USERNAME</code> / <code>ADMIN_PASSWORD</code>) 
-          <br> ถ้าไม่ได้แก้ค่าเอง username เริ่มต้นคือ 
+          <br> ถ้าไม่ได้เปลี่ยนค่าตอนติดตั้ง ให้ใช้ username/password
+          ที่กำหนดไว้ในไฟล์ <code>.env</code>
           <br><code>admin</code> 
           <br><code>admin1234</code></span></span></div>
       </div>
-      <div class="verify">✅ <strong>เช็ค:</strong> เข้าหน้าแอดมินได้ เห็นเมนูด้านซ้าย เช่น "ฐานความรู้", "บันทึกคำถาม-คำตอบ", "ภาพรวมสำหรับผู้บริหาร"</div>
+      <div class="verify">✅ <strong>เช็ค:</strong> เข้าหน้าแอดมินได้ เห็นเมนูด้านซ้าย เช่น "ฐานความรู้", "บันทึกคำถาม-คำตอบ"</div>
       <div class="step__check"><input type="checkbox" id="c0"><label for="c0">ล็อกอินแอดมินสำเร็จ</label></div>
     </div>
   </section>
@@ -232,18 +232,20 @@
     <div class="step__head">
       <div class="step__badge">2</div>
       <div><h2>ฝังข้อความเข้าคลังความรู้ (ไม่ต้องมี PDF)</h2>
-        <div class="step__program">หน้าแอดมิน → แท็บ "โดเมน" → "เพิ่มโดเมน" → แมว, รหัสโดเมน cat</div>
+        <div class="step__program">หน้าแอดมิน → แท็บ "โดเมน" → "เพิ่มโดเมน" → แมว, ใส่รหัสโดเมน cat</div>
         <div class="step__program">หน้าแอดมิน → แท็บ "ฐานความรู้" → ช่องเพิ่มข้อความโดยตรง</div></div>
     </div>
     <div class="step__body">
       <div class="explain">
-        <div class="explain-row"><span class="icon">📄</span><span class="txt"><strong>เนื้อหาที่จะฝัง:</strong> <span class="sub">เปิดไฟล์ <a href="../resource/cat.txt" target="_blank" rel="noopener"><code>resource/cat.txt</code></a> ที่ผู้จัดอบรมเตรียมไว้ (คลิกลิงก์นี้เพื่อเปิด) คัดลอกเนื้อหาทั้งหมด แล้ววางในช่องฝังข้อความโดยตรงที่หน้าแอดมิน 
+        <div class="explain-row"><span class="icon">📄</span><span class="txt"><strong>เนื้อหาที่จะฝัง:</strong> <span class="sub">เปิดไฟล์ <a href="../resource/cat.txt" target="_blank" rel="noopener"><code>resource/cat.txt</code></a> ที่เตรียมไว้ให้ คัดลอกเนื้อหาทั้งหมด แล้ววางในช่องฝังข้อความโดยตรงที่หน้าแอดมิน 
         <br> **  อย่าลืมเปลี่ยนโดเมน เป็น แมว **</span></span></div>
-        <div class="explain-row"><span class="icon">📦</span><span class="txt"><strong>ทำอะไร:</strong> <span class="sub">แท็บ "ฐานความรู้" มี 2 วิธีป้อนข้อมูล — อัปโหลด PDF (ต้องผ่าน OCR ก่อน ใช้เวลานานกว่า) กับ <strong>ฝังข้อความโดยตรง</strong> (พิมพ์/วางข้อความแล้วฝังทันที ไม่ต้องมีไฟล์เลย) เลือกแบบหลังสำหรับการทดสอบนี้ — เร็วกว่าและตัดตัวแปรเรื่อง OCR ออกไปก่อน</span></span></div>
-        <div class="explain-row"><span class="icon">🔧</span><span class="txt"><strong>เบื้องหลังที่เกิดขึ้น:</strong> <span class="sub">ข้อความที่วางเข้าไปจะถูกแปลงเป็น "เวกเตอร์" (ชุดตัวเลขที่แทนความหมาย) ด้วยโมเดล bge-m3 ที่ Ollama รันอยู่ในเครื่องคุณ แล้วบันทึกลงฐานข้อมูล PostgreSQL — เวกเตอร์นี้คือสิ่งที่ระบบใช้ "ค้นหา" ว่าข้อความไหนเกี่ยวข้องกับคำถามที่ถามเข้ามา</span></span></div>
-        <div class="explain-row"><span class="icon">🏷️</span><span class="txt"><strong>ช่องหมวด/โดเมน:</strong> <span class="sub">เลือกหมวดอะไรก็ได้ที่มีอยู่แล้วในลิสต์ — ไม่ต้องกังวลว่าไม่มีหมวด "แมว" ให้เลือก เพราะการค้นหาจากหน้าแชทหลักในขั้นที่ 3 ไม่ได้ระบุหมวดเจาะจง (ค้นข้ามหมวดทั้งหมด) เลือกหมวดไหนก็ยังเจอได้เหมือนกัน</span></span></div>
+        <div class="explain-row"><span class="icon">📦</span><span class="txt"><strong>ทำอะไร:</strong> <span class="sub">แท็บ "ฐานความรู้" มี 2 วิธีป้อนข้อมูล <br>  
+          - 1. อัปโหลด PDF (ต้องผ่าน OCR ก่อน ใช้เวลานานกว่า) <br>
+          - 2. <strong>ฝังข้อความโดยตรง</strong> (พิมพ์/วางข้อความแล้วฝังทันที ไม่ต้องมีไฟล์)  การทำงานเร็วกว่าและตัดตัวแปรเรื่อง OCR ออกไปก่อน</span></span></div>
+        <div class="explain-row"><span class="icon">🔧</span><span class="txt"><strong>เบื้องหลังที่เกิดขึ้น:</strong> <span class="sub">ข้อความที่วางเข้าไปจะถูกแปลงเป็น "เวกเตอร์" (ชุดตัวเลขที่แทนความหมาย) ด้วยโมเดล bge-m3 ที่ Ollama รันอยู่ในเครื่อง แล้วบันทึกลงฐานข้อมูล PostgreSQL — เวกเตอร์นี้คือสิ่งที่ระบบใช้ "ค้นหา" ว่าข้อความไหนเกี่ยวข้องกับคำถามที่ถามเข้ามา</span></span></div>
+       
       </div>
-      <div class="verify">✅ <strong>เช็ค:</strong> กดฝัง/บันทึกแล้วไม่มี error ขึ้น</div>
+      <div class="verify">✅ <strong>เช็ค:</strong> กดปุ่ม ฝังข้อความ แล้วไม่มี error ขึ้น</div>
       <div class="step__check"><input type="checkbox" id="c2"><label for="c2">ฝังข้อความสำเร็จแล้ว</label></div>
     </div>
   </section>
@@ -255,30 +257,18 @@
     </div>
     <div class="step__body">
       <div class="explain">
-        <div class="explain-row"><span class="icon">💡</span><span class="txt"><strong>ทำไมอยากลอง:</strong> <span class="sub">ข้อความที่เพิ่งฝังในขั้นที่ 2 ถูกเก็บเป็นแถวหนึ่งในตาราง <code>knowledge_base</code> จริง ๆ ลองเข้าไปดูด้วยตาตัวเองว่าหน้าตาเป็นยังไง มีคอลัมน์อะไรบ้าง</span></span></div>
+        <div class="explain-row"><span class="icon">💡</span><span class="txt"><strong>ทำไมอยากให้เห็น database:</strong> 
+          <span class="sub">ข้อความที่เพิ่งฝังในขั้นที่ 2 ถูกเก็บเป็นแถวหนึ่งในตาราง <code>knowledge_base</code> จริง ๆ 
+            ลองเช็คดูว่า มีคอลัมน์อะไรบ้าง <br>
+          </span></span></div>
       </div>
+      
+      </div>
+
       <div class="explain">
-        <div class="explain-row"><span class="icon">🖥️</span><span class="txt"><strong>วิธีที่ 1 — ผ่าน terminal (ไม่ต้องติดตั้งอะไรเพิ่ม):</strong> <span class="sub">รันจากโฟลเดอร์โปรเจกต์ (<code>chatbot-OAE</code>) — <code>psql</code> ติดมากับ container ของ Postgres อยู่แล้ว</span></span></div>
-      </div>
-      <div class="cmdblock">
-        <pre><code>docker compose exec postgres psql -U postgres -d postgres</code></pre>
-        <button class="copy-btn" data-copy="docker compose exec postgres psql -U postgres -d postgres">คัดลอก</button>
-      </div>
-      <div class="cmdblock">
-        <pre><code>SELECT id, source, category, left(text, 80) AS text_preview
-FROM knowledge_base
-ORDER BY id DESC
-LIMIT 5;</code></pre>
-        <button class="copy-btn" data-copy="SELECT id, source, category, left(text, 80) AS text_preview
-FROM knowledge_base
-ORDER BY id DESC
-LIMIT 5;">คัดลอก</button>
-      </div>
-      <div class="explain">
-        <div class="explain-row"><span class="icon">📦</span><span class="txt"><strong>ทำอะไร:</strong> <span class="sub">คำสั่ง SQL ด้านบนดึงแถวล่าสุด 5 แถวจากตาราง <code>knowledge_base</code> มาโชว์แค่ 80 ตัวอักษรแรกของข้อความ (ตัดคอลัมน์ <code>embedding</code> ที่เป็นตัวเลขยาวเป็นพันตัวออกไปเพื่อให้อ่านง่าย) — พิมพ์ <code>\q</code> แล้ว Enter เพื่อออกจาก psql</span></span></div>
-      </div>
-      <div class="explain">
-        <div class="explain-row"><span class="icon">🖼️</span><span class="txt"><strong>วิธีที่ 2 — ผ่านโปรแกรม DBeaver (ถ้าอยากได้หน้าตา GUI):</strong> <span class="sub">ดาวน์โหลด DBeaver Community (ฟรี) จาก <a href="https://dbeaver.io/download/" target="_blank" rel="noopener">dbeaver.io/download</a> แล้วสร้างการเชื่อมต่อใหม่แบบ PostgreSQL ด้วยค่าด้านล่าง</span></span></div>
+        <div class="explain-row"><span class="icon">🖼️</span><span class="txt"><strong>ใช้โปรแกรม DBeaver:</strong> 
+          <span class="sub">
+            สร้างการเชื่อมต่อใหม่แบบ PostgreSQL ด้วยค่าด้านล่าง</span></span></div>
       </div>
       <div class="cmdblock">
         <pre><code>Host: localhost
@@ -295,8 +285,8 @@ Password: postgres">คัดลอก</button>
       <div class="explain">
         <div class="explain-row"><span class="icon">🎯</span><span class="txt"><strong>ทำไม port 5433 ไม่ใช่ 5432:</strong> <span class="sub"><code>docker-compose.yml</code> จับคู่พอร์ตฝั่งเครื่องเราไว้ที่ 5433 (ไม่ใช่ 5432 มาตรฐาน) เพื่อไม่ให้ชนกับ Postgres ที่อาจติดตั้งไว้ในเครื่องอยู่แล้ว — เชื่อมต่อจากเครื่องเราต้องใช้ 5433 เสมอ (ภายใน container ยังคุยกันที่ 5432 ตามปกติ)</span></span></div>
       </div>
-      <div class="verify">✅ <strong>เช็ค:</strong> เห็นแถวข้อมูลเรื่องแมววิเชียรมาศที่เพิ่งฝังไปในขั้นที่ 2 (ไม่ว่าจะดูผ่าน psql หรือ DBeaver)</div>
-      <div class="step__check"><input type="checkbox" id="cdb"><label for="cdb">ลองดูข้อมูลใน database แล้ว (วิธีใดวิธีหนึ่ง)</label></div>
+      <div class="verify">✅ <strong>เช็ค:</strong> เห็นแถวข้อมูลเรื่องแมววิเชียรมาศที่เพิ่งฝังไปในขั้นที่ 2 </div>
+      <div class="step__check"><input type="checkbox" id="cdb"><label for="cdb">ลองดูข้อมูลใน database แล้ว </label></div>
     </div>
   </section>
 
@@ -328,7 +318,7 @@ Password: postgres">คัดลอก</button>
                 <span class="sub">
                   ข้อความที่วางเข้าไปจะถูกแบ่งเป็นชิ้นข้อมูล (chunk)
                   แล้วแปลงเป็น "เวกเตอร์" (ชุดตัวเลขที่แทนความหมายของข้อความ)
-                  ด้วยโมเดล bge-m3 ที่ Ollama รันอยู่ในเครื่องคุณ
+                  ด้วยโมเดล bge-m3 ที่ Ollama รันอยู่ในเครื่อง
                   จากนั้นระบบจะเก็บทั้ง <strong>ข้อความต้นฉบับและเวกเตอร์</strong>
                   ลงฐานข้อมูล PostgreSQL — เวกเตอร์ใช้สำหรับค้นหาข้อมูลที่มี
                   ความหมายใกล้เคียงกับคำถามในภายหลัง
@@ -382,7 +372,7 @@ Password: postgres">คัดลอก</button>
     </div>
   </section>
 
-  <div class="partlabel">ขั้นที่ 3 — ลบทิ้งแล้วดูมัน "ลืม"</div>
+  <div class="partlabel">ขั้นที่ 3 — ลบทิ้งแล้วดูว่า chatbot "ไม่รู้จัก" ข้อมูลนั้นแล้ว</div>
 
   <section class="step" id="s5">
     <div class="step__head">
@@ -434,7 +424,7 @@ Password: postgres">คัดลอก</button>
           </span>
         </div>
         
-        <div class="verify">
+        <!-- <div class="verify">
           ✅ <strong>นี่คือ "aha moment" ของทั้งการทดลอง:</strong>
           <br>
           ถ้าคำตอบเปลี่ยนจาก "มีคำตอบละเอียดพร้อมอ้างอิง [1]"
@@ -444,7 +434,19 @@ Password: postgres">คัดลอก</button>
           — เมื่อมีเอกสาร ระบบสามารถค้นพบข้อมูลและนำมาใช้สร้างคำตอบ
           แต่เมื่อลบเอกสารออก ระบบไม่สามารถค้นพบข้อมูลนั้นได้อีก
           และกลับมาปฏิเสธการตอบ
+        </div> -->
+
+        <div class="verify">
+          💡 นี่คือ <strong> จุดที่เห็นภาพการทำงานของ chatbot ชัดที่สุด</strong>
+          <br>
+          ถ้าตอนที่มีเอกสาร ระบบตอบได้ละเอียดและมีอ้างอิง [1]
+          แต่พอลบเอกสารออก คำตอบกลับกลายเป็น "ไม่มีข้อมูล" เหมือนกับตอนเริ่มต้น
+          นั่นแสดงให้เห็นชัดเจนว่า <strong>Retrieval และ no-data guard ของระบบกำลังทำงาน</strong>
+          <br>
+          เมื่อมีเอกสาร ระบบสามารถค้นหาข้อมูลที่เกี่ยวข้องและนำมาใช้ตอบคำถามได้
+          แต่เมื่อไม่มีเอกสาร ระบบก็หาแหล่งข้อมูลไม่เจอ และจะไม่พยายามเดาคำตอบขึ้นมาเอง
         </div>
+
 
         <div class="step__check"><input type="checkbox" id="c6"><label for="c6">คำตอบเปลี่ยนกลับเป็น "ไม่มีข้อมูล" แล้ว</label></div>
     </div>
@@ -508,7 +510,7 @@ Password: postgres">คัดลอก</button>
       </div>
   
       <div class="conceptbox">
-        <h3>💡 คำตอบที่ควรอธิบายได้</h3>
+        <!-- <h3>💡 คำตอบที่ควรอธิบายได้</h3> -->
         <p>
           ก่อนเพิ่ม <code>cat.txt</code> ระบบค้นข้อมูลเกี่ยวกับแมวไม่พบ
           จึงปฏิเสธการตอบ
@@ -533,13 +535,14 @@ Password: postgres">คัดลอก</button>
         </p>
       </div>
   
-    </div>
-  </section>
-
-  <div class="callout">
+    </div>  
+    <div class="callout">
     <span class="callout__label">ทำเสร็จครบแล้ว — ต่อไปคือขั้นที่ 3</span>
     <p>ขั้นต่อไปคือ "ตามรอยคำถาม 1 ข้อในโค้ดจริง" — ใส่ <code>print()</code> ของตัวเองตามจุดสำคัญในโค้ด แล้วดู log จริงตอนถามคำถาม อยู่ใน <a href="step3_trace-question.html">ขั้นที่ 3 — ตามรอยคำถาม</a></p>
   </div>
+  </section>
+
+
 </main>
 
 <footer>

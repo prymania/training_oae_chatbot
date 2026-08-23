@@ -107,6 +107,14 @@
   }
   .cmdblock pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
 
+.cmdblock a {
+  color: #fff;
+}
+
+.cmdblock a:hover {
+  color: #fff;
+}
+
 
   .copy-btn {
     position: absolute; top: 8px; right: 8px;
@@ -192,8 +200,7 @@
       <a class="current">🧰 เตรียมเครื่องพัฒนา (ขั้นที่ 1) · กำลังอ่าน</a>
       <a href="step2_rag-test.html">🧪 ทดสอบ RAG (ขั้นที่ 2)</a>
       <a href="step3_trace-question.html">🧵 ตามรอยคำถาม (ขั้นที่ 3)</a>
-      <a href="step4_line-oa-guide.html">💬 สร้างแชทบอท LINE (ขั้นที่ 4)</a>
-      <a href="step5_system-overview.html">📗 ภาพรวมระบบ (ขั้นที่ 5)</a>
+      <a href="step4_system-overview.html">📗 ภาพรวมระบบ (ขั้นที่ 4)</a>
     </nav>
   </div>
 
@@ -230,8 +237,25 @@
     <div class="step__head">
       <div class="step__badge">0</div>
       <div>
-        <h2>ติดตั้งโปรแกรมที่จำเป็นในการทำงาน</h2>
-        <div class="step__program">โปรแกรม: VS Code (แก้ไฟล์โค้ด) + เครื่องมือจัดการฐานข้อมูล</div>
+        <h2>ติดตั้งโปรแกรมที่จำเป็นในการทำงาน / ลงทะเบียน github</h2>
+        <div class="step__program">โปรแกรม: VS Code (แก้ไฟล์โค้ด) + เครื่องมือจัดการฐานข้อมูล, สมัคร GitHub</div>
+      </div>
+    </div>
+
+    <div class="explain">
+      <div class="explain-row">
+        <span class="icon">📦</span>
+        <span class="txt">
+          <strong>install โปรแกรม และ ลงทะเบียน GitHub:</strong>
+          <span class="sub">
+            <br><br>หมายเหตุ ถ้าเดิมเครื่องมีโปรแกรมเหล่านี้อยู่แล้ว สามารถข้ามขั้นตอนนี้ไปได้เลย  <br>
+            สามารถ serch โปรแกรมเหล่านี้บน google แล้วดาวน์โหลดมาติดตั้งเองได้เช่นกัน แต่แนะนำให้ใช้ winget เพราะสะดวกกว่า <br><br>
+            - <strong>VS Code</strong> (Visual Studio Code) คือโปรแกรมแก้ไขโค้ด (code editor) <br>
+            - <strong>DBeaver</strong> คือโปรแกรมดูและจัดการฐานข้อมูลแบบมีหน้าจอ (GUI) <br>
+            - <strong>GitHub</strong> คือบริการเก็บซอร์สโค้ดบนคลาวด์ — เราจะใช้เก็บโค้ดของตัวเอง และดึงโค้ดโปรเจกต์ OAE Chatbot ลงมา <br>
+            
+          </span>
+        </span>
       </div>
     </div>
 
@@ -271,25 +295,42 @@
           </span>
         </div>
 
+        <div class="cmdblock">
+          <pre><code><a href="https://github.com/signup" target="_blank" rel="noopener">https://github.com/signup</a></code></pre>     
+        </div>
+        
+        <div class="explain">
+          <div class="explain-row">
+            <span class="icon">📦</span>
+            <span class="txt">
+              <strong>ลงทะเบียน github:</strong>
+              <span class="sub">
+                GitHub คือบริการเก็บซอร์สโค้ดบนคลาวด์ — เราจะใช้เก็บโค้ดของตัวเอง และดึงโค้ดโปรเจกต์ OAE Chatbot ลงมา
+                <br>
+                สมัครบัญชีฟรีได้ที่ <a href="https://github.com/signup" target="_blank" rel="noopener">https://github.com/signup</a>
+                <br>
+                
+              </span>
+            </span>
+          </div>
+
+
         <div class="explain-row">
           <span class="icon">🎯</span>
           <span class="txt">
             <strong>ทำไมต้องใช้:</strong>
             <span class="sub">
               โปรเจกต์นี้เก็บข้อมูลใน PostgreSQL (+ pgvector) การมีเครื่องมือดูฐานข้อมูลช่วยให้เช็คได้เองว่า
-              เอกสารที่อัปโหลด/ผู้ใช้/ประวัติแชท ถูกบันทึกลงตารางจริงหรือไม่ โดยไม่ต้องรอถามคนอื่น
+              เอกสารที่อัปโหลด/ผู้ใช้/ประวัติแชท ถูกบันทึกลงตารางจริงหรือไม่ 
             </span>
           </span>
         </div>
       </div>
 
-      <div class="verify">
-        ✅ <strong>เช็ค:</strong> เปิด VS Code ได้ และเปิดโปรแกรมจัดการฐานข้อมูลที่เลือกได้
-      </div>
 
       <div class="step__check">
         <input type="checkbox" id="c0">
-        <label for="c0">ติดตั้ง VS Code และเครื่องมือจัดการฐานข้อมูลแล้ว</label>
+        <label for="c0">เปิดโปรแกรม VSCode, DBeaver ได้ และสมัครบัญชี GitHub เรียบร้อยแล้ว</label>
       </div>
     </div>
   </section>
@@ -798,12 +839,34 @@ uv --version">คัดลอก</button>
       </div>
     </div>
 
+    <div class="explain">
+      <div class="explain-row">
+        <span class="icon">📦</span>
+        <span class="txt">
+          <strong>ลง extension ใน vscode:</strong>
+          <span class="sub">
+
+               extension ที่แนะนำ: <br>
+               - GitHub Pull Requests and Issues<br>
+               - Gitflow<br>
+            <br> extension ตัวนี้ช่วยให้เราดึงโค้ดจาก GitHub มาไว้ในเครื่องได้ง่ายขึ้น
+            <br> จากนั้นใช้คำสั่ง <code>git clone</code> ใน terminal ของ VS Code เพื่อดึงโปรเจกต์ OAE Chatbot ลงมา
+          </span>
+        </span>
+      </div>    
+
+          </span>
+        </span>
+      </div>
+    </div>
+
+
     <div class="step__body">
       <div class="cmdblock">
         <pre><code>git clone https://github.com/prymania/oae_chatbot.git
-cd oae-chatbot</code></pre>
+cd oae_chatbot</code></pre>
         <button class="copy-btn" data-copy="git clone https://github.com/prymania/oae_chatbot.git
-cd oae-chatbot">คัดลอก</button>
+cd oae_chatbot">คัดลอก</button>
       </div>
 
       <div class="explain">
@@ -814,7 +877,7 @@ cd oae-chatbot">คัดลอก</button>
             <span class="sub">
               <code>git clone</code> จะดึงซอร์สโค้ดของโปรเจกต์จาก GitHub
               มาไว้ในเครื่อง พร้อมประวัติการแก้ไขของ Git
-              ส่วน <code>cd</code> ใช้สำหรับเข้าไปในโฟลเดอร์ของโปรเจกต์
+              <br> ส่วน <code>cd</code> ใช้สำหรับเข้าไปในโฟลเดอร์ของโปรเจกต์
             </span>
           </span>
         </div>
@@ -838,10 +901,8 @@ cd oae-chatbot">คัดลอก</button>
 
     <div class="step__body">
       <div class="cmdblock">
-        <pre><code>copy .env.example .env
-notepad .env</code></pre>
-        <button class="copy-btn" data-copy="copy .env.example .env
-notepad .env">คัดลอก</button>
+        <pre><code>copy .env.example .env </code></pre>
+        <button class="copy-btn" data-copy="copy .env.example .env">คัดลอก</button>
       </div>
 
       <div class="explain">
@@ -853,7 +914,7 @@ notepad .env">คัดลอก</button>
               <code>.env.example</code> เป็นไฟล์ตัวอย่างที่เตรียมค่าไว้ให้
               แต่ไม่มี API Key จริง
               คำสั่ง <code>copy</code> จะสร้างไฟล์ <code>.env</code> จากไฟล์ตัวอย่าง
-              แล้ว <code>notepad .env</code> จะเปิดไฟล์ให้เราแก้ไข
+              จากนั้น เปิดไฟล์  <code>.env</code> เพื่อแก้ไขข้อมูล
             </span>
           </span>
         </div>
@@ -976,10 +1037,14 @@ DEEPSEEK_API_KEY=sk-0f77d39006ac487b904cb26537551438">คัดลอก</button
         ถ้าเห็นหน้าแชท แสดงว่าระบบพร้อมใช้งานแล้ว
       </div>
 
-      <div class="cmdblock">
+      <!-- <div class="cmdblock">
         <pre><code>http://localhost:8000</code></pre>
         <button class="copy-btn" data-copy="http://localhost:8000">คัดลอก</button>
-      </div>
+      </div> -->
+              <div class="cmdblock">
+                <pre><code><a href="http://localhost:8000" target="_blank" rel="noopener">http://localhost:8000</a></code></pre>
+              </div>
+
 
       <div class="step__check">
         <input type="checkbox" id="c12">

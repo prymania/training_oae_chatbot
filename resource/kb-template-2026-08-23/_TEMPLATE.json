@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "generated_at": "2026-08-23T13:40:09+00:00",
+  "domains": [
+    {
+      "folder": "เนื้อโค",
+      "domain_id": "beef",
+      "label": "เนื้อโค",
+      "subdomains": {}
+    },
+    {
+      "folder": "ไก่",
+      "domain_id": "chicken",
+      "label": "ไก่",
+      "subdomains": {}
+    },
+    {
+      "folder": "โค",
+      "domain_id": "cow",
+      "label": "โค",
+      "subdomains": {}
+    },
+    {
+      "folder": "ทุเรียน",
+      "domain_id": "durian",
+      "label": "ทุเรียน",
+      "subdomains": {}
+    },
+    {
+      "folder": "OAE สศก",
+      "domain_id": "oae",
+      "label": "OAE / สศก.",
+      "subdomains": {}
+    },
+    {
+      "folder": "ปาล์มน้ำมัน",
+      "domain_id": "palm_oil",
+      "label": "ปาล์มน้ำมัน",
+      "subdomains": {
+        "การจัดการฟาร์ม": "การจัดการฟาร์ม",
+        "การตลาด": "การตลาด",
+        "ความเสี่ยง": "ความเสี่ยง",
+        "ผลผลิต": "ผลผลิต",
+        "ทั่วไป": "ทั่วไป"
+      }
+    },
+    {
+      "folder": "ข้าว",
+      "domain_id": "rice",
+      "label": "ข้าว",
+      "subdomains": {}
+    },
+    {
+      "folder": "กุ้ง",
+      "domain_id": "shrimp",
+      "label": "กุ้ง",
+      "subdomains": {}
+    },
+    {
+      "folder": "สุกร",
+      "domain_id": "swine",
+      "label": "สุกร",
+      "subdomains": {}
+    },
+    {
+      "folder": "แมว",
+      "domain_id": "cat",
+      "label": "แมว",
+      "subdomains": {
+        "ทั่วไป": "ทั่วไป"
+      }
+    }
+  ]
+}
