@@ -19,6 +19,9 @@
     --danger: #b3261e;
     --danger-soft: #fbe4e2;
     --danger-soft-line: #eab3ac;
+    --code-bg: #10231a;
+    --code-ink: #d9ead9;
+    --code-accent: #7fd7a0;
     --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
     --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
     --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
@@ -44,6 +47,9 @@
       --danger: #ff8a80;
       --danger-soft: #331715;
       --danger-soft-line: #6b2b26;
+      --code-bg: #0b1710;
+      --code-ink: #cfe6d2;
+      --code-accent: #8fe0ab;
       --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
     }
   }
@@ -66,6 +72,9 @@
     --danger: #ff8a80;
     --danger-soft: #331715;
     --danger-soft-line: #6b2b26;
+    --code-bg: #0b1710;
+    --code-ink: #cfe6d2;
+    --code-accent: #8fe0ab;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
   }
 
@@ -241,6 +250,12 @@
     border-radius: 4px;
     padding: 0.05em 0.4em;
   }
+
+  .codeblock {
+    background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 14px 16px;
+    overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; margin: 10px 0; box-shadow: var(--shadow);
+  }
+  .codeblock code { background: none; border: none; padding: 0; color: inherit; }
 
   /* ── Callouts ────────────────────────────────────────────────────────── */
   .callout {
@@ -437,6 +452,28 @@
     <!-- ══════════════════ LOGIN & ROLES ══════════════════ -->
     <section class="section" id="login">
       <div class="section-head"><h2>เข้าสู่ระบบผู้ดูแล และบทบาทผู้ใช้งาน</h2></div>
+
+      <div class="callout callout--warn">
+        <span class="callout__label">ก่อนเริ่มพาร์ท 2 — เตรียมเครื่องให้พร้อมก่อน</span>
+        <p>หัวข้อนี้เป็นจุดเริ่มต้นของการอบรม<strong>ฝั่งผู้ดูแลระบบหลังบ้าน</strong> ซึ่งมีฟังก์ชันเพิ่มเติมจากที่สอนในพาร์ท 1 — ก่อนเข้าสู่ระบบ ต้องเตรียมเครื่อง 3 ขั้นตอนนี้ให้เรียบร้อยก่อน:</p>
+        <ol>
+          <li>
+            <strong>ตรวจสอบสิทธิ์เข้า Git ก่อน</strong> — repo ที่ใช้ในพาร์ท 2 (<code>oae_chatbot_day2</code>) เป็น repo ส่วนตัว เปิดให้เฉพาะผู้ที่เกี่ยวข้องเท่านั้น ถ้ายังไม่ได้รับเชิญเข้า repo นี้ ให้แจ้งผู้จัดอบรมก่อนเริ่ม (ไม่งั้น <code>git clone</code> ในข้อ 3 จะขึ้น permission denied)
+          </li>
+          <li>
+            <strong>ปิดระบบของพาร์ท 1 ให้หมดก่อน</strong> — เปิด terminal ที่โฟลเดอร์โปรเจกต์ของพาร์ท 1 แล้วรัน:
+            <div class="codeblock"><pre><code>docker compose down -v</code></pre></div>
+            <p>คำสั่งนี้ปิด container ทั้งหมดของพาร์ท 1 <strong>และลบข้อมูลที่เคยฝึกไว้ทิ้งไปด้วย</strong> (ตัวเลือก <code>-v</code> = ลบ volume/ฐานข้อมูลด้วย ไม่ใช่แค่ปิดเฉย ๆ) — ทำเพื่อเคลียร์เครื่องให้พร้อมรับระบบชุดใหม่ของพาร์ท 2 ไม่ให้พอร์ตชนกันหรือข้อมูลปนกัน</p>
+          </li>
+          <li>
+            <strong>ดึงโปรเจกต์ของพาร์ท 2 มาไว้ในเครื่อง</strong>:
+            <div class="codeblock"><pre><code>git clone https://github.com/prymania/oae_chatbot_day2.git</code></pre></div>
+            <p>แล้วเปิดใช้งานตามขั้นตอนเดียวกับพาร์ท 1 ขั้นที่ 1 (คัดลอก <code>.env.example</code> เป็น <code>.env</code> แล้ว <code>docker compose up -d</code>) — ถ้าจำขั้นตอนไม่ได้ ย้อนกลับไปดูที่ <a href="../part1/step1_setup-full.html">พาร์ท 1 ขั้นที่ 1</a> ได้</p>
+          </li>
+        </ol>
+        <p>ทำครบ 3 ข้อนี้แล้วจึงเปิดเบราว์เซอร์ไปที่ <code>/admin</code> ตามขั้นตอนด้านล่างได้เลย</p>
+      </div>
+
       <div class="prose">
         <p>เปิดเบราว์เซอร์ไปที่ที่อยู่ของระบบ ต่อท้ายด้วย <code>/admin</code> (เช่นตอนพัฒนา/ทดสอบในเครื่องคือ <code>http://localhost:8000/admin</code>) จะเจอหน้าจอ "ระบบผู้ดูแล" ให้กรอก <strong>ชื่อผู้ใช้</strong> และ <strong>รหัสผ่าน</strong> ที่ผู้ดูแลระบบตั้งให้ แล้วกด "เข้าสู่ระบบ"</p>
         <p>เมื่อเข้าสู่ระบบสำเร็จ จะเห็นเมนูด้านซ้าย 4 หมวด (ภาพรวม / คลังความรู้ / การใช้งาน / ระบบ) ที่มุมล่างซ้ายจะมีจำนวน "ชิ้นข้อมูล" ทั้งหมดในฐานความรู้ ชื่อผู้ใช้ปัจจุบัน บทบาท และปุ่ม "ออกจากระบบ"</p>
@@ -754,6 +791,18 @@
         <div class="prose">
           <p>เมนูสำหรับเชื่อมต่อ "แหล่งข้อมูลสด" ภายนอก (เช่น ราคาสินค้า พยากรณ์อากาศ ระดับน้ำ) ให้บอทเรียกใช้ระหว่างคุยกับผู้ใช้ได้ — เพิ่มลิงก์เองทีละรายการ หรือให้ระบบ "ตรวจลิงก์" จากโดเมนหลักแล้วเสนอบริการย่อยที่พบให้เลือกรับเข้าระบบทีเดียวหลายรายการ</p>
           <p>เมื่อกด "ตั้งค่าแชท" ที่ลิงก์ใดลิงก์หนึ่ง จะเปิด "แผงตั้งค่าเครื่องมือ" ให้ทดสอบยิงเรียก API จริง ("ยิงดูข้อมูลจริง") ดูตัวอย่างผลลัพธ์ แล้วเลือกรูปแบบการ์ดที่จะโชว์ในแชท (กราฟ/ตัวเลข/ตาราง/แผนที่/GUI ที่ AI วาดให้/ข้อความ) ก่อนกด "เปิดในแชท" เพื่อให้บอทเรียกใช้ได้จริง</p>
+          <p>ตัวอย่าง API สาธารณะที่ใช้งานฟรี ไม่ต้องสมัครสมาชิกหรือขอ API key —ลองเพิ่มฝึกใช้เมนูนี้ได้:</p>
+        </div>
+
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>API ตัวอย่าง</th><th>Base URL</th><th>ใช้ทำอะไร</th><th>ตัวอย่างคำถามทดสอบ</th></tr></thead>
+            <tbody>
+              <tr><td>🌤️ Open-Meteo</td><td><code>https://api.open-meteo.com/v1/forecast</code></td><td>พยากรณ์อากาศรายชั่วโมง</td><td>"ตอนนี้มหาสารคามอุณหภูมิเท่าไหร่?"</td></tr>
+              <tr><td>💱 Frankfurter</td><td><code>https://frankfurter.dev/</code></td><td>อัตราแลกเปลี่ยนเงินตราต่างประเทศ</td><td>"100 ดอลลาร์เป็นเงินบาทเท่าไหร่?"</td></tr>
+              <tr><td>🧬 GBIF</td><td><code>https://api.gbif.org/v1/species/</code></td><td>ข้อมูลสปีชีย์ (อนุกรมวิธานสิ่งมีชีวิต)</td><td>"Oryza sativa คืออะไร?"</td></tr>
+            </tbody>
+          </table>
         </div>
         <div class="callout callout--danger">
           <span class="callout__label">ข้อควรระวังสำคัญ</span>
