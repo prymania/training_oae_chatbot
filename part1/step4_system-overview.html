@@ -486,15 +486,14 @@
     <ul>
       <li><a href="#overview">ภาพรวมแนวคิดการทำงาน</a></li>
     </ul>
-    <h3>1 · แนวคิดการทำงาน</h3>
+    <h3>แนวคิดการทำงาน</h3>
     <ul>
-      <li><a href="#concept-rag">RAG คืออะไร</a></li>
-      <li><a href="#concept-arch">สถาปัตยกรรมระบบ</a></li>
-      <li><a href="#concept-models">เบื้องหลัง 3 เทคโนโลยีที่ใช้</a></li>
-      <li><a href="#concept-flow">ขั้นตอนตอบคำถาม</a></li>
-      <li><a href="#concept-ingest">ขั้นตอนนำเข้าข้อมูล</a></li>
-      <li><a href="#concept-auth">ระบบผู้ใช้และสิทธิ์</a></li>
-      <li><a href="#concept-extra">ระบบเสริมรอบข้าง</a></li>
+      <li><a href="#concept-rag">1 · RAG คืออะไร</a></li>
+      <li><a href="#concept-arch">2 · สถาปัตยกรรมระบบ</a></li>
+      <li><a href="#concept-models">3 · เบื้องหลัง 3 เทคโนโลยีที่ใช้</a></li>
+      <li><a href="#concept-flow">4 · ขั้นตอนตอบคำถาม</a></li>
+      <li><a href="#concept-ingest">5 · ขั้นตอนนำเข้าข้อมูล</a></li>
+      <li><a href="#concept-auth">6 · ระบบผู้ใช้และสิทธิ์</a></li>
     </ul>
     <h3>ภาคผนวก</h3>
     <ul>
@@ -517,7 +516,7 @@
       <a href="step1_setup-full.html">🧰 เตรียมเครื่องพัฒนา (ขั้นที่ 1)</a>
       <a href="step2_rag-test.html">🧪 ทดสอบ RAG (ขั้นที่ 2)</a>
       <a href="step3_trace-question.html">🧵 ตามรอยคำถาม (ขั้นที่ 3) </a>
-      <a class="current" ">📗 ภาพรวมระบบ (ขั้นที่ 4) · กำลังอ่าน</a>
+      <a class="current">📗 ภาพรวมระบบ (ขั้นที่ 4) · กำลังอ่าน</a>
     </nav>
       <dl class="hero__facts">
         <div class="hero__fact"><dt>ประเภทระบบ</dt><dd>RAG Chatbot (Retrieval-Augmented Generation)</dd></div>
@@ -531,7 +530,7 @@
 
     <!-- ══════════════════ SECTION 1 ══════════════════ -->
     <section class="section" id="concept-rag">
-      <div class="section-head"><span class="section-num">1.1</span><h2>แนวคิดการทำงาน: RAG คืออะไร</h2></div>
+      <div class="section-head"><span class="section-num">1</span><h2>แนวคิดการทำงาน: RAG คืออะไร</h2></div>
       <div class="prose">
         <p>
           ปัญหาของแชทบอท AI ทั่วไป (เช่น ChatGPT แบบเปล่า ๆ) คือมันตอบจาก
@@ -556,7 +555,7 @@
     </section>
 
     <section class="section" id="concept-arch">
-      <div class="section-head"><span class="section-num">1.2</span><h2>สถาปัตยกรรมระบบโดยรวม</h2></div>
+      <div class="section-head"><span class="section-num">2</span><h2>สถาปัตยกรรมระบบโดยรวม</h2></div>
       <p class="dek">ระบบประกอบด้วย 5 ส่วนหลักที่ทำงานร่วมกัน — ผู้ใช้ไม่เห็นความซับซ้อนนี้ เห็นแค่หน้าแชท</p>
 
       <div class="diagram-frame">
@@ -645,12 +644,12 @@
     </section>
 
     <section class="section" id="concept-models">
-      <div class="section-head"><span class="section-num">1.3</span><h2>เบื้องหลังการทำงาน: 3 เทคโนโลยี</h2></div>
+      <div class="section-head"><span class="section-num">3</span><h2>เบื้องหลังการทำงาน: 3 เทคโนโลยี</h2></div>
       <p class="dek">ระบบใช้โมเดล/บริการภายนอก 3 ตัวเป็นแกนหลัก — แต่ละตัวรับผิดชอบงานคนละอย่าง  ด้านล่างคือตัวอย่างจริงว่าแต่ละตัว "รับอะไรเข้า" และ "ส่งอะไรออก"</p>
 
       <div class="modelblock">
         <div class="modelblock__head"><div class="modelblock__badge">1</div><h3>Typhoon OCR — อ่านตัวอักษรจากไฟล์ PDF ที่เป็นภาพสแกน</h3></div>
-        <div class="modelblock__tool">ใช้ตอนนำเข้าเอกสาร (ดูหัวข้อ 1.5) — โมเดล OCR ภาษาไทยที่เรียกผ่าน Typhoon API</div>
+        <div class="modelblock__tool">ใช้ตอนนำเข้าเอกสาร (ดูหัวข้อ 5) — โมเดล OCR ภาษาไทยที่เรียกผ่าน Typhoon API</div>
         <div class="prose">
           <p>เอกสารราชการจำนวนมากเป็นไฟล์สแกน (รูปภาพ) ไม่ใช่ข้อความที่คัดลอกได้ตรง ๆ Typhoon OCR ทำหน้าที่ "อ่าน" ตัวอักษรไทยในภาพแล้วแปลงเป็นข้อความปกติ ก่อนที่ระบบจะนำไปตัดเป็นชิ้นย่อยและสร้างเวกเตอร์ในขั้นถัดไป</p>
         </div>
@@ -741,14 +740,65 @@
           <p class="threshold-caption"><span class="tick"></span>เส้นประ = คะแนนขั้นต่ำที่ยอมรับ (<code>RETRIEVE_MIN_SCORE = 0.35</code>) — ทั้ง 3 รายการต่ำกว่าเกณฑ์มาก เพราะคลังความรู้ไม่มีเรื่องนี้เลย</p>
           <div class="callout callout--warn">
             <span class="callout__label">คำตอบที่ระบบให้</span>
-            <p>"ขออภัย ไม่พบข้อมูลเรื่องนี้ในเอกสารที่มี ระบบมีข้อมูลเฉพาะด้านเศรษฐกิจการเกษตรเท่านั้น" — coverage = <code>none</code> ระบบตอบข้อความสำเร็จรูปทันที <strong>โดยไม่เรียก DeepSeek มาเดาคำตอบ</strong> (กลไกป้องกัน hallucination เดียวกับที่กล่าวถึงในหัวข้อ 1.4)</p>
+            <p>"ขออภัย ไม่พบข้อมูลเรื่องนี้ในเอกสารที่มี ระบบมีข้อมูลเฉพาะด้านเศรษฐกิจการเกษตรเท่านั้น" — coverage = <code>none</code> ระบบตอบข้อความสำเร็จรูปทันที <strong>โดยไม่เรียก DeepSeek มาเดาคำตอบ</strong> (กลไกป้องกัน hallucination เดียวกับที่กล่าวถึงในหัวข้อ 4)</p>
           </div>
+        </div>
+
+        <div class="prose">
+          <p><strong>ตัวอย่างที่ 3 — ถามเป็นภาษาอังกฤษ:</strong> คลังความรู้เก็บเอกสารเป็นภาษาไทยล้วน แต่ระบบยังตอบคำถามภาษาอังกฤษได้ถูกต้อง — ความสามารถนี้<strong>ไม่ใช่ของ DeepSeek อย่างเดียว</strong> แต่เป็นการทำงานร่วมกันของ 2 โมเดลคนละตัว คนละหน้าที่</p>
+        </div>
+
+        <div class="qaflow">
+          <p class="qaflow__q"><span class="qmark">?</span> คำถาม: "How to plant palm oil tree?"</p>
+          <div class="qaflow__steps">
+            <div class="qaflow__step"><h5>① [ทางเลือก] ขยายคำค้นหา</h5><div class="v">DeepSeek แตกคำถามเป็นคำค้นหาย่อยภาษาไทยเพิ่ม</div></div>
+            <div class="qaflow__sep">→</div>
+            <div class="qaflow__step"><h5>② แปลงเป็นเวกเตอร์</h5><div class="v">bge-m3 (Ollama) — ส่งข้อความอังกฤษเข้าตรง ๆ ไม่แปลภาษา</div></div>
+            <div class="qaflow__sep">→</div>
+            <div class="qaflow__step"><h5>③ ค้นใน pgvector</h5><div class="v">เทียบกับเวกเตอร์เอกสารไทยทุกชิ้นในคลังความรู้</div></div>
+            <div class="qaflow__sep">→</div>
+            <div class="qaflow__step"><h5>④ DeepSeek เรียบเรียง</h5><div class="v">อ่านเอกสารไทยที่เจอ ตอบกลับเป็นภาษาอังกฤษ</div></div>
+          </div>
+          <div class="hitlist">
+            <div class="hitrow"><div class="hitrow__rank">1</div><div class="hitrow__text">"...ระยะปลูกปาล์มน้ำมันที่เหมาะสมคือ 9×9 เมตร แบบสามเหลี่ยมด้านเท่า เตรียมหลุมปลูกขนาด 45×45×45 ซม..."</div><div class="hitrow__score"><span class="n">0.81</span><div class="scorebar"><div class="scorebar__fill" style="width:81%"></div><div class="scorebar__threshold"></div></div></div></div>
+            <div class="hitrow"><div class="hitrow__rank">2</div><div class="hitrow__text">"...การเตรียมดินก่อนปลูกปาล์มน้ำมัน ควรไถพรวนและใส่ปุ๋ยรองพื้นเพื่อปรับปรุงโครงสร้างดิน..."</div><div class="hitrow__score"><span class="n">0.76</span><div class="scorebar"><div class="scorebar__fill" style="width:76%"></div><div class="scorebar__threshold"></div></div></div></div>
+            <div class="hitrow"><div class="hitrow__rank">3</div><div class="hitrow__text">"...ต้นกล้าปาล์มน้ำมันที่พร้อมปลูกจริงต้องมีอายุ 10–12 เดือนจากการเพาะชำ..."</div><div class="hitrow__score"><span class="n">0.71</span><div class="scorebar"><div class="scorebar__fill" style="width:71%"></div><div class="scorebar__threshold"></div></div></div></div>
+          </div>
+          <p class="threshold-caption"><span class="tick"></span>สังเกต: คะแนนต่ำกว่าตัวอย่าง "หมูมีกี่ขา" เล็กน้อย (0.71–0.81 เทียบกับ 0.79–0.87) — ปกติของการค้นข้ามภาษา ยังผ่านเกณฑ์ 0.35 สบาย ๆ</p>
+          <div class="callout">
+            <span class="callout__label">คำตอบที่ DeepSeek เรียบเรียง (ภาษาอังกฤษ)</span>
+            <p>"To plant oil palm trees, use a spacing of about 9×9 meters in a triangular pattern, with planting holes around 45×45×45 cm. Prepare the soil beforehand with plowing and base fertilizer, and use seedlings that are 10–12 months old and ready for field planting. [1][2][3]"</p>
+          </div>
+        </div>
+
+        <div class="prose">
+          <h4>โฟลว์เต็ม แยกทีละขั้น (อ้างอิงโค้ดจริง)</h4>
+          <p><strong>① ขยายคำค้นหา</strong> — <code>app/services/rag.py:99</code> (<code>expand_query()</code>, DeepSeek) — ก่อนค้นหา DeepSeek จะช่วยแตกคำถามเป็นคำค้นหาย่อยเพิ่มเติม system prompt ที่ใช้เขียนเป็นภาษาไทยล้วนพร้อมตัวอย่าง (few-shot) เป็นภาษาไทย — ผลคือ DeepSeek มักจะสร้างคำค้นหาย่อยเป็นภาษาไทยออกมา ถึงแม้คำถามต้นทางจะเป็นอังกฤษ ข้อนี้ช่วยให้การค้นหาแม่นขึ้นทางอ้อม เพราะได้คำค้นหาภาษาเดียวกับเอกสารมาช่วยด้วย</p>
+          <p><strong>② แปลงเป็นเวกเตอร์</strong> — <code>app/services/embedding.py:19</code> (<code>embed_query()</code>, bge-m3/Ollama — <strong>ไม่ใช่ DeepSeek</strong>) — นี่คือจุดสำคัญที่สุดของความสามารถข้ามภาษา ฟังก์ชันนี้ส่งข้อความ (ไม่ว่าภาษาไหน) เข้า bge-m3 ตรง ๆ <strong>ไม่มีการแปลภาษาเลยสักขั้น</strong> bge-m3 เป็นโมเดล embedding แบบ multilingual (รองรับกว่า 100 ภาษารวมไทย-อังกฤษ) ถูกฝึกมาให้ "ประโยคที่ความหมายเหมือนกัน ไม่ว่าจะเขียนภาษาไหน จะถูกแปลงเป็นเวกเตอร์ที่อยู่ใกล้กันในปริภูมิเดียวกัน" เช่น "rice price" กับ "ราคาข้าว" จะได้เวกเตอร์ใกล้เคียงกันมาก แม้ไม่เคยแปลข้อความให้กันเลย — ความสามารถข้ามภาษาตัวจริงมาจากตรงนี้ ซึ่งเป็นของ bge-m3/Ollama ไม่ใช่ DeepSeek</p>
+          <p><strong>③ ค้นหาเอกสาร</strong> — pgvector cosine search (<strong>ไม่มี LLM เกี่ยวข้องในขั้นนี้</strong>) — นำเวกเตอร์จากขั้น ② ไปเทียบระยะห่างกับเวกเตอร์ของทุกชิ้นเอกสารไทยในฐานข้อมูล (ซึ่งถูกฝังด้วย bge-m3 ตัวเดียวกันตอนนำเข้าเอกสาร) แล้วดึงชิ้นที่ใกล้ที่สุดออกมา</p>
+          <p><strong>④ สร้างคำตอบ</strong> — <code>SYSTEM_PROMPT</code> ใน <code>app/config.py</code> (DeepSeek) — DeepSeek ได้รับคำถามอังกฤษต้นฉบับ + เนื้อหาชิ้นเอกสารภาษาไทยที่ค้นเจอ system prompt สั่งไว้ชัดเจนว่า "ใช้ภาษาไทยหรือภาษาอังกฤษตามภาษาของคำถาม" — DeepSeek เป็น LLM ที่เข้าใจได้หลายภาษาอยู่แล้ว จึงอ่านบริบทภาษาไทย แล้วเรียบเรียงคำตอบเป็นภาษาอังกฤษให้ตรงกับภาษาคำถามได้ พร้อมอ้างอิงแหล่งที่มาเดิม (ที่เป็นภาษาไทย)</p>
+        </div>
+
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>ความสามารถ</th><th>โมเดลที่รับผิดชอบ</th></tr></thead>
+            <tbody>
+              <tr><td>หาเอกสารไทยเจอจากคำถามอังกฤษ (การ "เข้าใจข้ามภาษา" ตัวจริง)</td><td><strong>bge-m3</strong> (Ollama)</td></tr>
+              <tr><td>แตกคำถามเป็นคำค้นหาย่อยภาษาไทยช่วยเสริมการค้นหา</td><td>DeepSeek</td></tr>
+              <tr><td>อ่านเนื้อหาไทย เรียบเรียงเป็นคำตอบอังกฤษ</td><td>DeepSeek</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout--warn">
+          <span class="callout__label">พูดให้ชัด</span>
+          <p>ถ้าไม่มี bge-m3 (หรือใช้ embedding model ที่ไม่ multilingual) ต่อให้ DeepSeek เก่งแค่ไหนก็<strong>หาเอกสารไทยที่ถูกต้องจากคำถามอังกฤษไม่เจอตั้งแต่ขั้นตอนค้นหา</strong> — DeepSeek ทำหน้าที่แค่ปลายทางคือ "อ่านสิ่งที่หาเจอแล้วมาเรียบเรียงคำตอบ" เท่านั้น ไม่ใช่ผู้ที่ทำให้ค้นเจอตั้งแต่แรก</p>
         </div>
       </div>
     </section>
 
     <section class="section" id="concept-flow">
-      <div class="section-head"><span class="section-num">1.4</span><h2>ขั้นตอนการทำงานเมื่อผู้ใช้ถามคำถาม</h2></div>
+      <div class="section-head"><span class="section-num">4</span><h2>ขั้นตอนการทำงานเมื่อผู้ใช้ถามคำถาม</h2></div>
       <p class="dek">นี่คือหัวใจของระบบ (<code>app/services/rag.py</code>, <code>app/routers/chat.py</code>) — คำถาม 1 ข้อ ผ่านกี่ขั้นตอนกว่าจะกลายเป็นคำตอบ</p>
 
       <div class="diagram-frame">
@@ -847,7 +897,7 @@
     </section>
 
     <section class="section" id="concept-ingest">
-      <div class="section-head"><span class="section-num">1.5</span><h2>ขั้นตอนการนำเข้าข้อมูลเข้าคลังความรู้ (Ingestion)</h2></div>
+      <div class="section-head"><span class="section-num">5</span><h2>ขั้นตอนการนำเข้าข้อมูลเข้าคลังความรู้ (Ingestion)</h2></div>
       <p class="dek">ก่อนแชทบอทจะตอบอะไรได้ ต้อง "ป้อน" เอกสารเข้าระบบก่อน — สคริปต์หลักคือ <code>scripts/batch_ingest.py</code></p>
       <div class="prose">
         <ol>
@@ -867,7 +917,7 @@
     </section>
 
     <section class="section" id="concept-auth">
-      <div class="section-head"><span class="section-num">1.6</span><h2>ระบบผู้ใช้งานและสิทธิ์การเข้าถึง</h2></div>
+      <div class="section-head"><span class="section-num">6</span><h2>ระบบผู้ใช้งานและสิทธิ์การเข้าถึง</h2></div>
       <div class="cardgrid">
         <div class="card"><h4>👤 ผู้ใช้ทั่วไป (Guest)</h4><p>เข้าใช้แชทได้ทันทีไม่ต้องสมัคร ระบุตัวตนด้วย UUID ชั่วคราว บทสนทนาเก็บแบบ sliding window (10 ข้อความล่าสุด)</p></div>
         <div class="card"><h4>🔐 ผู้ใช้ลงทะเบียน</h4><p>สมัครด้วยอีเมล + รหัส OTP 6 หลัก (ส่งผ่าน SMTP) เข้าสู่ระบบด้วยอีเมล/รหัสผ่าน ยืนยันตัวตนด้วย JWT (หมดอายุ 8 ชม.) ประวัติแชทถูกบันทึกถาวร</p></div>
@@ -879,21 +929,6 @@
       </div>
     </section>
 
-    <section class="section" id="concept-extra">
-      <div class="section-head"><span class="section-num">1.7</span><h2>ระบบเสริมรอบข้าง</h2></div>
-      <div class="prose">
-        <p>นอกจากแชทหลัก ระบบยังมีชั้นข้อมูลและหน้าจอเพิ่มเติมที่สร้างมูลค่าให้หน่วยงาน:</p>
-        <ul>
-          <li><strong>API สาธารณะ (<code>/api/v1</code>)</strong> — ให้หน่วยงาน/นักพัฒนาภายนอกดึงข้อมูลราคาสินค้า สถิติ และผลตอบคำถามผ่าน API มาตรฐาน มีระบบกุญแจ API และจำกัดอัตราการเรียก</li>
-          <li><strong>พอร์ทัลข้อมูล (<code>/portal</code>)</strong> — หน้าแสดงราคาสินค้าสด ความลึกของคลังความรู้ และลิงก์ต่อไปยังแชทโดยตรง</li>
-          <li><strong>แดชบอร์ดผู้บริหาร (<code>/dashboard</code>)</strong> — สรุปตัวชี้วัดตามมิติการตัดสินใจ (การผลิต/ตลาด/ความเสี่ยง/การเงิน/ฟาร์ม) แนวโน้ม 30 วัน และช่องว่างของข้อมูล</li>
-          <li><strong>แบบสำรวจความพึงพอใจ (<code>/survey</code>)</strong> — เก็บความคิดเห็นผู้ใช้ แยกอัตโนมัติว่ามาจากเว็บหรือ LINE</li>
-          <li><strong>เว็บผลการทดสอบ (Benchmarks)</strong> — เว็บไซต์แยกที่สรุปผลทดสอบคุณภาพคำตอบ (150 คำถามต่อหมวดสินค้า) เผยแพร่ที่ OAE-chatbot-benchmarks.netlify.app</li>
-        </ul>
-      </div>
-    </section>
-
-    
     <!-- ══════════════════ GLOSSARY ══════════════════ -->
     <section class="section" id="glossary">
       <div class="section-head"><span class="section-num">A</span><h2>ภาคผนวก: คำศัพท์เทคนิคที่ควรรู้</h2></div>

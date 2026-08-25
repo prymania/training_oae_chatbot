@@ -1,0 +1,901 @@
+<title>คู่มือดูแลระบบหลังบ้าน (Admin) — OAE Chatbot</title>
+<style>
+  :root {
+    --bg: #f6f8f3;
+    --surface: #ffffff;
+    --surface-2: #eef2ea;
+    --ink: #17211a;
+    --ink-muted: #4c5a4f;
+    --ink-faint: #7c8a7d;
+    --line: #dee6da;
+    --line-strong: #c4d0bf;
+    --accent: #266448;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2efe4;
+    --accent-soft-line: #bcdac4;
+    --warn: #9a5a12;
+    --warn-soft: #fbeedc;
+    --warn-soft-line: #ecc98b;
+    --danger: #b3261e;
+    --danger-soft: #fbe4e2;
+    --danger-soft-line: #eab3ac;
+    --code-bg: #10231a;
+    --code-ink: #d9ead9;
+    --code-accent: #7fd7a0;
+    --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
+    --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f;
+      --surface: #161f16;
+      --surface-2: #1c261b;
+      --ink: #e7ede4;
+      --ink-muted: #a7b6a5;
+      --ink-faint: #758574;
+      --line: #2b352a;
+      --line-strong: #3a463790;
+      --accent: #6fc492;
+      --accent-ink: #0c1a10;
+      --accent-soft: #1c2e21;
+      --accent-soft-line: #2f4a37;
+      --warn: #e3a763;
+      --warn-soft: #2e2314;
+      --warn-soft-line: #5a4322;
+      --danger: #ff8a80;
+      --danger-soft: #331715;
+      --danger-soft-line: #6b2b26;
+      --code-bg: #0b1710;
+      --code-ink: #cfe6d2;
+      --code-accent: #8fe0ab;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f;
+    --surface: #161f16;
+    --surface-2: #1c261b;
+    --ink: #e7ede4;
+    --ink-muted: #a7b6a5;
+    --ink-faint: #758574;
+    --line: #2b352a;
+    --line-strong: #3a463790;
+    --accent: #6fc492;
+    --accent-ink: #0c1a10;
+    --accent-soft: #1c2e21;
+    --accent-soft-line: #2f4a37;
+    --warn: #e3a763;
+    --warn-soft: #2e2314;
+    --warn-soft-line: #5a4322;
+    --danger: #ff8a80;
+    --danger-soft: #331715;
+    --danger-soft-line: #6b2b26;
+    --code-bg: #0b1710;
+    --code-ink: #cfe6d2;
+    --code-accent: #8fe0ab;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); }
+  a:hover { text-decoration-thickness: 2px; }
+  a:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 700; color: var(--ink); }
+  p { text-wrap: pretty; }
+
+  /* ── Top bar ─────────────────────────────────────────────────────────── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .topbar__mark {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: grid; place-items: center;
+    font-size: 17px;
+    flex: none;
+  }
+  .topbar__title { font-weight: 700; font-size: 15px; letter-spacing: 0.01em; }
+  .topbar__sub { font-size: 12.5px; color: var(--ink-faint); }
+  .topbar__meta {
+    margin-inline-start: auto;
+    display: flex; gap: 8px; flex-wrap: wrap;
+    align-items: center;
+    font-size: 12px; color: var(--ink-muted);
+  }
+  .pill {
+    border: 1px solid var(--line-strong);
+    background: var(--surface-2);
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .topbar__back {
+    font-size: 12.6px; font-weight: 600; color: var(--ink-muted); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px;
+  }
+  .topbar__back:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Shell / sidebar ─────────────────────────────────────────────────── */
+  .shell {
+    display: grid;
+    grid-template-columns: 258px minmax(0, 1fr);
+    gap: 0;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  .sidenav {
+    position: sticky;
+    top: 63px;
+    align-self: start;
+    height: calc(100vh - 63px);
+    overflow-y: auto;
+    padding: 28px 18px 40px 24px;
+    border-inline-end: 1px solid var(--line);
+  }
+  .sidenav h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    margin: 18px 0 8px;
+    font-weight: 700;
+  }
+  .sidenav h3:first-child { margin-top: 0; }
+  .sidenav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+  .sidenav a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 7px;
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-size: 13.5px;
+    border-inline-start: 2px solid transparent;
+  }
+  .sidenav a:hover { background: var(--surface-2); color: var(--ink); }
+
+  main { min-width: 0; padding: 40px clamp(20px, 4vw, 56px) 100px; }
+
+  /* ── Hero ────────────────────────────────────────────────────────────── */
+  .hero { padding-bottom: 32px; border-bottom: 1px solid var(--line); margin-bottom: 40px; }
+  .hero__eyebrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12.5px; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.07em;
+    margin-bottom: 14px;
+  }
+  .hero__eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .hero h1 { font-size: clamp(26px, 3.4vw, 36px); line-height: 1.25; margin: 0 0 14px; }
+  .hero p.lead { font-size: 16.5px; color: var(--ink-muted); max-width: 70ch; margin: 0 0 20px; }
+  .hero__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .hero__fact { background: var(--surface); padding: 12px 16px; }
+  .hero__fact dt { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); margin-bottom: 4px; }
+  .hero__fact dd { margin: 0; font-size: 14px; font-weight: 600; }
+
+  /* ── Sections ────────────────────────────────────────────────────────── */
+  .section { margin-bottom: 56px; scroll-margin-top: 78px; }
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 13px; font-weight: 700; color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-soft-line);
+    border-radius: 7px;
+    padding: 2px 8px;
+    flex: none;
+  }
+  .section h2 { font-size: 23px; margin: 0; }
+  .section > p.dek { color: var(--ink-muted); margin: 10px 0 22px; max-width: 74ch; }
+  .subsection { margin: 34px 0; scroll-margin-top: 78px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .subsection:first-of-type { border-top: none; padding-top: 0; }
+  .subsection__head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .subsection__num {
+    font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; color: var(--ink-faint);
+    flex: none;
+  }
+  .subsection h3 { font-size: 18px; margin: 0; }
+  .subsection .menupath {
+    font-size: 12px; color: var(--ink-faint); margin: 2px 0 14px;
+  }
+  .subsection .menupath code { font-size: 0.95em; }
+  .subsection h4 { font-size: 14px; margin: 16px 0 8px; color: var(--ink); }
+  .prose { max-width: 76ch; }
+  .prose p { margin: 0 0 12px; color: var(--ink); }
+  .prose ul, .prose ol { margin: 0 0 12px; padding-inline-start: 22px; }
+  .prose li { margin-bottom: 5px; }
+  .prose li::marker { color: var(--ink-faint); }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.87em;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.05em 0.4em;
+  }
+
+  .codeblock {
+    background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 14px 16px;
+    overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; margin: 10px 0; box-shadow: var(--shadow);
+  }
+  .codeblock code { background: none; border: none; padding: 0; color: inherit; }
+
+  /* ── Callouts ────────────────────────────────────────────────────────── */
+  .callout {
+    border: 1px solid var(--line);
+    border-inline-start: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    max-width: 78ch;
+  }
+  .callout p { margin: 0; color: var(--ink); }
+  .callout p + p { margin-top: 8px; }
+  .callout ul { margin: 6px 0 0; padding-inline-start: 20px; }
+  .callout li { margin-bottom: 4px; }
+  .callout__label {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--accent); margin-bottom: 6px;
+  }
+  .callout--warn { border-inline-start-color: var(--warn); background: var(--warn-soft); }
+  .callout--warn .callout__label { color: var(--warn); }
+  .callout--danger { border-inline-start-color: var(--danger); background: var(--danger-soft); }
+  .callout--danger .callout__label { color: var(--danger); }
+
+  /* ── Tables ──────────────────────────────────────────────────────────── */
+  .tablewrap { overflow-x: auto; margin: 14px 0 22px; border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.6px; min-width: 560px; }
+  caption { text-align: start; padding: 10px 14px 0; font-size: 12.5px; color: var(--ink-faint); }
+  th, td { text-align: start; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    background: var(--surface-2);
+    font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--ink-muted); font-weight: 700;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+  table.compact td, table.compact th { padding: 7px 12px; }
+  .risk-tag {
+    display: inline-block; font-size: 10.5px; font-weight: 700; white-space: nowrap;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .risk-tag--high { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger-soft-line); }
+  .risk-tag--mid { background: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn-soft-line); }
+  .risk-tag--none { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-soft-line); }
+
+  /* ── Cards / grids ───────────────────────────────────────────────────── */
+  .cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 16px 0 24px; }
+  .card {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+  .card h4 { margin: 0 0 6px; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+  .card p { margin: 0; font-size: 13.5px; color: var(--ink-muted); }
+  .card .tag {
+    font-family: var(--font-mono); font-size: 11px;
+    background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 5px; padding: 1px 6px; color: var(--ink-muted);
+  }
+
+  .filecard { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 10px 0; background: var(--surface); }
+  .filecard summary {
+    cursor: pointer; font-size: 13.5px; font-weight: 600;
+    color: var(--ink); list-style: none; display: flex; align-items: center; gap: 10px;
+  }
+  .filecard summary::-webkit-details-marker { display: none; }
+  .filecard summary::before {
+    content: "▸"; color: var(--accent); font-size: 11px; transition: transform 0.15s ease;
+    flex: none;
+  }
+  .filecard[open] summary::before { transform: rotate(90deg); }
+  .filecard .desc { font-size: 13px; color: var(--ink-faint); font-weight: 400; }
+  .filecard .body { padding: 12px 2px 2px 21px; font-size: 13.8px; }
+  .filecard .body ul { margin: 6px 0 0; padding-inline-start: 18px; }
+  .filecard .body li { margin-bottom: 5px; }
+  .filecard .body code { font-size: 0.85em; }
+
+  /* ── Folder tree illustration ───────────────────────────────────────── */
+  .filetree {
+    border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+    padding: 16px 20px; margin: 14px 0 20px; box-shadow: var(--shadow);
+    font-size: 13.8px; max-width: 76ch;
+  }
+  .filetree ul { list-style: none; margin: 2px 0; padding-inline-start: 22px; border-inline-start: 1px dashed var(--line-strong); }
+  .filetree > ul { border-inline-start: none; padding-inline-start: 0; margin: 0; }
+  .filetree li { margin: 4px 0; }
+  .filetree .folder { font-weight: 600; color: var(--ink); }
+  .filetree .folder::before { content: "📁 "; }
+  .filetree .file { color: var(--ink-faint); font-family: var(--font-mono); font-size: 0.92em; }
+  .filetree .file::before { content: "📄 "; }
+  .filetree .note { color: var(--ink-faint); font-size: 0.86em; font-weight: 400; }
+  .filetree .note::before { content: "— "; }
+
+  /* ── Glossary ────────────────────────────────────────────────────────── */
+  .glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px 24px; }
+  .glossary dt { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+  .glossary dd { margin: 0 0 4px; font-size: 13.5px; color: var(--ink-muted); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 24px clamp(20px, 4vw, 56px) 40px;
+    font-size: 12.5px; color: var(--ink-faint);
+    max-width: 1280px; margin: 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidenav {
+      position: static; height: auto; border-inline-end: none;
+      border-bottom: 1px solid var(--line);
+      padding: 14px 20px; display: flex; flex-direction: row; gap: 18px; overflow-x: auto;
+    }
+    .sidenav h3 { display: none; }
+    .sidenav ul { flex-direction: row; gap: 4px; }
+    .sidenav a { white-space: nowrap; }
+    main { padding: 28px 20px 80px; }
+  }
+</style>
+
+<div class="topbar">
+  <div class="topbar__mark">🗂️</div>
+  <div>
+    <div class="topbar__title">OAE Chatbot — คู่มือดูแลระบบหลังบ้าน</div>
+    <div class="topbar__sub">พาร์ท 2 — สำหรับเจ้าหน้าที่ผู้ดูแลระบบ ไม่ต้องเขียนโค้ด</div>
+  </div>
+  <div class="topbar__meta">
+    <span class="pill">Admin Panel</span>
+    <span class="pill">13 เมนู · 4 หมวด</span>
+    <a class="topbar__back" href="../index.html">← กลับหน้ารวมเอกสาร</a>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="sidenav" aria-label="สารบัญ">
+    <h3>เริ่มต้น</h3>
+    <ul>
+      <li><a href="#overview">ภาพรวมคู่มือ</a></li>
+      <li><a href="#login">เข้าสู่ระบบ &amp; บทบาทผู้ใช้</a></li>
+    </ul>
+    <h3>1 · ภาพรวม</h3>
+    <ul>
+      <li><a href="#ov-dashboard">ภาพรวมระบบ</a></li>
+      <li><a href="#ov-insights">รายงาน AI</a></li>
+    </ul>
+    <h3>2 · คลังความรู้</h3>
+    <ul>
+      <li><a href="#kb-panel">ฐานความรู้</a></li>
+      <li><a href="#kb-tree">โครงสร้าง KB</a></li>
+      <li><a href="#kb-domains">โดเมน</a></li>
+    </ul>
+    <h3>3 · การใช้งาน</h3>
+    <ul>
+      <li><a href="#usage-analytics">สถิติ</a></li>
+      <li><a href="#usage-logs">บันทึกคำถาม</a></li>
+      <li><a href="#usage-votes">คะแนนโหวต</a></li>
+      <li><a href="#usage-survey">แบบสำรวจ</a></li>
+    </ul>
+    <h3>4 · ระบบ</h3>
+    <ul>
+      <li><a href="#sys-users">จัดการผู้ใช้</a></li>
+      <li><a href="#sys-apilinks">ลิงก์ API / เครื่องมือ</a></li>
+      <li><a href="#sys-export">ส่งออก</a></li>
+      <li><a href="#sys-news">ประกาศข่าว LINE</a></li>
+    </ul>
+    <h3>ภาคผนวก</h3>
+    <ul>
+      <li><a href="#risk-summary">จุดที่ต้องระวังทั้งหมด</a></li>
+      <li><a href="#glossary">คำศัพท์</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="hero" id="overview">
+      <div class="hero__eyebrow">ภาพรวมคู่มือ</div>
+      <h1>คู่มือดูแลระบบหลังบ้าน (Admin Panel) ของ OAE Chatbot</h1>
+      <p class="lead">
+        ระบบหลังบ้าน (<code>/admin</code>) คือหน้าจอที่เจ้าหน้าที่ใช้ดูแลแชทบอทในงานประจำวัน —
+        เพิ่ม/ลบเอกสารในฐานความรู้ ดูสถิติการใช้งาน จัดการบัญชีผู้ใช้ และประกาศข่าวผ่าน LINE
+        โดย<strong>ไม่ต้องเขียนโค้ด</strong> คู่มือนี้ไล่อธิบายทีละเมนูตามที่ปรากฏจริงในระบบ
+        พร้อมระบุชัดเจนว่าปุ่มไหน "กดแล้วกู้คืนไม่ได้" เพื่อป้องกันการกดพลาด
+      </p>
+      <dl class="hero__facts">
+        <div class="hero__fact"><dt>เข้าใช้งานที่</dt><dd><code>/admin</code></dd></div>
+        <div class="hero__fact"><dt>จำนวนเมนู</dt><dd>13 เมนู แบ่งเป็น 4 หมวด</dd></div>
+        <div class="hero__fact"><dt>กลุ่มเป้าหมาย</dt><dd>เจ้าหน้าที่ดูแลเนื้อหา/ระบบ</dd></div>
+        <div class="hero__fact"><dt>อยากรู้ระดับโค้ด/API?</dt><dd>ดูพาร์ท 3</dd></div>
+      </dl>
+    </div>
+
+    <!-- ══════════════════ LOGIN & ROLES ══════════════════ -->
+    <section class="section" id="login">
+      <div class="section-head"><h2>เข้าสู่ระบบผู้ดูแล และบทบาทผู้ใช้งาน</h2></div>
+
+      <div class="callout callout--warn">
+        <span class="callout__label">ก่อนเริ่มพาร์ท 2 — เตรียมเครื่องให้พร้อมก่อน</span>
+        <p>หัวข้อนี้เป็นจุดเริ่มต้นของการอบรม<strong>ฝั่งผู้ดูแลระบบหลังบ้าน</strong> ซึ่งมีฟังก์ชันเพิ่มเติมจากที่สอนในพาร์ท 1 — ก่อนเข้าสู่ระบบ ต้องเตรียมเครื่อง 3 ขั้นตอนนี้ให้เรียบร้อยก่อน:</p>
+        <ol>
+          <li>
+            <strong>ตรวจสอบสิทธิ์เข้า Git ก่อน</strong> — repo ที่ใช้ในพาร์ท 2 (<code>oae_chatbot_day2</code>) เป็น repo ส่วนตัว เปิดให้เฉพาะผู้ที่เกี่ยวข้องเท่านั้น ถ้ายังไม่ได้รับเชิญเข้า repo นี้ ให้แจ้งผู้จัดอบรมก่อนเริ่ม (ไม่งั้น <code>git clone</code> ในข้อ 3 จะขึ้น permission denied)
+          </li>
+          <li>
+            <strong>ปิดระบบของพาร์ท 1 ให้หมดก่อน</strong> — เปิด terminal ที่โฟลเดอร์โปรเจกต์ของพาร์ท 1 แล้วรัน:
+            <div class="codeblock"><pre><code>docker compose down -v</code></pre></div>
+            <p>คำสั่งนี้ปิด container ทั้งหมดของพาร์ท 1 <strong>และลบข้อมูลที่เคยฝึกไว้ทิ้งไปด้วย</strong> (ตัวเลือก <code>-v</code> = ลบ volume/ฐานข้อมูลด้วย ไม่ใช่แค่ปิดเฉย ๆ) — ทำเพื่อเคลียร์เครื่องให้พร้อมรับระบบชุดใหม่ของพาร์ท 2 ไม่ให้พอร์ตชนกันหรือข้อมูลปนกัน</p>
+          </li>
+          <li>
+            <strong>ดึงโปรเจกต์ของพาร์ท 2 มาไว้ในเครื่อง</strong>:
+            <div class="codeblock"><pre><code>git clone https://github.com/prymania/oae_chatbot_day2.git</code></pre></div>
+            <p>แล้วเปิดใช้งานตามขั้นตอนเดียวกับพาร์ท 1 ขั้นที่ 1 (คัดลอก <code>.env.example</code> เป็น <code>.env</code> แล้ว <code>docker compose up -d</code>) — ถ้าจำขั้นตอนไม่ได้ ย้อนกลับไปดูที่ <a href="../part1/step1_setup-full.html">พาร์ท 1 ขั้นที่ 1</a> ได้</p>
+          </li>
+        </ol>
+        <p>ทำครบ 3 ข้อนี้แล้วจึงเปิดเบราว์เซอร์ไปที่ <code>/admin</code> ตามขั้นตอนด้านล่างได้เลย</p>
+      </div>
+
+      <div class="prose">
+        <p>เปิดเบราว์เซอร์ไปที่ที่อยู่ของระบบ ต่อท้ายด้วย <code>/admin</code> (เช่นตอนพัฒนา/ทดสอบในเครื่องคือ <code>http://localhost:8000/admin</code>) จะเจอหน้าจอ "ระบบผู้ดูแล" ให้กรอก <strong>ชื่อผู้ใช้</strong> และ <strong>รหัสผ่าน</strong> ที่ผู้ดูแลระบบตั้งให้ แล้วกด "เข้าสู่ระบบ"</p>
+        <p>เมื่อเข้าสู่ระบบสำเร็จ จะเห็นเมนูด้านซ้าย 4 หมวด (ภาพรวม / คลังความรู้ / การใช้งาน / ระบบ) ที่มุมล่างซ้ายจะมีจำนวน "ชิ้นข้อมูล" ทั้งหมดในฐานความรู้ ชื่อผู้ใช้ปัจจุบัน บทบาท และปุ่ม "ออกจากระบบ"</p>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <caption>บทบาทผู้ใช้งาน 3 ระดับ — ยิ่งสูงยิ่งทำได้มากขึ้น (ไม่ได้แทนที่กัน)</caption>
+          <thead><tr><th>บทบาท</th><th>ทำอะไรได้บ้าง</th></tr></thead>
+          <tbody>
+            <tr><td><strong>ผู้ใช้ทั่วไป</strong><br><span class="tag" style="font-family:var(--font-mono);font-size:11px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--ink-muted);">user</span></td><td>ใช้หน้าแชทได้อย่างเดียว — เข้าเมนู <code>/admin</code> ไม่ได้เลย</td></tr>
+            <tr><td><strong>แอดมิน</strong><br><span class="tag" style="font-family:var(--font-mono);font-size:11px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--ink-muted);">admin</span></td><td>ใช้เมนูส่วนใหญ่ในคู่มือนี้ได้ครบ — จัดการฐานความรู้ ดูสถิติ จัดการบัญชี "ผู้ใช้ทั่วไป" ได้ (ลบ/รีเซ็ตรหัสผ่าน) แต่แก้ไข/ลบบัญชีแอดมินคนอื่นไม่ได้ และเปลี่ยนบทบาทใครไม่ได้</td></tr>
+            <tr><td><strong>ซูเปอร์แอดมิน</strong><br><span class="tag" style="font-family:var(--font-mono);font-size:11px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--ink-muted);">super_admin</span></td><td>ทำได้ทุกอย่างที่แอดมินทำได้ บวก<strong>จัดการบัญชีแอดมินคนอื่น</strong>และ<strong>เปลี่ยนบทบาทผู้ใช้</strong>ได้ (เมนู "จัดการผู้ใช้" หัวข้อ 4.1)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <span class="callout__label">เข้าใจไว้ก่อน</span>
+        <p>การเข้าสู่ระบบมีอายุจำกัด (คล้ายบัตรผ่านชั่วคราว) ถ้าใช้งานค้างไว้นานแล้วจู่ ๆ ระบบเด้งกลับไปหน้าล็อกอินเอง ไม่ต้องตกใจ — แค่กรอกชื่อผู้ใช้/รหัสผ่านแล้วเข้าใหม่ ข้อมูลที่ทำค้างไว้ในบางฟอร์มอาจหายไป ควรกดบันทึกให้เสร็จเป็นช่วง ๆ</p>
+      </div>
+    </section>
+
+    <!-- ══════════════════ GROUP 1: ภาพรวม ══════════════════ -->
+    <section class="section" id="grp-overview">
+      <div class="section-head"><span class="section-num">1</span><h2>ภาพรวม</h2></div>
+      <p class="dek">หน้าจอสรุปภาพรวมของระบบ — เปิดดูก่อนเสมอเมื่อเข้าระบบ เพื่อเช็คว่ามีอะไรผิดปกติหรือไม่</p>
+
+      <div class="subsection" id="ov-dashboard">
+        <div class="subsection__head"><span class="subsection__num">1.1</span><h3>ภาพรวมระบบ</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>ภาพรวม</strong> → <code>ภาพรวมระบบ</code></p>
+        <div class="prose">
+          <p>หน้าแรกที่เห็นทันทีหลังล็อกอิน สรุปว่า "วันนี้ระบบเป็นอย่างไร" ในหน้าเดียว — จำนวนคำถามวันนี้ ผู้ใช้ทั้งหมด ขนาดฐานความรู้ ความพึงพอใจ อัตราตอบได้ แนวโน้ม 30 วัน ช่วงเวลาที่ถูกถามบ่อย โดเมนที่มีคนถามเยอะ จังหวัดที่ใช้งาน และคำถามล่าสุดแบบเรียลไทม์</p>
+        </div>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>ปุ่ม/ตัวควบคุม</th><th>ทำอะไร</th></tr></thead>
+            <tbody>
+              <tr><td>Save as PDF</td><td>ดาวน์โหลดรายงานสรุปภาพรวมทั้งหมดในหน้านี้เป็นไฟล์ PDF</td></tr>
+              <tr><td>↻ รีเฟรช</td><td>โหลดข้อมูลล่าสุดใหม่</td></tr>
+              <tr><td>รายเดือน / รายปี</td><td>สลับมุมมองกราฟ "ผู้ใช้ใหม่" — ไม่โหลดข้อมูลใหม่ แค่เปลี่ยนวิธีแสดงผล</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">
+          <span class="callout__label">ความปลอดภัย</span>
+          <p>หน้านี้เป็นหน้าดูข้อมูลอย่างเดียว ไม่มีปุ่มที่แก้ไขหรือลบข้อมูลใด ๆ — กดสำรวจได้อย่างอิสระ</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="ov-insights">
+        <div class="subsection__head"><span class="subsection__num">1.2</span><h3>รายงาน AI</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>ภาพรวม</strong> → <code>รายงาน AI</code></p>
+        <div class="prose">
+          <p>AI สรุปสถานการณ์ 7 วันล่าสุดให้เป็นข้อความอ่านง่าย (ไม่มีข้อมูลระบุตัวผู้ใช้) เทียบกับสัปดาห์ก่อนหน้า พร้อมกราฟเปรียบเทียบรายวัน โดเมน/หมวดคำถามที่ถูกถามมาก และมี "คลังรายงานย้อนหลัง" ให้คลิกย้อนดูรายงานสัปดาห์ก่อน ๆ ได้</p>
+        </div>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>ปุ่ม</th><th>ทำอะไร</th></tr></thead>
+            <tbody>
+              <tr><td>สร้างรายงานสัปดาห์นี้</td><td>สั่งให้ AI เขียนสรุปสัปดาห์นี้ใหม่ (ใช้เวลาสักครู่ ปุ่มจะขึ้น "กำลังสร้างรายงาน…")</td></tr>
+              <tr><td>↻ รีเฟรช</td><td>โหลดรายการรายงานและสถิติใหม่</td></tr>
+              <tr><td>คลิกการ์ดในคลังย้อนหลัง</td><td>เปลี่ยนรายงานที่แสดงในการ์ดหลัก (ไม่โหลดข้อมูลใหม่จากเซิร์ฟเวอร์)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--warn">
+          <span class="callout__label">ข้อควรระวัง</span>
+          <p>ปุ่ม "สร้างรายงานสัปดาห์นี้" ไม่มีระบบกันกดซ้ำสำหรับสัปดาห์เดียวกัน — ถ้ากดหลายครั้งอาจได้รายงานซ้ำหลายฉบับในคลัง ไม่ใช่ข้อผิดพลาดร้ายแรง แต่ไม่จำเป็นต้องกดซ้ำถ้าเพิ่งสร้างไปแล้ว</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ GROUP 2: คลังความรู้ ══════════════════ -->
+    <section class="section" id="grp-kb">
+      <div class="section-head"><span class="section-num">2</span><h2>คลังความรู้</h2></div>
+      <p class="dek">หัวใจของแชทบอท — เอกสารที่นำเข้าที่นี่คือสิ่งที่บอทใช้ตอบคำถาม เมนูในหมวดนี้ควรใช้อย่างระมัดระวังที่สุด</p>
+
+      <div class="subsection" id="kb-panel">
+        <div class="subsection__head"><span class="subsection__num">2.1</span><h3>ฐานความรู้</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>คลังความรู้</strong> → <code>ฐานความรู้</code></p>
+        <div class="prose">
+          <p>เมนูหลักสำหรับ<strong>เพิ่มเอกสารใหม่</strong>เข้าคลังความรู้ ไม่ว่าจะเป็นไฟล์ PDF หรือข้อความที่พิมพ์/วางเอง แล้วดูภาพรวมและค้นหาเอกสารที่เพิ่มไปแล้วทั้งหมด</p>
+          <h4>ขั้นตอนเพิ่มเอกสารแบบไฟล์ PDF</h4>
+          <ol>
+            <li>เลือกแท็บ "อัปโหลด PDF" แล้วลากไฟล์มาวาง หรือกด "เลือกไฟล์" (ไฟล์เดียว ไม่เกิน 50 MB) หรือ "เลือกโฟลเดอร์" (อัปโหลดทีเดียวหลายไฟล์ ไม่เกิน 100 ไฟล์ — เหมาะเวลามีเอกสารหลายหมวดพร้อมกัน)</li>
+            <li>ถ้าอัปโหลดทั้งโฟลเดอร์ ระบบจะเดาหมวดสินค้า/หมวดย่อยจากชื่อโฟลเดอร์ย่อยให้อัตโนมัติ — ตรวจสอบตารางตัวอย่างที่ขึ้นมาก่อนยืนยันเสมอ โฟลเดอร์ที่ชื่อไม่ตรงกับหมวดเดิมจะถูกทำเครื่องหมาย "ใหม่" (ระบบจะสร้างหมวดใหม่ให้อัตโนมัติ)</li>
+            <li>เลือก <strong>สินค้า/โดเมน</strong>, <strong>หมวดย่อย</strong>, <strong>ปี พ.ศ.</strong> และ <strong>หน่วยงานที่ออกเอกสาร</strong> ให้ตรงกับเนื้อหาจริง (มีปุ่มลัดหน่วยงานที่ใช้บ่อยให้กด)</li>
+            <li>ตรวจสอบกล่อง "จะถูกบันทึกเป็น" ว่าข้อมูลถูกต้อง แล้วกดปุ่มอัปโหลด — ระบบจะแสดงความคืบหน้า 5 ขั้น (รับไฟล์ → อ่านเอกสาร → แบ่งชิ้นข้อมูล → ฝังลงฐานความรู้ → เสร็จสิ้น) จนเสร็จ</li>
+          </ol>
+
+          <h4>โครงสร้างโฟลเดอร์ในเทมเพลต (template.zip)</h4>
+          <p>เมื่อกด "⬇ ดาวน์โหลดเทมเพลตโฟลเดอร์ (.zip)" แล้วแตกไฟล์ออกมา จะได้โฟลเดอร์ที่จำลองหมวดสินค้า/หมวดย่อยที่มีอยู่แล้วในระบบให้ทั้งหมด — <strong>โฟลเดอร์ชั้นแรก = โดเมน (หมวดสินค้า) และโฟลเดอร์ชั้นสอง = หมวดย่อย</strong> ตัวอย่างเช่น ถ้าระบบมี 3 โดเมน (ปาล์มน้ำมัน, ข้าว, กุ้ง) หน้าตาโฟลเดอร์ที่ได้จะเป็นแบบนี้:</p>
+
+          <div class="callout">
+            <span class="callout__label">หมายเหตุสำหรับวันอบรม</span>
+            <p>ให้ดาวน์โหลดไฟล์ <a href="../resource/sampledocs.zip" download>sampledocs.zip</a> ซึ่งมีไฟล์ตัวอย่างเอกสาร 
+              <br> ไก่ (2 ไฟล์), ปาล์มน้ำมัน (1 ไฟล์) และหมู (4 ไฟล์) 
+              <br> จากนั้นคัดลอกไฟล์ทั้งหมดไปวางในโฟลเดอร์ template ที่แตกออกมา ตาม subfolder ของแต่ละโดเมน (เช่น ไก่ → โฟลเดอร์ไก่, ปาล์มน้ำมัน → โฟลเดอร์ปาล์มน้ำมัน, หมู → โฟลเดอร์หมู):</p>
+          </div>
+          <div class="filetree">
+            <ul>
+              <li><span class="file">_TEMPLATE.json</span> <span class="note">อย่าลบหรือเปลี่ยนชื่อไฟล์นี้ — ระบบใช้จับคู่โฟลเดอร์กับโดเมนเดิมตอนอัปโหลดกลับ</span></li>
+              <li><span class="file">_อ่านก่อน-README.txt</span> <span class="note">คำอธิบายวิธีใช้แบบย่อ</span></li>
+              <li><span class="folder">ปาล์มน้ำมัน</span>
+                <ul>
+                  <li><span class="folder">การจัดการฟาร์ม</span></li>
+                  <li><span class="folder">การตลาด</span></li>
+                  <li><span class="folder">ความเสี่ยง</span></li>
+                </ul>
+              </li>
+              <li><span class="folder">ข้าว</span>
+                <ul>
+                  <li><span class="folder">การจัดการฟาร์ม</span></li>
+                  <li><span class="folder">การตลาด</span></li>
+                </ul>
+              </li>
+              <li><span class="folder">กุ้ง</span>
+                <ul>
+                  <li><span class="folder">การจัดการฟาร์ม</span></li>
+                  <li><span class="folder">การตลาด</span></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+
+          <p>ในแต่ละโฟลเดอร์หมวดย่อยจะมีไฟล์เปล่า <code>_PUT-PDF-HERE.txt</code> วางไว้เตือน (ลบทิ้งได้ ระบบข้ามไฟล์ที่ไม่ใช่ .pdf อยู่แล้ว) — สิ่งที่ต้องทำคือ<strong>ลากไฟล์ PDF วางลงในโฟลเดอร์หมวดย่อยที่ตรงกับเนื้อหา</strong> จะวางกี่ไฟล์ต่อโฟลเดอร์ก็ได้ แล้วกลับไปที่เมนูฐานความรู้ กด "เลือกโฟลเดอร์" แล้วชี้ไปที่โฟลเดอร์นอกสุด (ชื่อ template หรือชื่อที่ตั้งไว้) ระบบจะไล่อัปโหลดทุกไฟล์ในทุกโฟลเดอร์ย่อยให้ในครั้งเดียว</p>
+
+          <div class="tablewrap">
+            <table class="compact">
+              <thead><tr><th>วางไฟล์ตรงไหน</th><th>ระบบจะบันทึกเป็น</th></tr></thead>
+              <tbody>
+                <tr><td><code>&lt;โดเมน&gt;/&lt;หมวดย่อย&gt;/ไฟล์.pdf</code></td><td>เข้าโดเมนและหมวดย่อยนั้นตามชื่อโฟลเดอร์</td></tr>
+                <tr><td><code>&lt;โดเมน&gt;/ไฟล์.pdf</code> (วางตรงในโฟลเดอร์โดเมน ไม่มีโฟลเดอร์หมวดย่อย)</td><td>เข้าโดเมนนั้น แต่หมวดย่อยตั้งเป็น "ทั่วไป" โดยอัตโนมัติ</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout">
+            <span class="callout__label">อยากเพิ่มโดเมน/หมวดย่อยใหม่ระหว่างเตรียมไฟล์เลยได้ไหม</span>
+            <p>ได้ — สร้างโฟลเดอร์ใหม่เพิ่มเองในต้นไม้นี้ได้เลย (เช่นเพิ่มโฟลเดอร์ "ทุเรียน" หรือเพิ่มหมวดย่อยใหม่ในโดเมนเดิม) ระบบจะขึ้นป้าย "ใหม่" ให้เห็นตอนอัปโหลดและลงทะเบียนโดเมน/หมวดย่อยนั้นให้อัตโนมัติ เทียบเท่ากับไปสร้างที่เมนู "โดเมน" (หัวข้อ 2.3) ล่วงหน้า — แต่ต้อง<strong>ตรวจสอบตัวอย่างก่อนกดยืนยันอัปโหลดเสมอ</strong> เผื่อสะกดชื่อโฟลเดอร์ผิดแล้วกลายเป็นสร้างโดเมนซ้ำโดยไม่ตั้งใจ</p>
+          </div>
+
+          <h4>ขั้นตอนเพิ่มเอกสารแบบพิมพ์ข้อความเอง</h4>
+          <p>สลับไปแท็บ "วางข้อความ" กรอก "ชื่อเอกสาร/หัวข้อ" และเนื้อหาในกล่องข้อความ เลือกหมวดสินค้า/ปี/หน่วยงานเหมือนแบบ PDF แล้วกดเพิ่มเข้าฐานความรู้ — เหมาะกับกรณีอยากเพิ่มคำตอบสั้น ๆ ที่ไม่มีไฟล์ต้นฉบับ (เช่น ใช้คู่กับปุ่ม "+ เพิ่มลงฐานความรู้" จากเมนูสถิติ หัวข้อ 3.1)</p>
+        </div>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>ส่วนอื่นในหน้านี้</th><th>ใช้ทำอะไร</th></tr></thead>
+            <tbody>
+              <tr><td>⬇ ดาวน์โหลดเทมเพลตโฟลเดอร์ (.zip)</td><td>ได้โฟลเดอร์เปล่าที่ตั้งชื่อตามหมวดสินค้าที่มีอยู่แล้ว ใช้จัดวางไฟล์ PDF ให้ถูกหมวดก่อนอัปโหลดแบบเลือกโฟลเดอร์</td></tr>
+              <tr><td>กราฟภาพรวมฐานความรู้</td><td>ดูสัดส่วนจำนวนชิ้นข้อมูลแยกตามหมวดสินค้า/หมวดย่อย</td></tr>
+              <tr><td>ตาราง "แหล่งข้อมูลฐานความรู้"</td><td>รายชื่อเอกสารทั้งหมดที่เพิ่มไปแล้ว ค้นหา/กรองตามหมวด/เรียงลำดับได้</td></tr>
+              <tr><td>🗑️ ในตารางเอกสาร</td><td>ลบเอกสารรายการนั้นทั้งฉบับ</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--danger">
+          <span class="callout__label">ข้อควรระวังสำคัญ</span>
+          <ul>
+            <li><strong>ปุ่ม 🗑️ ลบเอกสาร ลบทั้งฉบับพร้อมทุกชิ้นข้อมูลทันที กู้คืนไม่ได้</strong> — ระบบจะถามยืนยันหนึ่งครั้งก่อนลบเท่านั้น</li>
+            <li>หมวดสินค้า/หมวดย่อยที่เลือกตอนอัปโหลด มีผลโดยตรงกับตอนบอทค้นคำตอบ — ถ้าเลือกผิด บอทอาจหยิบเอกสารนี้ไปตอบเรื่องที่ไม่เกี่ยวข้อง</li>
+            <li>"ปี พ.ศ." มีผลกับ<em>การจัดอันดับ</em>คำตอบ ไม่ใช่ตัวกรอง — ถ้าใส่ปีผิด เอกสารเก่าอาจถูกจัดอันดับสูงกว่าเอกสารใหม่ที่ถูกต้องกว่า</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="subsection" id="kb-tree">
+        <div class="subsection__head"><span class="subsection__num">2.2</span><h3>โครงสร้าง KB</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>คลังความรู้</strong> → <code>โครงสร้าง KB</code></p>
+        <div class="prose">
+          <p>มุมมองแบบต้นไม้ ไล่ลำดับชั้น <strong>โดเมน → หมวดย่อย → เอกสาร → ชิ้นข้อมูล</strong> คลิกแต่ละแถวเพื่อขยาย/ยุบดูชั้นถัดไป ใช้เมนูนี้เมื่อต้องการดูเนื้อหาละเอียดระดับ "ชิ้นข้อมูล" หรือลบเฉพาะบางส่วนโดยไม่ต้องลบทั้งเอกสาร (ซึ่งเมนู "ฐานความรู้" ทำไม่ได้)</p>
+        </div>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>ระดับที่ลบ</th><th>ผลลัพธ์เมื่อกด 🗑️</th></tr></thead>
+            <tbody>
+              <tr><td>โดเมน</td><td>ลบชิ้นข้อมูลทุกชิ้นในโดเมนนั้นทั้งหมด (ทะเบียนโดเมนยังอยู่ อัปโหลดเข้าใหม่ได้)</td></tr>
+              <tr><td>หมวดย่อย</td><td>ลบชิ้นข้อมูลทุกชิ้นในหมวดย่อยนั้น</td></tr>
+              <tr><td>เอกสาร</td><td>ลบเอกสารนั้นทั้งฉบับ (เท่ากับปุ่มลบในเมนู "ฐานความรู้")</td></tr>
+              <tr><td>ชิ้นข้อมูล (แถวเดียว)</td><td>ลบเฉพาะชิ้นข้อมูลนั้นชิ้นเดียว — ทำได้เฉพาะในเมนูนี้เท่านั้น</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--danger">
+          <span class="callout__label">ข้อควรระวังสำคัญ</span>
+          <p>ทุกปุ่มลบในหน้านี้ขึ้นข้อความยืนยันว่า "ลบแล้วไม่สามารถกู้คืนได้" จริงตามนั้น — <strong>ปุ่มลบระดับโดเมน/หมวดย่อยอาจลบข้อมูลนับพันชิ้นในคลิกเดียว</strong> อ่านจำนวนชิ้นข้อมูลในกล่องยืนยันให้ดีก่อนกดทุกครั้ง และถ้าต้องการลบ "ทะเบียนโดเมน" ออกจากระบบจริง ๆ (ไม่ใช่แค่เนื้อหาข้างใน) ต้องไปทำที่เมนู "โดเมน" (หัวข้อ 2.3) แยกต่างหาก</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="kb-domains">
+        <div class="subsection__head"><span class="subsection__num">2.3</span><h3>โดเมน</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>คลังความรู้</strong> → <code>โดเมน</code></p>
+        <div class="prose">
+          <p>จัดการรายชื่อ "หมวดสินค้า" (เช่น ปาล์มน้ำมัน โคนม กุ้ง ทุเรียน ข้าว) และหมวดย่อยของแต่ละหมวด — ต้อง<strong>สร้างโดเมนที่นี่ก่อน</strong> จึงจะเลือกหมวดนั้นตอนอัปโหลดเอกสารในเมนู "ฐานความรู้" ได้</p>
+          <p>กรอก "ชื่อที่แสดง" (ภาษาไทยได้) ระบบจะเสนอ "รหัสโดเมน" (ภาษาอังกฤษตัวเล็ก) ให้อัตโนมัติ กด "+ เพิ่มโดเมน" เพื่อสร้าง ส่วนหมวดย่อยเพิ่มได้จากช่องพิมพ์ในการ์ดของแต่ละโดเมนโดยตรง</p>
+        </div>
+        <div class="callout callout--warn">
+          <span class="callout__label">ข้อควรระวัง</span>
+          <ul>
+            <li><strong>"รหัสโดเมน" เปลี่ยนภายหลังไม่ได้</strong> เพราะเอกสารและประวัติคำถามอ้างอิงรหัสนี้ตลอด — ตั้งให้รอบคอบตั้งแต่แรก (ชื่อที่แสดงเปลี่ยนได้ภายหลัง แต่รหัสไม่ได้)</li>
+            <li>ลบโดเมน/หมวดย่อยไม่ได้ถ้า<strong>ยังมีเอกสารอยู่ข้างใน</strong> — ระบบกันไว้ให้อัตโนมัติ ต้องไปลบเอกสารในเมนู "ฐานความรู้" หรือ "โครงสร้าง KB" ให้หมดก่อน จึงจะลบโดเมนนั้นได้</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ GROUP 3: การใช้งาน ══════════════════ -->
+    <section class="section" id="grp-usage">
+      <div class="section-head"><span class="section-num">3</span><h2>การใช้งาน</h2></div>
+      <p class="dek">สถิติเชิงลึกและผลตอบรับจากผู้ใช้จริง — ใช้เมนูนี้เพื่อรู้ว่าควรเพิ่มเอกสารเรื่องอะไร หรือบอทมีปัญหาตรงไหน</p>
+
+      <div class="subsection" id="usage-analytics">
+        <div class="subsection__head"><span class="subsection__num">3.1</span><h3>สถิติ</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>การใช้งาน</strong> → <code>สถิติ</code></p>
+        <div class="prose">
+          <p>สถิติเจาะลึกกว่าหน้า "ภาพรวมระบบ" — แยกตามหมวดสินค้า จังหวัด ฤดูกาล และที่สำคัญที่สุดคือตาราง <strong>"คำถามที่ตอบไม่ได้"</strong> ซึ่งจัดกลุ่มคำถามคล้ายกันไว้ให้ เพื่อดูว่าควรเพิ่มเอกสารเรื่องอะไรเข้าฐานความรู้เพิ่ม</p>
+        </div>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>ปุ่ม</th><th>ทำอะไร</th></tr></thead>
+            <tbody>
+              <tr><td>Save as PDF</td><td>ดาวน์โหลดรายงานสถิติทั้งหมดในหน้าเป็น PDF</td></tr>
+              <tr><td>ส่งออก XLSX</td><td>ดาวน์โหลดข้อมูลสถิติทั้งหมดเป็นไฟล์ Excel</td></tr>
+              <tr><td>ดาวน์โหลด CSV (2 จุด)</td><td>ส่งออกเฉพาะตารางคำถามที่ตอบไม่ได้ หรือตารางกลุ่มคำถามคล้ายกัน เป็น CSV</td></tr>
+              <tr><td>+ เพิ่มลงฐานความรู้ (ต่อแถว)</td><td>พาไปที่เมนู "ฐานความรู้" พร้อมกรอกคำถามนั้นไว้ในฟอร์มให้แล้ว — <strong>ยังไม่บันทึกจนกว่าจะกรอกคำตอบและกดส่งที่หน้านั้น</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">
+          <span class="callout__label">สังเกตไว้</span>
+          <p>ป้าย "เพิ่มแล้ว ✓" หลังกด "+ เพิ่มลงฐานความรู้" จำไว้แค่ในเบราว์เซอร์ขณะนั้น ถ้ารีเฟรชหน้าเว็บหรือเปิดจากเครื่องอื่น ป้ายจะหายไป — ก่อนเพิ่มคำถามเดิมซ้ำ ลองค้นหาในเมนู "ฐานความรู้" ก่อนว่ามีอยู่แล้วหรือยัง</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="usage-logs">
+        <div class="subsection__head"><span class="subsection__num">3.2</span><h3>บันทึกคำถาม</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>การใช้งาน</strong> → <code>บันทึกคำถาม</code></p>
+        <div class="prose">
+          <p>ตารางบันทึกคำถามดิบ ทีละแถว = คำถาม 1 ครั้ง คลิกแถวเพื่อดูข้อความเต็มและรายละเอียด (หมวด จังหวัด ช่องทาง) ใช้ตัวกรองด้านบน — ค้นข้อความ, หมวดสินค้า, ช่องทาง (เว็บ/LINE), ช่วงวันที่, และเรียงลำดับใหม่สุด/เก่าสุดก่อน</p>
+        </div>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>ปุ่ม</th><th>ทำอะไร</th></tr></thead>
+            <tbody>
+              <tr><td>Save as PDF</td><td>ส่งออก<strong>เฉพาะหน้าที่กำลังกรองอยู่</strong> (สูงสุด 50 แถว)</td></tr>
+              <tr><td>ส่งออก XLSX</td><td>ส่งออกข้อมูล<strong>ครบตามช่วงวันที่ที่เลือกกรอง</strong> ไม่จำกัดแค่หน้าที่เห็น</td></tr>
+              <tr><td>← ก่อนหน้า / ถัดไป →</td><td>เปลี่ยนหน้า (แสดงทีละ 50 แถว)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--warn">
+          <span class="callout__label">ข้อควรระวัง</span>
+          <p>ผู้ใช้ที่ไม่ได้ล็อกอิน (guest) จะถูกแสดงเป็น "แขก" ในรายงานที่ส่งออก แต่ในตารางสดบนหน้าจอ ยังเห็นชื่อผู้ใช้จริงได้เมื่อเอาเมาส์ชี้ค้างที่แถว — ระวังเรื่องนี้เวลาแชร์หน้าจอให้คนอื่นดู</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="usage-votes">
+        <div class="subsection__head"><span class="subsection__num">3.3</span><h3>คะแนนโหวต</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>การใช้งาน</strong> → <code>คะแนนโหวต</code></p>
+        <div class="prose">
+          <p>ผู้ใช้กด 👍/👎 ให้คำตอบของบอทได้ที่หน้าแชท เมนูนี้รวบยอดผลโหวตทั้งระบบ และมีตาราง <strong>"คิวปรับปรุงฐานความรู้"</strong> เรียงคำถามที่โดนโหวต 👎 มากที่สุดไว้บนสุด — ใช้เป็นจุดเริ่มตรวจสอบว่าคำตอบเรื่องไหนควรปรับปรุง</p>
+        </div>
+        <div class="prose">
+          <p>ปุ่มที่มี: Save as PDF, ส่งออก XLSX, ↻ รีเฟรช — เป็นหน้าดูรายงานอย่างเดียว ไม่มีปุ่มแก้ไข/ลบ</p>
+        </div>
+        <div class="callout">
+          <span class="callout__label">สังเกตไว้</span>
+          <p>เปอร์เซ็นต์ "ความพึงพอใจ" คิดจากผู้ใช้ที่โหวตเท่านั้น ไม่รวมคนที่ไม่ได้โหวต — ถ้ามีคนโหวตน้อยเมื่อเทียบกับจำนวนคำถามทั้งหมด ตัวเลขนี้อาจไม่สะท้อนภาพรวมจริงทั้งหมด</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="usage-survey">
+        <div class="subsection__head"><span class="subsection__num">3.4</span><h3>แบบสำรวจ</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>การใช้งาน</strong> → <code>แบบสำรวจ</code></p>
+        <div class="prose">
+          <p>ผลแบบสำรวจความพึงพอใจที่ผู้ใช้กรอกจากหน้าเว็บ <code>/survey</code> — ให้คะแนน 5 ด้าน (ความครบถ้วน ความถูกต้อง นำไปใช้ได้ ความรวดเร็ว และคะแนนรวม) พร้อมข้อเสนอแนะแบบข้อความอิสระ แยกดูตามกลุ่มผู้ตอบ (เกษตรกร / ประชาชนทั่วไป / บุคลากร สศก. / ฯลฯ) และช่องทาง (เว็บ/LINE) ได้</p>
+        </div>
+        <div class="callout callout--warn">
+          <span class="callout__label">ข้อควรระวัง</span>
+          <p>Save as PDF ส่งออกได้<strong>เฉพาะหน้าที่กำลังดูอยู่</strong> — ถ้าต้องการข้อมูลทั้งหมดครบทุกแถว ให้ใช้ปุ่ม "ส่งออก XLSX" แทน นอกจากนี้การแยกช่องทาง LINE/เว็บ เป็นการ<em>เดา</em>จากข้อมูลทางเทคนิคของเบราว์เซอร์ผู้ตอบ ไม่ใช่ค่าที่ผู้ตอบระบุตรง ๆ จึงอาจคลาดเคลื่อนได้บ้าง</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ GROUP 4: ระบบ ══════════════════ -->
+    <section class="section" id="grp-system">
+      <div class="section-head"><span class="section-num">4</span><h2>ระบบ</h2></div>
+      <p class="dek">การตั้งค่าระดับระบบ — บัญชีผู้ใช้ แหล่งข้อมูลภายนอก การส่งออกข้อมูล และการสื่อสารกับผู้ใช้ผ่าน LINE</p>
+
+      <div class="subsection" id="sys-users">
+        <div class="subsection__head"><span class="subsection__num">4.1</span><h3>จัดการผู้ใช้</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>ระบบ</strong> → <code>จัดการผู้ใช้</code></p>
+        <div class="prose">
+          <p>ตารางบัญชีผู้ใช้ทั้งหมดในระบบ ทั้งบัญชี "ผู้ใช้ทั่วไป" (คนที่แชท) และบัญชี "แอดมิน/ซูเปอร์แอดมิน" รวมอยู่ในตารางเดียวกัน แยกกันด้วยคอลัมน์ "บทบาท" — เพิ่มบัญชีใหม่ได้จากฟอร์มด้านซ้าย ค้นหา/กรองตามบทบาท/เรียงลำดับได้จากแถบด้านบนตาราง คลิกที่ชื่อผู้ใช้เพื่อดูสถิติการใช้งานของคนนั้น (คำถามทั้งหมด หมวดที่ถามบ่อย คำถามล่าสุด)</p>
+        </div>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>ใครทำอะไรกับใครได้บ้าง</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><strong>เปลี่ยนบทบาทผู้ใช้</strong></td><td>ทำได้เฉพาะ<strong>ซูเปอร์แอดมิน</strong>เท่านั้น</td></tr>
+              <tr><td><strong>🔑 รีเซ็ตรหัสผ่าน / 🗑️ ลบบัญชี</strong></td><td>แอดมินทั่วไปทำได้เฉพาะกับบัญชี "ผู้ใช้ทั่วไป" เท่านั้น จะแก้ไข/ลบบัญชีแอดมินคนอื่นไม่ได้ (ต้องเป็นซูเปอร์แอดมิน) และลบบัญชีตัวเองไม่ได้เสมอ</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--danger">
+          <span class="callout__label">ข้อควรระวังสำคัญ</span>
+          <p>การลบบัญชีผู้ใช้กู้คืนไม่ได้ (มีกล่องยืนยันก่อนลบเพียงครั้งเดียว) หากซูเปอร์แอดมินเปลี่ยนบทบาทของ<strong>ตัวเอง</strong>ให้ต่ำลง จะเสียสิทธิ์ซูเปอร์แอดมินทันทีในเซสชันที่ใช้งานอยู่ — ควรมีซูเปอร์แอดมินอย่างน้อย 2 คนเสมอ กันกรณีบัญชีเดียวถูกล็อกออกจากสิทธิ์สูงสุด</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="sys-apilinks">
+        <div class="subsection__head"><span class="subsection__num">4.2</span><h3>ลิงก์ API / เครื่องมือ</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>ระบบ</strong> → <code>ลิงก์ API / เครื่องมือ</code></p>
+        <div class="prose">
+          <p>เมนูสำหรับเชื่อมต่อ "แหล่งข้อมูลสด" ภายนอก (เช่น ราคาสินค้า พยากรณ์อากาศ ระดับน้ำ) ให้บอทเรียกใช้ระหว่างคุยกับผู้ใช้ได้ — เพิ่มลิงก์เองทีละรายการ หรือให้ระบบ "ตรวจลิงก์" จากโดเมนหลักแล้วเสนอบริการย่อยที่พบให้เลือกรับเข้าระบบทีเดียวหลายรายการ</p>
+          <p>เมื่อกด "ตั้งค่าแชท" ที่ลิงก์ใดลิงก์หนึ่ง จะเปิด "แผงตั้งค่าเครื่องมือ" ให้ทดสอบยิงเรียก API จริง ("ยิงดูข้อมูลจริง") ดูตัวอย่างผลลัพธ์ แล้วเลือกรูปแบบการ์ดที่จะโชว์ในแชท (กราฟ/ตัวเลข/ตาราง/แผนที่/GUI ที่ AI วาดให้/ข้อความ) ก่อนกด "เปิดในแชท" เพื่อให้บอทเรียกใช้ได้จริง</p>
+          <p>ตัวอย่าง API สาธารณะที่ใช้งานฟรี ไม่ต้องสมัครสมาชิกหรือขอ API key —ลองเพิ่มฝึกใช้เมนูนี้ได้:</p>
+        </div>
+
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>API ตัวอย่าง</th><th>Base URL</th><th>ใช้ทำอะไร</th><th>ตัวอย่างคำถามทดสอบ</th></tr></thead>
+            <tbody>
+              <tr><td>🌤️ Open-Meteo</td><td><code>https://api.open-meteo.com/v1/forecast</code></td><td>พยากรณ์อากาศรายชั่วโมง</td><td>"ตอนนี้มหาสารคามอุณหภูมิเท่าไหร่?"</td></tr>
+              <tr><td>💱 Frankfurter</td><td><code>https://frankfurter.dev/</code></td><td>อัตราแลกเปลี่ยนเงินตราต่างประเทศ</td><td>"100 ดอลลาร์เป็นเงินบาทเท่าไหร่?"</td></tr>
+              <tr><td>🧬 GBIF</td><td><code>https://api.gbif.org/v1/species/</code></td><td>ข้อมูลสปีชีย์ (อนุกรมวิธานสิ่งมีชีวิต)</td><td>"Oryza sativa คืออะไร?"</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--danger">
+          <span class="callout__label">ข้อควรระวังสำคัญ</span>
+          <ul>
+            <li>ลิงก์บางตัว (บริการหลักของระบบ เช่น ราคาสินค้า สภาพอากาศ ระดับน้ำ หรือตัวโมเดล AI เอง) เป็น<strong>บริการที่ระบบใช้งานอยู่แล้วโดยตรง</strong> — แก้ไข URL ได้ แต่เปิดเป็น "เครื่องมือทั่วไป" เพิ่มเติมไม่ได้ และการแก้ Base URL ของลิงก์เหล่านี้จะไปแทนที่ค่าที่ระบบใช้งานจริงทันที กระทบส่วนอื่นของระบบได้</li>
+            <li>ก่อนกด "เปิดในแชท" ต้อง<strong>ทดสอบยิงเรียกจริงและดูตัวอย่างการ์ดให้แน่ใจก่อนเสมอ</strong> — ไม่เช่นนั้นบอทอาจเอาข้อมูลผิด/ว่างเปล่าไปตอบผู้ใช้จริง</li>
+            <li>รหัสของลิงก์ (id) เปลี่ยนภายหลังไม่ได้เช่นเดียวกับรหัสโดเมน</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="subsection" id="sys-export">
+        <div class="subsection__head"><span class="subsection__num">4.3</span><h3>ส่งออก</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>ระบบ</strong> → <code>ส่งออก</code></p>
+        <div class="prose">
+          <p>จุดรวมสำหรับดาวน์โหลดชุดข้อมูลเป็นไฟล์ Excel หรือ CSV เลือกชุดข้อมูลที่ต้องการจากการ์ด กำหนดช่วงวันที่ (ถ้าเกี่ยวข้อง) แล้วกด "⬇ ดาวน์โหลด"</p>
+        </div>
+        <div class="tablewrap">
+          <table class="compact">
+            <thead><tr><th>ชุดข้อมูล</th><th>คือข้อมูลอะไร</th></tr></thead>
+            <tbody>
+              <tr><td>ภาพรวมผู้บริหาร</td><td>ตัวชี้วัด ช่องทาง หมวดสินค้า และแนวโน้ม</td></tr>
+              <tr><td>บันทึกการใช้บริการ</td><td>คำถามที่เข้ามา พร้อมสถานะการตอบ</td></tr>
+              <tr><td>บัญชีผู้ใช้</td><td>สมาชิกที่ลงทะเบียนและบทบาท</td></tr>
+              <tr><td>ผลตอบรับผู้ใช้</td><td>โหวตถูกใจ/ไม่ถูกใจ และความเห็น</td></tr>
+              <tr><td>แบบสำรวจความพึงพอใจ</td><td>คะแนนรายด้านและข้อเสนอแนะ</td></tr>
+              <tr><td>เอกสารฐานความรู้</td><td>รายชื่อเอกสารที่อยู่ในคลังความรู้</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout--warn">
+          <span class="callout__label">ข้อควรระวัง</span>
+          <p>ไฟล์ที่มีข้อมูลผู้ใช้ (เช่น "บัญชีผู้ใช้" หรือ "บันทึกการใช้บริการ" ที่มีชื่อ/อีเมล) ควรเก็บและส่งต่อตามนโยบายความเป็นส่วนตัวของหน่วยงาน ไม่ควรส่งต่อให้ผู้ที่ไม่เกี่ยวข้องโดยไม่จำเป็น</p>
+        </div>
+      </div>
+
+      <div class="subsection" id="sys-news">
+        <div class="subsection__head"><span class="subsection__num">4.4</span><h3>ประกาศข่าว LINE</h3></div>
+        <p class="menupath">เมนู: หมวด <strong>ระบบ</strong> → <code>ประกาศข่าว LINE</code></p>
+        <div class="prose">
+          <p>เขียนข่าว/ประกาศ (หัวข้อ รายละเอียด รูปภาพ ลิงก์) บันทึกเป็น "แบบร่าง" ก่อนได้ แล้วค่อยส่งออกอากาศเป็นข้อความ LINE แบบการ์ดไปหา<strong>ผู้ติดตามบัญชี LINE Official Account ทุกคน</strong> โดยไม่ต้องเข้าไปใช้เครื่องมือของ LINE เอง</p>
+        </div>
+        <div class="callout callout--danger">
+          <span class="callout__label">เมนูที่มีความเสี่ยงสูงสุดในระบบ — อ่านก่อนกด</span>
+          <ul>
+            <li>ปุ่ม <strong>"ประกาศบน LINE"</strong> จะส่งข้อความถึง<strong>ผู้ติดตามทั้งหมดทันที</strong>เมื่อกดยืนยัน — กล่องยืนยันบอกตรง ๆ ว่า "การประกาศใช้โควตาข้อความของเดือนนี้" ไม่มีขั้นตอนแก้ไขหรือยกเลิกภายหลังการกดยืนยัน</li>
+            <li><strong>แก้ไขข้อความหลังประกาศไปแล้ว ไม่ทำให้ข้อความที่ผู้ใช้ได้รับไปแล้วเปลี่ยนตาม</strong> — ข้อความที่ส่งออกไปคือฉบับ ณ เวลาที่กดปุ่ม</li>
+            <li><strong>ลบข่าวออกจากระบบ ไม่ได้ "เรียกคืน" ข้อความที่ส่งไปแล้ว</strong> — เป็นแค่การลบสำเนาฝั่งแอดมินเท่านั้น</li>
+            <li>ถ้ากดปุ่ม "ประกาศบน LINE" ซ้ำอีกครั้ง (เช่นเข้าใจผิดว่าครั้งแรกไม่สำเร็จ) จะเป็นการส่งข่าวเดิม<strong>ซ้ำอีกรอบ</strong>ให้ผู้ติดตามทุกคน — ควรเช็คสถานะ "ประกาศแล้ว" และเวลาที่ประกาศในรายการข่าวก่อนกดซ้ำเสมอ</li>
+            <li>ก่อนกดประกาศจริง แนะนำให้ตรวจตัวสะกด รูปภาพ และลิงก์ในฟอร์มให้ครบถ้วนเสียก่อน เหมือนตรวจทานก่อนส่งจดหมายเวียนที่เรียกคืนไม่ได้</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ APPENDIX ══════════════════ -->
+    <section class="section" id="risk-summary">
+      <div class="section-head"><h2>ภาคผนวก: จุดที่ต้องระวังทั้งหมด (สรุปรวม)</h2></div>
+      <p class="dek">รวมทุกการกระทำที่ "กู้คืนไม่ได้" หรือมีเงื่อนไขพิเศษ จากทุกเมนูไว้ในตารางเดียว ไว้ดูก่อนกดปุ่มที่ไม่แน่ใจ</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>เมนู</th><th>การกระทำ</th><th>ผลกระทบ</th><th>กู้คืนได้?</th></tr></thead>
+          <tbody>
+            <tr><td>ฐานความรู้ (2.1)</td><td>🗑️ ลบเอกสารในตาราง</td><td>ลบเอกสารทั้งฉบับพร้อมทุกชิ้นข้อมูล</td><td><span class="risk-tag risk-tag--high">ไม่ได้</span></td></tr>
+            <tr><td>โครงสร้าง KB (2.2)</td><td>🗑️ ลบระดับโดเมน/หมวดย่อย/เอกสาร</td><td>ลบข้อมูลได้ครั้งละหลายพันชิ้น</td><td><span class="risk-tag risk-tag--high">ไม่ได้</span></td></tr>
+            <tr><td>โครงสร้าง KB (2.2)</td><td>🗑️ ลบชิ้นข้อมูลเดี่ยว</td><td>ลบชิ้นข้อมูลนั้นชิ้นเดียว</td><td><span class="risk-tag risk-tag--high">ไม่ได้</span></td></tr>
+            <tr><td>โดเมน (2.3)</td><td>ตั้งรหัสโดเมนตอนสร้าง</td><td>เอกสาร/ประวัติคำถามอ้างอิงรหัสนี้ตลอดไป</td><td><span class="risk-tag risk-tag--mid">แก้รหัสไม่ได้ (ชื่อที่แสดงแก้ได้)</span></td></tr>
+            <tr><td>จัดการผู้ใช้ (4.1)</td><td>🗑️ ลบบัญชีผู้ใช้</td><td>บัญชีหายจากระบบถาวร</td><td><span class="risk-tag risk-tag--high">ไม่ได้</span></td></tr>
+            <tr><td>จัดการผู้ใช้ (4.1)</td><td>เปลี่ยนบทบาทตัวเอง</td><td>อาจเสียสิทธิ์ซูเปอร์แอดมินทันที</td><td><span class="risk-tag risk-tag--mid">เปลี่ยนกลับได้ถ้ายังมีซูเปอร์แอดมินคนอื่น</span></td></tr>
+            <tr><td>ลิงก์ API (4.2)</td><td>ลบลิงก์ / แก้ Base URL ของลิงก์ที่เปิดใช้งาน</td><td>เครื่องมือหายจากแชท หรือบริการหลักถูกแทนที่ค่า</td><td><span class="risk-tag risk-tag--mid">ลบไม่ได้คืน / แก้ URL แก้กลับได้</span></td></tr>
+            <tr><td>ประกาศข่าว LINE (4.4)</td><td>ประกาศบน LINE</td><td>ส่งข้อความถึงผู้ติดตามทั้งหมดทันที ใช้โควตารายเดือน</td><td><span class="risk-tag risk-tag--high">ไม่ได้ — เรียกคืนข้อความที่ส่งแล้วไม่ได้</span></td></tr>
+            <tr><td>รายงาน AI (1.2)</td><td>สร้างรายงานสัปดาห์นี้ซ้ำ</td><td>ไม่มีตัวกันสร้างซ้ำ อาจได้รายงานซ้ำในคลัง</td><td><span class="risk-tag risk-tag--none">ไม่กระทบข้อมูลอื่น</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <span class="callout__label">อยากรู้ลึกกว่านี้</span>
+        <p>คู่มือนี้อธิบายเฉพาะมุมมองการใช้งาน — ถ้าต้องการรู้ระดับไฟล์โค้ด, endpoint API, หรือโครงสร้างฐานข้อมูลเบื้องหลังแต่ละเมนู ดูได้ที่ <a href="../part3/index.html">พาร์ท 3 — พัฒนาและดูแลระบบต่อ</a></p>
+      </div>
+    </section>
+
+    <section class="section" id="glossary">
+      <div class="section-head"><h2>คำศัพท์ที่เจอบ่อยในหน้าแอดมิน</h2></div>
+      <dl class="glossary">
+        <div><dt>ชิ้นข้อมูล (chunk)</dt><dd>เอกสาร 1 ฉบับที่นำเข้าจะถูกตัดแบ่งเป็นชิ้นย่อย ๆ หลายชิ้น แต่ละชิ้นคือหน่วยที่บอทค้นหาและใช้ตอบคำถาม</dd></div>
+        <div><dt>โดเมน (domain)</dt><dd>หมวดสินค้า/หัวข้อหลัก เช่น ปาล์มน้ำมัน โคนม กุ้ง — ใช้จัดกลุ่มเอกสารและกรองการค้นหา</dd></div>
+        <div><dt>ตอบไม่ได้ (unanswerable)</dt><dd>คำถามที่ระบบค้นไม่เจอเอกสารที่เกี่ยวข้องพอ จึงตอบว่าไม่มีข้อมูล แทนที่จะเดา</dd></div>
+        <div><dt>เซสชันหมดอายุ</dt><dd>การเข้าสู่ระบบมีอายุจำกัด หมดแล้วระบบจะพากลับไปหน้าล็อกอินอัตโนมัติ</dd></div>
+        <div><dt>แขก (guest)</dt><dd>ผู้ใช้ที่คุยกับบอทโดยไม่ได้ล็อกอิน/สมัครสมาชิก</dd></div>
+        <div><dt>โควตาข้อความ LINE</dt><dd>จำนวนข้อความที่บัญชี LINE Official Account ส่งได้ฟรี/ตามแพ็กเกจในแต่ละเดือน การประกาศข่าวแต่ละครั้งใช้โควตานี้</dd></div>
+      </dl>
+    </section>
+  </main>
+</div>
+
+<footer>เอกสารพาร์ท 2 — คู่มือนี้อธิบายตามเมนูจริงในระบบหลังบ้าน ณ วันที่จัดทำ หากเมนูมีการเปลี่ยนแปลงในอนาคต เนื้อหาบางส่วนอาจไม่ตรงกับหน้าจอจริง</footer>
