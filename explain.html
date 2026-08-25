@@ -1,0 +1,485 @@
+<title>เข้าใจค่า Local vs Production — OAE Chatbot</title>
+<style>
+  :root {
+    --bg: #f6f8f3; --surface: #ffffff; --surface-2: #eef2ea;
+    --ink: #17211a; --ink-muted: #4c5a4f; --ink-faint: #7c8a7d;
+    --line: #dee6da; --line-strong: #c4d0bf;
+    --accent: #266448; --accent-ink: #ffffff; --accent-soft: #e2efe4; --accent-soft-line: #bcdac4;
+    --gold: #9a6d12; --gold-soft: #fbf1dc; --gold-soft-line: #ecd28b;
+    --red: #a3312a; --red-soft: #fbeae8; --red-soft-line: #eab7b1;
+    --code-bg: #10231a; --code-ink: #d9ead9; --code-accent: #7fd7a0;
+    --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
+    --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+      --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+      --line: #2b352a; --line-strong: #3a463790;
+      --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+      --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+      --red: #e08a83; --red-soft: #2e1a18; --red-soft-line: #593330;
+      --code-bg: #0b1710; --code-ink: #cfe6d2; --code-accent: #8fe0ab;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+    --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+    --line: #2b352a; --line-strong: #3a463790;
+    --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+    --gold: #e3b95f; --gold-soft: #2e2413; --gold-soft-line: #5a4520;
+    --red: #e08a83; --red-soft: #2e1a18; --red-soft-line: #593330;
+    --code-bg: #0b1710; --code-ink: #cfe6d2; --code-accent: #8fe0ab;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 700; color: var(--ink); }
+  p { text-wrap: pretty; }
+  code { font-family: var(--font-mono); font-size: 0.87em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.4em; }
+
+  .topbar { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .topbar__row { display: flex; align-items: center; gap: 12px; padding: 13px 24px; }
+  .topbar__mark { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 16px; flex: none; }
+  .topbar__title { font-weight: 700; font-size: 15px; }
+  .topbar__sub { font-size: 12.5px; color: var(--ink-faint); }
+  .topbar__back { margin-inline-start: auto; font-size: 12.6px; font-weight: 600; color: var(--ink-muted); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; }
+  .topbar__back:hover { border-color: var(--accent); color: var(--accent); }
+
+  main { max-width: 800px; margin: 0 auto; padding: 40px clamp(20px, 4vw, 40px) 100px; }
+
+  .hero { margin-bottom: 30px; }
+  .hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+  .hero__eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .hero h1 { font-size: clamp(23px, 3.2vw, 30px); line-height: 1.3; margin: 0 0 12px; }
+  .hero p.lead { font-size: 15.5px; color: var(--ink-muted); margin: 0; }
+
+  .callout { border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 13px 16px; margin: 16px 0; }
+  .callout p { margin: 0; font-size: 13.6px; color: var(--ink); }
+  .callout p + p { margin-top: 8px; }
+  .callout__label { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 5px; }
+  .callout--gold { border-inline-start-color: var(--gold); background: var(--gold-soft); }
+  .callout--gold .callout__label { color: var(--gold); }
+  .callout--red { border-inline-start-color: var(--red); background: var(--red-soft); }
+  .callout--red .callout__label { color: var(--red); }
+
+  .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+  @media (max-width: 620px) { .cmp { grid-template-columns: 1fr; } }
+  .cmp__card { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: var(--surface); box-shadow: var(--shadow); }
+  .cmp__card h3 { font-size: 13.5px; margin: 0 0 8px; display: flex; align-items: center; gap: 7px; }
+  .cmp__card ul { margin: 0; padding-inline-start: 18px; font-size: 13px; color: var(--ink-muted); }
+  .cmp__card li + li { margin-top: 5px; }
+  .cmp__card code { font-size: 0.85em; }
+
+  .partlabel { display: flex; align-items: center; gap: 10px; margin: 40px 0 4px; font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+  .partlabel::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .partlabel:first-of-type { margin-top: 30px; }
+
+  .step { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); margin: 14px 0; overflow: hidden; scroll-margin-top: 90px; }
+  .step__head { display: flex; align-items: flex-start; gap: 13px; padding: 16px 20px 14px; border-bottom: 1px solid var(--line); }
+  .step__badge { flex: none; width: 32px; height: 32px; border-radius: 9px; background: var(--accent-soft); border: 1px solid var(--accent-soft-line); color: var(--accent); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 14px; }
+  .step__head h2 { font-size: 16.5px; margin: 0; }
+  .step__program { font-size: 12.5px; color: var(--ink-faint); margin-top: 2px; }
+  .step__body { padding: 16px 20px 18px; }
+  .step__body > p { font-size: 13.8px; color: var(--ink); margin: 0 0 12px; }
+  .step__body > p .sub { color: var(--ink-muted); }
+
+  .cmdblock { position: relative; margin: 4px 0 16px; }
+  .cmdblock pre { background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 13px 50px 13px 15px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.55; margin: 0; }
+  .cmdblock pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+  .cmdblock a { color: #fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.4); }
+  .cmdblock a:hover { color: var(--code-accent); }
+  code a { color: var(--accent); text-underline-offset: 2px; }
+  .cmdblock .cap { font-size: 12px; color: var(--ink-faint); margin: 0 0 5px; }
+  .copy-btn { position: absolute; top: 8px; right: 8px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.08); color: var(--code-ink); border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+  .copy-btn:hover { background: rgba(255,255,255,0.16); }
+  .copy-btn.copied { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  .explain { display: grid; gap: 10px; margin-top: 4px; }
+  .explain-row { display: flex; gap: 10px; }
+  .explain-row .icon { flex: none; width: 22px; text-align: center; font-size: 14px; padding-top: 1px; }
+  .explain-row .txt { font-size: 13.8px; color: var(--ink); }
+  .explain-row .txt strong { color: var(--ink); }
+  .explain-row .txt .sub { color: var(--ink-muted); }
+
+  .verify { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 12px; font-size: 13px; color: var(--ink-muted); }
+  .verify strong { color: var(--ink); }
+  .verify code { font-size: 0.92em; }
+
+  .step__check { display: flex; align-items: center; gap: 9px; margin-top: 14px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); }
+  .step__check input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; flex: none; }
+  .step__check label { font-size: 13.3px; cursor: pointer; color: var(--ink-muted); }
+  .step__check.checked { background: var(--accent-soft); border-color: var(--accent-soft-line); }
+  .step__check.checked label { color: var(--accent); font-weight: 600; }
+
+  .cheatsheet { border: 1px solid var(--line-strong); border-radius: 14px; background: var(--surface-2); padding: 18px 20px; margin: 24px 0; }
+  .cheatsheet h3 { font-size: 14.5px; margin: 0 0 12px; }
+  table.cheat { width: 100%; border-collapse: collapse; font-size: 13.2px; }
+  table.cheat th, table.cheat td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.cheat th { color: var(--ink-faint); font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  table.cheat code { font-size: 0.86em; }
+  table.cheat tr:last-child td { border-bottom: none; }
+
+  footer { max-width: 800px; margin: 0 auto; border-top: 1px solid var(--line); padding: 22px clamp(20px, 4vw, 40px) 40px; font-size: 12.5px; color: var(--ink-faint); }
+</style>
+
+<div class="topbar">
+  <div class="topbar__row">
+    <div class="topbar__mark">🧭</div>
+    <div>
+      <div class="topbar__title">เข้าใจค่า Local vs Production</div>
+      <div class="topbar__sub">OAE Chatbot — ทำไม frontend ที่รันในเครื่อง ถึงบางทีคุยกับ production จริง</div>
+    </div>
+    <a class="topbar__back" href="index.html">← หน้าหลัก</a>
+  </div>
+</div>
+
+<main>
+  <div class="hero">
+    <div class="hero__eyebrow">อ้างอิงประกอบการรัน local</div>
+    <h1>ทำไม database local ดูมีข้อมูลเยอะเหมือน production ทั้งที่เพิ่งตั้งเครื่องเอง</h1>
+    <p class="lead">
+      สรุปจากคำถามจริงที่เจอ: รัน <code>npm run dev</code> แล้วเข้าหน้าเว็บ เห็นข้อมูลหมวดหมู่เยอะผิดปกติ (30,000+ รายการ)
+      ทั้งที่ database ในเครื่องมีแค่ไม่กี่สิบแถว — สาเหตุคือมี "จุดตั้งค่า" หลายจุดที่แยกกันคนละไฟล์ คนละกลไก
+      เอกสารนี้ไล่ทีละไฟล์ ทีละคำสั่ง ให้เข้าใจว่าต้องดูตรงไหน และเช็คยังไงให้มั่นใจ ไม่ต้องเดา
+    </p>
+  </div>
+
+  <div class="callout callout--red">
+    <span class="callout__label">อาการที่เจอ</span>
+    <p>เปิดหน้าเว็บที่ <code><a href="http://localhost:5173" target="_blank" rel="noopener">localhost:5173</a></code> แล้วเห็นหมวดหมู่ความรู้เยอะผิดปกติ (เช่น "งบประมาณ", "รายงานประจำปี")
+    ทั้งที่เพิ่งตั้ง database ในเครื่องเอง ยังไม่ได้ ingest ข้อมูลอะไรเข้าไปเลย</p>
+  </div>
+
+  <div class="callout">
+    <span class="callout__label">สาเหตุที่แท้จริง</span>
+    <p><strong>Frontend dev server (5173) ไม่ได้คุยกับ backend local (8000)</strong> แต่ proxy ไปคุยกับ backend
+    <strong>production จริง</strong> เพราะไม่ได้ตั้งค่าตัวแปรตัวหนึ่งก่อนรัน <code>npm run dev</code> —
+    ค่า default ในโค้ดจะ fallback ไปที่เซิร์ฟเวอร์จริงทันที</p>
+  </div>
+
+  <div class="cmp">
+    <div class="cmp__card">
+      <h3>🐍 Backend (Python)</h3>
+      <ul>
+        <li>อ่านค่าจาก <code>app/config.py</code></li>
+        <li>โหลดไฟล์ <code>.env</code> ให้ <strong>อัตโนมัติ</strong></li>
+        <li>แพทเทิร์น: <code>os.environ.get("KEY", default)</code></li>
+      </ul>
+    </div>
+    <div class="cmp__card">
+      <h3>⚡ Frontend (Vite/Node)</h3>
+      <ul>
+        <li>อ่านค่าจาก <code>vite.config.ts</code></li>
+        <li><strong>ไม่โหลด</strong> <code>.env</code> ให้อัตโนมัติ</li>
+        <li>แพทเทิร์น: <code>process.env.KEY || default</code></li>
+        <li>ต้องตั้งเป็น shell env var เองทุกครั้ง</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════════ STEP 1 ══════════════ -->
+  <div class="partlabel">ฝั่ง Backend</div>
+
+  <section class="step" id="s1">
+    <div class="step__head">
+      <div class="step__badge">1</div>
+      <div>
+        <h2>เปิด app/config.py ดูแพทเทิร์นการอ่านค่า</h2>
+        <div class="step__program">ไฟล์: app/config.py</div>
+      </div>
+    </div>
+    <div class="step__body">
+      <p>ทุกตัวแปรในไฟล์นี้ใช้แพทเทิร์นเดียวกันหมด จำรูปแบบนี้ไว้แล้วอ่านโค้ดที่เหลือได้เอง:</p>
+      <div class="cmdblock">
+        <pre><code>DATABASE_URL = os.environ.get(
+    "DATABASE_URL", "postgresql://postgres:postgres@localhost:5433/postgres"
+)
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "<a href="http://localhost:11434" target="_blank" rel="noopener">http://localhost:11434</a>")</code></pre>
+      </div>
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">🔑</span>
+          <span class="txt"><strong>วิธีอ่าน:</strong>
+            <span class="sub"><code>os.environ.get("ชื่อตัวแปร", "ค่า default")</code> — ถ้ามีใครตั้งค่าตัวแปรนี้ไว้ (จาก <code>.env</code> หรือ shell) จะใช้ค่านั้น
+            ถ้าไม่มีใครตั้งเลย จะใช้ค่าตัวที่สองในวงเล็บเป็น default</span>
+          </span>
+        </div>
+      </div>
+      <div class="step__check">
+        <input type="checkbox" id="c1">
+        <label for="c1">เปิด app/config.py แล้วหาแพทเทิร์นนี้เจอในตัวแปรอื่น ๆ เช่น JWT_SECRET, ADMIN_PASSWORD, SMTP_HOST</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s2">
+    <div class="step__head">
+      <div class="step__badge">2</div>
+      <div>
+        <h2>เปิดไฟล์ .env ที่ root โปรเจกต์</h2>
+        <div class="step__program">ไฟล์: .env (ไม่ใช่ .env.example)</div>
+      </div>
+    </div>
+    <div class="step__body">
+      <p>กฎ 2 ข้อที่ต้องจำ:</p>
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">✅</span>
+          <span class="txt"><strong>บรรทัดที่ไม่มี # นำหน้า + มีค่าจริงหลัง =</strong>
+            <span class="sub">ค่านี้ "ชนะ" default ใน config.py เพราะ config.py เรียก <code>load_dotenv(override=True)</code> — override=True แปลว่า <code>.env</code> ชนะแม้แต่ค่าที่อาจตั้งไว้ในเครื่อง (Windows environment variables) ด้วย</span>
+          </span>
+        </div>
+        <div class="explain-row">
+          <span class="icon">⛔</span>
+          <span class="txt"><strong>บรรทัดที่ขึ้นต้นด้วย #</strong>
+            <span class="sub">เท่ากับไม่มีบรรทัดนั้นเลย → config.py fallback ไปใช้ default ของตัวเอง</span>
+          </span>
+        </div>
+      </div>
+      <div class="callout callout--gold">
+        <span class="callout__label">กับดักที่เจอมาแล้ว</span>
+        <p>เขียน <code>KEY=&nbsp;&nbsp;&nbsp;&nbsp;# คำอธิบาย</code> (เว้นค่าว่างแต่มีคอมเมนต์ต่อท้าย) — python-dotenv จะอ่านทั้ง
+        <code># คำอธิบาย</code> เป็นค่าจริงของตัวแปรนั้นไปเลย ไม่ใช่ค่าว่าง! ถ้าตัวแปรนั้นถูกเอาไป <code>int(...)</code> ต่อ โปรแกรมจะ crash ทันที
+        วิธีที่ถูกต้องถ้ายังไม่อยากตั้งค่า คือ comment ทิ้งทั้งบรรทัดด้วย <code>#</code> นำหน้าเลย ไม่ใช่เว้นแค่ค่า</p>
+      </div>
+      <div class="step__check">
+        <input type="checkbox" id="c2">
+        <label for="c2">เปิด .env แล้วเทียบทีละบรรทัดกับ default ใน config.py</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s3">
+    <div class="step__head">
+      <div class="step__badge">3</div>
+      <div>
+        <h2>เช็คค่าจริงที่ backend ใช้ (ไม่ต้องเดา)</h2>
+        <div class="step__program">คำสั่ง: uv run python -c "..."</div>
+      </div>
+    </div>
+    <div class="step__body">
+      <p>อย่าเดาจากการอ่านโค้ดอย่างเดียว ให้รันคำสั่งนี้เพื่อดูค่าที่ "คำนวณเสร็จแล้ว" จริง ๆ:</p>
+      <div class="cmdblock">
+        <pre><code>uv run python -c "from app import config; print(config.DATABASE_URL); print(config.OLLAMA_HOST)"</code></pre>
+        <button class="copy-btn" data-copy='uv run python -c "from app import config; print(config.DATABASE_URL); print(config.OLLAMA_HOST)"'>คัดลอก</button>
+      </div>
+      <div class="verify">ผลลัพธ์ที่ได้ = ค่าจริงที่ <code>rag_server.py</code> จะใช้ตอนสตาร์ท ไม่ใช่การอ่านโค้ดแล้วเดาเอา</div>
+      <div class="step__check">
+        <input type="checkbox" id="c3">
+        <label for="c3">รันคำสั่งนี้แล้วเห็นค่า DATABASE_URL / OLLAMA_HOST จริงของเครื่องตัวเอง</label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ STEP 4 ══════════════ -->
+  <div class="partlabel">ฝั่ง Frontend — จุดต่างสำคัญ</div>
+
+  <section class="step" id="s4">
+    <div class="step__head">
+      <div class="step__badge">4</div>
+      <div>
+        <h2>เปิด vite.config.ts ดูแพทเทิร์นฝั่ง frontend</h2>
+        <div class="step__program">ไฟล์: vite.config.ts</div>
+      </div>
+    </div>
+    <div class="step__body">
+      <div class="cmdblock">
+        <pre><code>"/chat": {
+  target: process.env.VITE_PROXY_TARGET || "<a href="http://151.246.242.116:8818" target="_blank" rel="noopener">http://151.246.242.116:8818</a>",
+  changeOrigin: true,
+},</code></pre>
+      </div>
+      <div class="callout callout--red">
+        <span class="callout__label">ต่างจาก backend ตรงนี้</span>
+        <p><code>process.env.VITE_PROXY_TARGET</code> อ่านจาก <strong>Windows/shell environment variable ล้วน ๆ</strong> —
+        ไม่มีโค้ดตรงไหนใน <code>vite.config.ts</code> โหลดไฟล์ <code>.env</code> เลย
+        ต่อให้เขียน <code>VITE_PROXY_TARGET=<a href="http://localhost:8000" target="_blank" rel="noopener">http://localhost:8000</a></code> ลงใน <code>.env</code> ก็ <strong>ไม่มีผลกับไฟล์นี้เลย</strong></p>
+      </div>
+      <p style="margin-top:12px">ถ้าไม่ตั้งตัวแปรนี้ก่อนรัน <code>npm run dev</code> → ทุก request (<code>/chat</code>, <code>/admin/...</code>, <code>/categories</code> ฯลฯ)
+      จะยิงตรงไปที่ <code><a href="http://151.246.242.116:8818" target="_blank" rel="noopener">http://151.246.242.116:8818</a></code> ซึ่งคือ <strong>production VPS จริง</strong> ทันที — นี่คือรากของปัญหาที่เจอ</p>
+      <div class="step__check">
+        <input type="checkbox" id="c4">
+        <label for="c4">เปิด vite.config.ts แล้วหาบรรทัด VITE_PROXY_TARGET เจอ</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s5">
+    <div class="step__head">
+      <div class="step__badge">5</div>
+      <div>
+        <h2>เช็คว่า terminal ที่รัน npm run dev อยู่ ตั้งค่านี้หรือยัง</h2>
+        <div class="step__program">คำสั่ง: echo $env:VITE_PROXY_TARGET</div>
+      </div>
+    </div>
+    <div class="step__body">
+      <p>ไปที่ terminal เดิมที่รัน <code>npm run dev</code> ค้างอยู่ (หรือเทอร์มินัลที่ใช้สั่งตอนนั้น) พิมพ์:</p>
+      <div class="cmdblock">
+        <pre><code>echo $env:VITE_PROXY_TARGET</code></pre>
+        <button class="copy-btn" data-copy="echo $env:VITE_PROXY_TARGET">คัดลอก</button>
+      </div>
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">⛔</span>
+          <span class="txt"><strong>ว่างเปล่า</strong> <span class="sub">→ process ที่รันอยู่ไม่ได้ตั้งค่านี้ → กำลังคุยกับ production แน่นอน</span></span>
+        </div>
+        <div class="explain-row">
+          <span class="icon">✅</span>
+          <span class="txt"><strong>มีค่า <a href="http://localhost:8000" target="_blank" rel="noopener">http://localhost:8000</a></strong> <span class="sub">→ ตั้งไว้แล้ว ถูกต้อง</span></span>
+        </div>
+      </div>
+      <div class="callout callout--gold">
+        <span class="callout__label">ข้อควรรู้</span>
+        <p>ตัวแปรนี้อยู่แค่ใน <strong>session ของ terminal นั้น</strong> เท่านั้น ปิด terminal แล้วเปิดใหม่ ค่านี้หายไปเลย
+        ต้องตั้งใหม่ทุกครั้งที่เปิด terminal ใหม่มารัน <code>npm run dev</code></p>
+      </div>
+      <div class="step__check">
+        <input type="checkbox" id="c5">
+        <label for="c5">เช็คแล้วรู้ว่า terminal ปัจจุบันตั้งค่านี้ไว้หรือยัง</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s6">
+    <div class="step__head">
+      <div class="step__badge">6</div>
+      <div>
+        <h2>verify แบบไม่ต้องพึ่งความจำ — เทียบ response จริง</h2>
+        <div class="step__program">คำสั่ง: curl (ยิงตรง vs ผ่าน proxy)</div>
+      </div>
+    </div>
+    <div class="step__body">
+      <p>วิธีนี้ใช้ได้เสมอไม่ว่าจะสงสัยเรื่องอะไร — เทียบ backend ตรง ๆ กับที่ผ่าน frontend proxy:</p>
+      <div class="cmdblock">
+        <pre><code>curl <a href="http://localhost:8000/categories" target="_blank" rel="noopener">http://localhost:8000/categories</a></code></pre>
+        <button class="copy-btn" data-copy="curl http://localhost:8000/categories">คัดลอก</button>
+      </div>
+      <div class="cmdblock">
+        <pre><code>curl <a href="http://localhost:5173/categories" target="_blank" rel="noopener">http://localhost:5173/categories</a></code></pre>
+        <button class="copy-btn" data-copy="curl http://localhost:5173/categories">คัดลอก</button>
+      </div>
+      <div class="explain">
+        <div class="explain-row">
+          <span class="icon">✅</span>
+          <span class="txt"><strong>ผลลัพธ์เหมือนกัน</strong> <span class="sub">→ frontend กำลังคุยกับ local backend ถูกต้องแล้ว</span></span>
+        </div>
+        <div class="explain-row">
+          <span class="icon">⛔</span>
+          <span class="txt"><strong>ผลลัพธ์ต่างกัน</strong> <span class="sub">→ frontend (5173) กำลังคุยกับ production อยู่ ยังไม่ได้ตั้งค่า proxy ให้ถูก</span></span>
+        </div>
+      </div>
+      <div class="step__check">
+        <input type="checkbox" id="c6">
+        <label for="c6">รันสองคำสั่งนี้แล้วเทียบผลลัพธ์ดูเอง</label>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s7">
+    <div class="step__head">
+      <div class="step__badge">7</div>
+      <div>
+        <h2>แก้ปัญหา — ตั้งค่าให้ถูกก่อนรัน dev server</h2>
+        <div class="step__program">ต้องทำใน terminal เดียวกับที่จะรัน npm run dev</div>
+      </div>
+    </div>
+    <div class="step__body">
+      <p>1. ไป terminal ที่รัน <code>npm run dev</code> ค้างอยู่ กด <code>Ctrl+C</code> เพื่อหยุดก่อน<br>
+      2. พิมพ์ตั้งค่า แล้วค่อยรันใหม่ (แยกกัน 2 บรรทัด):</p>
+      <div class="cmdblock">
+        <pre><code>$env:VITE_PROXY_TARGET = "<a href="http://localhost:8000" target="_blank" rel="noopener">http://localhost:8000</a>"
+npm run dev</code></pre>
+        <button class="copy-btn" data-copy='$env:VITE_PROXY_TARGET = "http://localhost:8000"&#10;npm run dev'>คัดลอก</button>
+      </div>
+      <p>3. กลับไปทำ ขั้น 5 และ ขั้น 6 ซ้ำอีกรอบ เพื่อยืนยันว่าตั้งถูกแล้ว</p>
+      <div class="step__check">
+        <input type="checkbox" id="c7">
+        <label for="c7">ตั้งค่าและรัน dev server ใหม่ แล้ว verify ผ่านแล้ว</label>
+      </div>
+    </div>
+  </section>
+
+  <div class="cheatsheet">
+    <h3>📌 สรุปสั้น ๆ ไว้ทวนภายหลัง</h3>
+    <table class="cheat">
+      <tr><th>อยากรู้อะไร</th><th>ดูไฟล์ไหน</th><th>วิธี verify</th></tr>
+      <tr>
+        <td>backend ใช้ DB/Ollama ตัวไหน</td>
+        <td><code>.env</code> + <code>app/config.py</code></td>
+        <td><code>uv run python -c "from app import config; print(config.DATABASE_URL)"</code></td>
+      </tr>
+      <tr>
+        <td>frontend proxy ไปหา backend ตัวไหน</td>
+        <td><code>vite.config.ts</code></td>
+        <td><code>echo $env:VITE_PROXY_TARGET</code> ใน terminal ที่รัน <code>npm run dev</code></td>
+      </tr>
+      <tr>
+        <td>ตอนนี้กำลังคุยกับ local หรือ production จริง</td>
+        <td>—</td>
+        <td>เทียบ <code>curl <a href="http://localhost:8000/categories" target="_blank" rel="noopener">localhost:8000/categories</a></code> กับ <code>curl <a href="http://localhost:5173/categories" target="_blank" rel="noopener">localhost:5173/categories</a></code></td>
+      </tr>
+    </table>
+  </div>
+</main>
+
+<footer>
+  สร้างจากคำถาม/คำอธิบายจริงระหว่างเซสชันแก้ไฟล์ .env และไล่หา proxy target ของโปรเจกต์ OAE Chatbot
+</footer>
+
+<script>
+  (function () {
+    var STORAGE_KEY = "OAE-explain-localvsprod-v1";
+    var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.step__check input[type="checkbox"]'));
+
+    function loadState() {
+      try { return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}"); }
+      catch (e) { return {}; }
+    }
+    function saveState(state) {
+      try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    }
+
+    var state = loadState();
+    checkboxes.forEach(function (cb) {
+      if (state[cb.id]) { cb.checked = true; cb.closest(".step__check").classList.add("checked"); }
+      cb.addEventListener("change", function () {
+        cb.closest(".step__check").classList.toggle("checked", cb.checked);
+        var s = loadState(); s[cb.id] = cb.checked; saveState(s);
+      });
+    });
+
+    Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var text = (btn.getAttribute("data-copy") || "").replace(/&#10;/g, "\n");
+        var done = function () {
+          var original = btn.textContent;
+          btn.textContent = "คัดลอกแล้ว ✓";
+          btn.classList.add("copied");
+          window.setTimeout(function () {
+            btn.textContent = original;
+            btn.classList.remove("copied");
+          }, 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); done(); });
+        } else {
+          fallbackCopy(text); done();
+        }
+      });
+    });
+    function fallbackCopy(text) {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  })();
+</script>

@@ -221,6 +221,14 @@
               ถ้าเป็นกรณีเหล่านี้ เราสามารถตอบกลับได้เลย ไม่ต้องเสียเวลาไปค้นเอกสาร</span>
           </span>
         </div>
+        <div class="explain-row">
+          <span class="icon">💡</span>
+          <span class="txt">
+            <strong>ทำไมต้อง print ค่า <code>question</code>:</strong>
+            <span class="sub">แสดงคำถามดิบที่ผู้ใช้พิมพ์เข้ามา ก่อนที่ระบบจะเริ่มวิเคราะห์อะไรเลย
+              ใช้ยืนยันว่าสิ่งที่เราพิมพ์ในหน้าแชท เดินทางมาถึงจุดแรกสุดนี้จริง ๆ ตรงตามที่พิมพ์</span>
+          </span>
+        </div>
       </div>
       <div class="findblock">หาบรรทัดนี้ (ใกล้ต้นไฟล์ ฟังก์ชัน <code>classify_intent</code>)</div>
       <div class="cmdblock">
@@ -257,8 +265,17 @@
             จุดนี้จะทำหน้าที่แค่ “พิจารณาก่อน” ว่าจำเป็นหรือไม่</span>
         </span>
       </div>
+      <div class="explain-row">
+        <span class="icon">💡</span>
+        <span class="txt">
+          <strong>ทำไมต้อง print ค่า <code>question</code>/<code>domain</code>:</strong>
+          <span class="sub"><code>question</code> คือคำถามเดิมที่ส่งต่อมาจาก TRACE 1 ส่วน <code>domain</code>
+            คือหมวดสินค้าที่ผู้ใช้เลือกไว้ตอนแชท (เช่น "ปาล์มน้ำมัน" หรือ "ทั้งหมด")
+            การเห็นค่าคู่นี้ช่วยให้รู้ว่า ตอนที่ระบบพิจารณาว่าจะเรียก API เสริมไหม กำลังดูคำถามและขอบเขตหมวดไหนอยู่</span>
+        </span>
       </div>
-      <div class="findblock">หาบรรทัดนี้ (ท้ายฟังก์ชัน <code>try_enrich</code>)</div>
+      </div>
+      <div class="findblock">หาบรรทัดนี้ (ต้นฟังก์ชัน <code>try_enrich</code>)</div>
       <div class="cmdblock">
         <pre><code>    tools, or all selected tools return no data.
     """
@@ -293,8 +310,17 @@
               ขั้นที่ 2</span>
           </span>
         </div>
+        <div class="explain-row">
+          <span class="icon">💡</span>
+          <span class="txt">
+            <strong>ทำไมต้อง print ค่า <code>query</code>/<code>domain</code>:</strong>
+            <span class="sub"><code>query</code> ที่เห็นตรงนี้อาจไม่เหมือนคำถามเดิมเป๊ะ ๆ แล้ว เพราะบางครั้งระบบจะขยาย/ปรับคำค้นหา
+              ให้ค้นเจอง่ายขึ้นก่อน ส่วน <code>domain</code> บอกว่ากำลังค้นเฉพาะหมวดไหน การพิมพ์ค่านี้ช่วยให้เห็นว่าคำค้นหาที่แท้จริง
+              ที่ถูกส่งไปค้นในฐานความรู้คืออะไรกันแน่</span>
+          </span>
+        </div>
       </div>
-      <div class="findblock">หาบรรทัดนี้ (ท้ายฟังก์ชัน <code>retrieve_expanded</code>)</div>
+      <div class="findblock">หาบรรทัดนี้ (ต้นฟังก์ชัน <code>retrieve_expanded</code>)</div>
       <div class="cmdblock">
         <pre><code>    one embed + one pgvector round-trip per request.
     """
@@ -443,6 +469,15 @@
             <span class="sub">ตรงนี้คือเส้นทางที่หน้าแชทใช้งานจริง โดย <code>/chat/stream</code>
               จะส่งคำตอบกลับมาให้เห็นทีละส่วน ทำให้ข้อความค่อย ๆ ปรากฏบนหน้าจอ โค้ดส่วนนี้มีการเรียก DeepSeek และบันทึก
               log แยกจาก TRACE 4 แม้จะทำหน้าที่คล้ายกัน แต่เป็นคนละฟังก์ชันกัน</span>
+          </span>
+        </div>
+        <div class="explain-row">
+          <span class="icon">💡</span>
+          <span class="txt">
+            <strong>ทำไมต้อง print ค่า <code>intent</code>/<code>coverage</code>:</strong>
+            <span class="sub">เหมือนกับ TRACE 4 — <code>pc.intent</code> คือผลจาก TRACE 1 ว่าคำถามนี้เข้าข่ายอะไร ส่วน
+              <code>pc.coverage</code> บอกว่าค้นข้อมูลจากเอกสารแล้วได้ข้อมูลครอบคลุมแค่ไหน แต่ครั้งนี้ค่าทั้งสองถูกพิมพ์ในเส้นทาง
+              streaming ที่หน้าแชทใช้งานจริง ทำให้เห็นว่าค่าที่ส่งต่อมาจากขั้นตอนก่อนหน้าถูกต้องตรงกันทั้งสองเส้นทางหรือไม่</span>
           </span>
         </div>
       </div>
@@ -644,7 +679,7 @@
   <div class="step__head">
     <div class="step__badge">8</div>
     <div>
-      <h2>ดู log แล้วลองวาดเส้นทางด้วยตัวเอง</h2>
+      <h2>ดู log แล้วเพื่อเข้าใจเส้นทาง</h2>
       <div class="step__program">กลับไปหน้าต่างที่เปิด log ค้างไว้ (ขั้นที่ 1)</div>
     </div>
   </div>
@@ -663,10 +698,38 @@
       <div class="explain-row">
         <span class="icon">✏️</span>
         <span class="txt">
-          <strong>ลองคำถามทักทาย: </strong>
-          <span class="sub"> พิมพ์ข้อความ เช่น สวัสดี ลองดูใน log ว่าคำถามผ่าน TRACE 4 หรือไม่</span>
+          <strong>ลองคำถามหลาย ๆ แบบ: </strong>
+          <span class="sub"> พิมพ์ข้อความ เช่น สวัสดี , คำถามอื่น ๆ ลองดูใน log  ** อย่าลืมเปลี่ยน โดเมนที่ต้องการถาม **</span>
           </span>
+          
       </div>
+
+      <div class="cmdblock">
+        <pre><code>สวัสดี</code></pre>
+        <button class="copy-btn" data-copy="สวัสดี">คัดลอก</button>
+      </div>
+
+      <div class="cmdblock">
+        <pre><code>เลี้ยงไก่ยังไงดี</code></pre>
+        <button class="copy-btn" data-copy="เลี้ยงไก่ยังไงดี">คัดลอก</button>
+      </div>
+
+
+
+      <div class="cmdblock">
+        <pre><code>What do you know about chickens</code></pre>
+        <button class="copy-btn" data-copy="What do you know about chickens">คัดลอก</button>
+      </div>
+      
+      <div class="cmdblock">
+        <pre><code>How to plant palm oil</code></pre>
+        <button class="copy-btn" data-copy="How to plant palm oil">คัดลอก</button>
+      </div>
+      <div class="cmdblock">
+        <pre><code>temperature today</code></pre>
+        <button class="copy-btn" data-copy="temperature today">คัดลอก</button>
+      </div>
+
     </div>
 
     <div class="step__check">

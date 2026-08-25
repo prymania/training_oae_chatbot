@@ -1,0 +1,921 @@
+<title>Developer Reference — OAE Chatbot</title>
+<style>
+  :root {
+    --bg: #f6f8f3; --surface: #ffffff; --surface-2: #eef2ea;
+    --ink: #17211a; --ink-muted: #4c5a4f; --ink-faint: #7c8a7d;
+    --line: #dee6da; --line-strong: #c4d0bf;
+    --accent: #266448; --accent-ink: #ffffff; --accent-soft: #e2efe4; --accent-soft-line: #bcdac4;
+    --warn: #9a5a12; --warn-soft: #fbeedc; --warn-soft-line: #ecc98b;
+    --danger: #b3261e; --danger-soft: #fbe4e2; --danger-soft-line: #eab3ac;
+    --blue: #29628c; --blue-soft: #e7f1fa; --blue-soft-line: #b9d7ea;
+    --code-bg: #10231a; --code-ink: #d9ead9; --code-accent: #7fd7a0;
+    --shadow: 0 1px 2px rgba(20, 30, 22, 0.06), 0 6px 20px -8px rgba(20, 30, 22, 0.12);
+    --font-ui: "Noto Sans Thai UI", "Segoe UI Variable", "Segoe UI", "Leelawadee UI", "TH Sarabun New", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Sarabun", "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+      --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+      --line: #2b352a; --line-strong: #3a463790;
+      --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+      --warn: #e3a763; --warn-soft: #2e2314; --warn-soft-line: #5a4322;
+      --danger: #ff8a80; --danger-soft: #331715; --danger-soft-line: #6b2b26;
+      --blue: #7fb8de; --blue-soft: #16242e; --blue-soft-line: #2c4a5e;
+      --code-bg: #0b1710; --code-ink: #cfe6d2; --code-accent: #8fe0ab;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10160f; --surface: #161f16; --surface-2: #1c261b;
+    --ink: #e7ede4; --ink-muted: #a7b6a5; --ink-faint: #758574;
+    --line: #2b352a; --line-strong: #3a463790;
+    --accent: #6fc492; --accent-ink: #0c1a10; --accent-soft: #1c2e21; --accent-soft-line: #2f4a37;
+    --warn: #e3a763; --warn-soft: #2e2314; --warn-soft-line: #5a4322;
+    --danger: #ff8a80; --danger-soft: #331715; --danger-soft-line: #6b2b26;
+    --blue: #7fb8de; --blue-soft: #16242e; --blue-soft-line: #2c4a5e;
+    --code-bg: #0b1710; --code-ink: #cfe6d2; --code-accent: #8fe0ab;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); }
+  a:hover { text-decoration-thickness: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 700; color: var(--ink); }
+  p { text-wrap: pretty; }
+  code { font-family: var(--font-mono); font-size: 0.87em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0.05em 0.4em; }
+
+  /* ── Top bar ─────────────────────────────────────────────────────────── */
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; z-index: 20; }
+  .topbar__mark { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 17px; flex: none; }
+  .topbar__title { font-weight: 700; font-size: 15px; letter-spacing: 0.01em; }
+  .topbar__sub { font-size: 12.5px; color: var(--ink-faint); }
+  .topbar__meta { margin-inline-start: auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--ink-muted); }
+  .pill { border: 1px solid var(--line-strong); background: var(--surface-2); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+  .topbar__back { font-size: 12.6px; font-weight: 600; color: var(--ink-muted); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px; }
+  .topbar__back:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Shell / sidebar ─────────────────────────────────────────────────── */
+  .shell { display: grid; grid-template-columns: 258px minmax(0, 1fr); gap: 0; max-width: 1280px; margin: 0 auto; }
+  .sidenav { position: sticky; top: 63px; align-self: start; height: calc(100vh - 63px); overflow-y: auto; padding: 28px 18px 40px 24px; border-inline-end: 1px solid var(--line); }
+  .sidenav h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); margin: 0 0 8px; font-weight: 700; }
+  .sidenav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+  .sidenav a { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 7px; color: var(--ink-muted); text-decoration: none; font-size: 13.5px; font-weight: 600; border-inline-start: 2px solid transparent; }
+  .sidenav a .num { flex: none; width: 20px; height: 20px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line); display: grid; place-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+  .sidenav a:hover { background: var(--surface-2); color: var(--ink); }
+  .sidenav a.active { background: var(--accent-soft); color: var(--accent); border-inline-start-color: var(--accent); }
+  .sidenav a.active .num { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+  main { min-width: 0; padding: 40px clamp(20px, 4vw, 56px) 100px; }
+
+  /* ── Hero ────────────────────────────────────────────────────────────── */
+  .hero { padding-bottom: 32px; border-bottom: 1px solid var(--line); margin-bottom: 40px; }
+  .hero__eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px; }
+  .hero__eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .hero h1 { font-size: clamp(24px, 3.4vw, 33px); line-height: 1.25; margin: 0 0 14px; }
+  .hero p.lead { font-size: 15.5px; color: var(--ink-muted); max-width: 74ch; margin: 0 0 20px; }
+  .hero__facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .hero__fact { background: var(--surface); padding: 12px 16px; }
+  .hero__fact dt { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); margin-bottom: 4px; }
+  .hero__fact dd { margin: 0; font-size: 14px; font-weight: 600; }
+
+  /* ── Sections ────────────────────────────────────────────────────────── */
+  .section { margin-bottom: 54px; scroll-margin-top: 78px; }
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+  .section-num { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-soft-line); border-radius: 7px; padding: 2px 8px; flex: none; }
+  .section h2 { font-size: 22px; margin: 0; }
+  .section > p.dek { color: var(--ink-muted); margin: 10px 0 22px; max-width: 74ch; }
+  .prose { max-width: 78ch; }
+  .prose p { margin: 0 0 12px; color: var(--ink); }
+  .prose ul, .prose ol { margin: 0 0 12px; padding-inline-start: 22px; }
+  .prose li { margin-bottom: 5px; }
+
+  .codeblock { position: relative; background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 14px 50px 14px 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; margin: 10px 0 16px; box-shadow: var(--shadow); }
+  .codeblock code { background: none; border: none; padding: 0; color: inherit; }
+  .codeblock a { color: #fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.4); }
+  .codeblock a:hover { color: var(--code-accent); }
+  code a { color: var(--accent); text-underline-offset: 2px; }
+  .copy-btn { position: absolute; top: 8px; right: 8px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.08); color: var(--code-ink); border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+  .copy-btn:hover { background: rgba(255,255,255,0.16); }
+  .copy-btn.copied { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  /* ── Callouts ────────────────────────────────────────────────────────── */
+  .callout { border: 1px solid var(--line); border-inline-start: 3px solid var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 14px 18px; margin: 16px 0; max-width: 80ch; }
+  .callout p { margin: 0; color: var(--ink); font-size: 13.6px; }
+  .callout p + p { margin-top: 8px; }
+  .callout__label { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 6px; }
+  .callout--warn { border-inline-start-color: var(--warn); background: var(--warn-soft); }
+  .callout--warn .callout__label { color: var(--warn); }
+  .callout--danger { border-inline-start-color: var(--danger); background: var(--danger-soft); }
+  .callout--danger .callout__label { color: var(--danger); }
+  .callout--blue { border-inline-start-color: var(--blue); background: var(--blue-soft); }
+  .callout--blue .callout__label { color: var(--blue); }
+
+  /* ── Tables ──────────────────────────────────────────────────────────── */
+  .tablewrap { overflow-x: auto; margin: 14px 0 20px; border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.4px; min-width: 480px; }
+  caption { text-align: start; padding: 10px 14px 0; font-size: 12.5px; color: var(--ink-faint); }
+  th, td { text-align: start; padding: 8px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th { background: var(--surface-2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); font-weight: 700; border-bottom: 1px solid var(--line-strong); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+  table code { font-size: 0.86em; white-space: nowrap; }
+  .method { font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 5px; }
+  .m-get { background: var(--blue-soft); color: var(--blue); border: 1px solid var(--blue-soft-line); }
+  .m-post { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-soft-line); }
+  .m-put { background: var(--warn-soft); color: var(--warn); border: 1px solid var(--warn-soft-line); }
+  .m-delete { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger-soft-line); }
+
+  /* ── Cards / grids ───────────────────────────────────────────────────── */
+  .cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 16px 0 24px; }
+  .card { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .card__head { padding: 13px 16px 11px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 9px; }
+  .card__head .ico { font-size: 16px; }
+  .card__head h4 { font-size: 14.5px; margin: 0; }
+  .card__body { padding: 13px 16px 15px; }
+  .card__body > p { font-size: 13.3px; color: var(--ink-muted); margin: 0 0 10px; }
+
+  /* ── Terminal step cards ─────────────────────────────────────────────── */
+  .termgrid { display: grid; gap: 14px; margin: 14px 0 20px; }
+  .term { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+  .term__head { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+  .term__badge { flex: none; width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 12.5px; }
+  .term__head h4 { font-size: 14px; margin: 0; }
+  .term__head .stay { margin-inline-start: auto; font-size: 10.5px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+  .term__body { padding: 13px 16px 15px; }
+  .term__body > p { font-size: 13px; color: var(--ink-muted); margin: 0 0 8px; }
+  .term__wait { font-size: 12px; color: var(--ink-faint); margin-top: 6px; }
+  .term__wait code { font-size: 0.92em; }
+
+  /* ── Port fact cards ─────────────────────────────────────────────────── */
+  .portgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 14px 0 20px; }
+  .portcard { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); }
+  .portcard.is-primary { border-color: var(--accent-soft-line); background: var(--accent-soft); }
+  .portcard .num { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--ink); }
+  .portcard.is-primary .num { color: var(--accent); }
+  .portcard .role { font-size: 12px; font-weight: 700; margin: 4px 0 3px; }
+  .portcard .note { font-size: 11.6px; color: var(--ink-muted); line-height: 1.5; }
+  .portcard .tag { display: inline-block; margin-top: 7px; font-size: 10.3px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .tag--use { background: var(--accent); color: var(--accent-ink); }
+  .tag--avoid { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger-soft-line); }
+  .tag--bg { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--line); }
+
+  /* ── Feature map cards ───────────────────────────────────────────────── */
+  .featgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0 24px; }
+  @media (max-width: 640px) { .featgrid { grid-template-columns: 1fr; } }
+  .feat { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); padding: 15px 17px; }
+  .feat h4 { font-size: 14px; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+  .feat .desc { font-size: 12.6px; color: var(--ink-muted); margin: 0 0 10px; }
+  .feat .grp { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); margin: 10px 0 4px; }
+  .feat .grp:first-of-type { margin-top: 0; }
+  .feat ul { margin: 0; padding-inline-start: 16px; font-size: 12.4px; color: var(--ink); }
+  .feat li + li { margin-top: 3px; }
+  .feat li code { font-size: 0.92em; }
+
+  .linkgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 14px 0 20px; }
+  .linkcard { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); }
+  .linkcard code { display: block; font-size: 12.8px; margin-bottom: 4px; }
+  .linkcard .d { font-size: 12px; color: var(--ink-muted); }
+  .linkcard .warn { display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 700; color: var(--danger); }
+
+  footer { border-top: 1px solid var(--line); padding: 24px clamp(20px, 4vw, 56px) 40px; font-size: 12.5px; color: var(--ink-faint); max-width: 1280px; margin: 0 auto; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidenav { position: static; height: auto; border-inline-end: none; border-bottom: 1px solid var(--line); padding: 14px 20px; }
+    .sidenav ul { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+    .sidenav a { white-space: nowrap; }
+    main { padding: 28px 20px 80px; }
+  }
+</style>
+
+<div class="topbar">
+  <div class="topbar__mark">🛠️</div>
+  <div>
+    <div class="topbar__title">Developer Reference — OAE Chatbot</div>
+    <div class="topbar__sub">แผนที่ไฟล์ / ฟังก์ชัน / endpoint สำหรับโปรแกรมเมอร์</div>
+  </div>
+  <div class="topbar__meta">
+    <span class="pill">7 หัวข้อ</span>
+    <a class="topbar__back" href="index.html">← กลับหน้ารวมเอกสาร</a>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="sidenav" id="sidenav" aria-label="สารบัญ">
+    <h3>เนื้อหา</h3>
+    <ul>
+      <li><a href="#runlocal"><span class="num">1</span> เริ่มรัน Local</a></li>
+      <li><a href="#backend"><span class="num">2</span> Backend</a></li>
+      <li><a href="#frontend"><span class="num">3</span> Frontend</a></li>
+      <li><a href="#feature"><span class="num">4</span> Feature map</a></li>
+      <li><a href="#swagger"><span class="num">5</span> Swagger / API Docs</a></li>
+      <li><a href="#cheatsheet"><span class="num">6</span> Cheatsheet</a></li>
+      <li><a href="#exercises"><span class="num">7</span> โจทย์ฝึกทำ</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="hero__eyebrow">Developer Reference</div>
+      <h1>เจอโจทย์แล้วต้องเปิดไฟล์ไหน ฟังก์ชันไหน endpoint ไหน</h1>
+      <p class="lead">
+        ไม่ใช่คู่มือสอนติดตั้ง (ดูชุด onboarding ที่ <a href="index.html">หน้าหลัก</a> แทน) — หน้านี้คือแผนที่อ้างอิงสำหรับคนที่เขียนโค้ดอยู่แล้ว
+        ต้องการรู้เร็ว ๆ ว่า "ฟีเจอร์นี้แก้ไฟล์ไหน" "endpoint นี้อยู่ที่ไหน" "อยากลองยิง API ต้องเปิดอะไร"
+      </p>
+      <dl class="hero__facts">
+        <div class="hero__fact"><dt>Backend</dt><dd><code>localhost:8000</code></dd></div>
+        <div class="hero__fact"><dt>Frontend dev</dt><dd><code>localhost:5173</code></dd></div>
+        <div class="hero__fact"><dt>Entry point</dt><dd><code>rag_server.py</code></dd></div>
+        <div class="hero__fact"><dt>เอกสารเต็ม</dt><dd><code>AGENTS.md</code></dd></div>
+      </dl>
+    </div>
+
+    <div class="callout">
+      <span class="callout__label">โครงสร้างเอกสารตัวจริง</span>
+      <p>หน้านี้เป็น "แผนที่ย่อ" ที่ตัดยอดมาจาก <code>AGENTS.md</code> ที่ root repo — ถ้าอยากได้รายละเอียดเจาะลึกกว่านี้ (tunables, gotchas,
+      RAG flow แบบเต็ม) เปิด <code>AGENTS.md</code> เป็นแหล่งความจริงหลักเสมอ ไฟล์นี้แค่ช่วยให้ scan หาไฟล์ที่ต้องแก้ได้เร็วขึ้น</p>
+    </div>
+
+    <!-- ══════════════════ 1. RUN LOCAL ══════════════════ -->
+    <section class="section" id="runlocal">
+      <div class="section-head"><span class="section-num">1</span><h2>เริ่มรัน Local</h2></div>
+      <p class="dek">ทำครั้งเดียวตอนต้นคาบ เปิด 3 terminal ทิ้งไว้ตลอด ไม่ต้องปิดจนกว่าจะเลิกงาน</p>
+
+      <h4 style="font-size:14px;margin:0 0 8px;">พอร์ตแต่ละตัวคืออะไร (อ่านก่อนเปิด terminal)</h4>
+      <div class="portgrid">
+        <div class="portcard is-primary">
+          <div class="num">5173</div>
+          <div class="role">Frontend dev server</div>
+          <div class="note">หน้าเว็บสด ๆ ตามไฟล์ที่แก้ล่าสุด มี hot reload</div>
+          <span class="tag tag--use">เปิดดูตลอดคาบ</span>
+        </div>
+        <div class="portcard">
+          <div class="num">8000</div>
+          <div class="role">Backend API</div>
+          <div class="note">ตอบ API + Swagger (<code>/docs</code>) — เว็บที่เห็นตรงนี้เป็นของเก่า ไม่อัปเดตตามไฟล์สด</div>
+          <span class="tag tag--avoid">ห้ามเปิดดูเว็บตรงนี้</span>
+        </div>
+        <div class="portcard">
+          <div class="num">5433</div>
+          <div class="role">PostgreSQL (Docker)</div>
+          <div class="note">เก็บข้อมูลความรู้/ผู้ใช้ ทำงานเบื้องหลังล้วน ๆ</div>
+          <span class="tag tag--bg">ไม่ต้องเปิดดูเอง</span>
+        </div>
+        <div class="portcard">
+          <div class="num">11434</div>
+          <div class="role">Ollama (bge-m3)</div>
+          <div class="note">รันเป็น native service อยู่แล้วบนเครื่อง ไม่ต้องสั่งอะไรเพิ่ม</div>
+          <span class="tag tag--bg">ไม่ต้องยุ่ง</span>
+        </div>
+      </div>
+
+      <div class="termgrid">
+        <div class="term">
+          <div class="term__head">
+            <div class="term__badge">1</div>
+            <h4>Terminal 1 — ฐานข้อมูล</h4>
+            <span class="stay">เปิดทิ้งไว้</span>
+          </div>
+          <div class="term__body">
+            <p>ถ้าเคยมี container <code>app</code> ค้างพอร์ต 8000 อยู่ ให้หยุดก่อน แล้วเปิดแค่ Postgres:</p>
+            <div class="codeblock">
+              <pre><code>docker compose stop app
+docker compose up -d postgres</code></pre>
+              <button class="copy-btn" data-copy="docker compose stop app&#10;docker compose up -d postgres">คัดลอก</button>
+            </div>
+            <div class="term__wait">รอจนเห็น <code>Container chatbot-oae-postgres-1  Started</code></div>
+          </div>
+        </div>
+
+        <div class="term">
+          <div class="term__head">
+            <div class="term__badge">2</div>
+            <h4>Terminal 2 — Backend</h4>
+            <span class="stay">เปิดทิ้งไว้</span>
+          </div>
+          <div class="term__body">
+            <p><code>--reload</code> สำคัญมาก — แก้ไฟล์ <code>.py</code> แล้ว save จะรีสตาร์ทให้เองอัตโนมัติ ไม่ต้องกด Ctrl+C เอง:</p>
+            <div class="codeblock">
+              <pre><code>uv run uvicorn rag_server:app --reload --port 8000</code></pre>
+              <button class="copy-btn" data-copy="uv run uvicorn rag_server:app --reload --port 8000">คัดลอก</button>
+            </div>
+            <div class="term__wait">รอจนเห็น <code>Application startup complete</code></div>
+          </div>
+        </div>
+
+        <div class="term">
+          <div class="term__head">
+            <div class="term__badge">3</div>
+            <h4>Terminal 3 — Frontend</h4>
+            <span class="stay">เปิดทิ้งไว้</span>
+          </div>
+          <div class="term__body">
+            <p>ไม่ต้องตั้งตัวแปรอะไรก่อนแล้ว (แก้ <code>vite.config.ts</code> ให้ default ชี้ local อยู่แล้ว) พิมพ์คำสั่งเดียวพอ:</p>
+
+            
+            <div class="codeblock">
+              <pre><code>npm install</code></pre>
+              <button class="copy-btn" data-copy="npm install">คัดลอก</button>
+            </div>
+            
+            <div class="codeblock">
+              <pre><code>npm run dev</code></pre>
+              <button class="copy-btn" data-copy="npm run dev">คัดลอก</button>
+            </div>
+            
+            <div class="term__wait">รอจนเห็น <code>Local: <a href="http://localhost:5173/" target="_blank" rel="noopener">http://localhost:5173/</a></code></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout--danger">
+        <span class="callout__label">กฎเดียวที่ต้องจำ</span>
+        <p>ตลอดคาบ เปิดแค่ <code><a href="http://localhost:5173" target="_blank" rel="noopener">http://localhost:5173</a></code> เท่านั้นในเบราว์เซอร์ — ห้ามเปิด <code>localhost:8000</code> ดูเว็บเด็ดขาด
+        (8000 เปิดดูเฉพาะตอนอยากเช็ค API ผ่าน Swagger ที่ <code>/docs</code> เท่านั้น ดูหัวข้อ 5)</p>
+      </div>
+
+      <h4 style="font-size:14px;margin:26px 0 8px;">แก้โค้ดแล้ว ต้อง restart อะไรไหม</h4>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>แก้อะไร</th><th>ต้อง restart ไหม</th></tr></thead>
+          <tbody>
+            <tr><td>ไฟล์ frontend (<code>.tsx</code> / <code>.ts</code> / <code>.css</code>)</td><td>❌ ไม่ต้อง — hot reload อัตโนมัติ แค่ save แล้วดูที่ 5173</td></tr>
+            <tr><td>ไฟล์ backend (<code>.py</code>)</td><td>❌ ไม่ต้อง — มี <code>--reload</code> อยู่แล้ว แค่ save รอ 2-3 วินาที</td></tr>
+            <tr><td>ไฟล์ <code>.env</code></td><td>✅ ต้อง — กด <code>Ctrl+C</code> ที่ Terminal 2 แล้วรันคำสั่ง backend ใหม่ (env โหลดตอนสตาร์ทครั้งเดียวเท่านั้น)</td></tr>
+            <tr><td>Docker (Postgres)</td><td>❌ ไม่ต้องแตะเลยทั้งคาบ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout--warn">
+        <span class="callout__label">ถ้า backend error ตอนสตาร์ท เรื่อง .env</span>
+        <p>ถ้าเจอ error แบบ <code>ValueError: invalid literal for int()</code> ตอนรัน Terminal 2 — สาเหตุมักมาจากไฟล์ <code>.env</code> มีบรรทัด
+        <code>KEY=</code> เว้นว่างไว้โดยไม่มี <code>#</code> นำหน้า ให้ comment ทั้งบรรทัดด้วย <code>#</code> ถ้ายังไม่อยากตั้งค่านั้น (รายละเอียดเต็มดูที่ <code>explain.html</code>)</p>
+      </div>
+    </section>
+
+    <!-- ══════════════════ 2. BACKEND ══════════════════ -->
+    <section class="section" id="backend">
+      <div class="section-head"><span class="section-num">2</span><h2>Backend (FastAPI / Python)</h2></div>
+      <p class="dek">Entry point: <code>rag_server.py</code> (~40 บรรทัด shim) → re-export <code>app.main.app</code> โค้ดจริงทั้งหมดอยู่ใต้แพ็กเกจ <code>app/</code></p>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card__head"><span class="ico">🚪</span><h4>Entry point &amp; app factory</h4></div>
+        <div class="card__body">
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>ไฟล์</th><th>หน้าที่</th></tr></thead>
+              <tbody>
+                <tr><td><code>rag_server.py</code></td><td>Shim — <code>uv run rag_server.py</code> / <code>uvicorn rag_server:app</code> ยังใช้ได้เหมือนเดิม</td></tr>
+                <tr><td><code>app/main.py</code></td><td>สร้าง <code>FastAPI()</code>, lifespan (init DB pool, seed admin, warm-up embedding model), CORS, mount static (<code>/assets</code> <code>/img</code> <code>/geo</code>), <code>include_router(...)</code> ทั้งหมด</td></tr>
+                <tr><td><code>app/config.py</code></td><td>ค่าคงที่/env ทั้งหมด — RAG tunables, JWT, SMTP, feature flags (ดูตาราง env ใน AGENTS.md)</td></tr>
+                <tr><td><code>app/auth.py</code></td><td>PBKDF2 hash, JWT encode/decode, <code>require_admin</code> / <code>require_user</code> / <code>optional_user</code> dependency</td></tr>
+                <tr><td><code>app/models.py</code></td><td>Pydantic request models ทั้งหมด (<code>ChatRequest</code>, <code>LoginRequest</code>, …)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card__head"><span class="ico">🛣️</span><h4>Routers — endpoint อยู่ที่ไฟล์ไหน</h4></div>
+        <div class="card__body">
+          <p>ไฟล์ router ทุกตัวอยู่ใต้ <code>app/routers/</code> — ตารางนี้คือรายการเกือบครบ (endpoint ที่มี param เยอะดูรายละเอียดจริงที่ Swagger)</p>
+
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th colspan="2"><code>app/routers/public.py</code> — หน้าเว็บ + public read</th></tr></thead>
+              <tbody>
+                <tr><td><span class="method m-get">GET</span></td><td><code>/</code> · <code>/app</code> · <code>/portal</code> · <code>/dashboard</code> · <code>/gis</code> · <code>/survey</code> · <code>/api-docs</code> — เสิร์ฟ HTML shell ของแต่ละหน้า</td></tr>
+                <tr><td><span class="method m-get">GET</span></td><td><code>/health</code>, <code>/categories</code>, <code>/api-links</code>, <code>/live/price/{key}</code>, <code>/insights/public/latest</code>, <code>/share/{log_id}</code></td></tr>
+                <tr><td><span class="method m-post">POST</span></td><td><code>/survey/submit</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th colspan="2"><code>app/routers/chat.py</code> — RAG chat</th></tr></thead>
+              <tbody>
+                <tr><td><span class="method m-post">POST</span></td><td><code>/chat</code> — JSON หรือ text/plain stream</td></tr>
+                <tr><td><span class="method m-post">POST</span></td><td><code>/chat/stream</code> — SSE (<code>event: meta</code> → token → <code>event: done</code>)</td></tr>
+                <tr><td><span class="method m-get">GET</span></td><td><code>/followups/{log_id}</code> — lazy suggestion chips</td></tr>
+                <tr><td><span class="method m-post">POST</span></td><td><code>/feedback</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th colspan="2"><code>app/routers/auth.py</code> — auth + user + OTP</th></tr></thead>
+              <tbody>
+                <tr><td><span class="method m-post">POST</span></td><td><code>/auth/login</code>, <code>/auth/signup</code>, <code>/auth/otp/send</code>, <code>/auth/otp/verify</code>, <code>/auth/password/reset</code></td></tr>
+                <tr><td><span class="method m-get">GET</span></td><td><code>/auth/me</code>, <code>/auth/otp/config</code>, <code>/user/me</code>, <code>/user/stats</code>, <code>/user/history</code></td></tr>
+                <tr><td><span class="method m-put">PUT</span></td><td><code>/user/profile</code>, <code>/user/password</code></td></tr>
+                <tr><td><span class="method m-post">POST</span></td><td><code>/user/conversation/reset</code>, <code>/guest/conversation/reset</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th colspan="2"><code>app/routers/admin.py</code> — admin-only (require_admin)</th></tr></thead>
+              <tbody>
+                <tr><td><span class="method m-get">GET</span></td><td><code>/admin/stats</code>, <code>/admin/dashboard/summary</code>, <code>/admin/analytics</code>, <code>/admin/status</code>, <code>/admin/users</code>, <code>/admin/logs</code>, <code>/admin/kb/tree</code>, <code>/admin/insights</code>, <code>/admin/surveys</code>, <code>/admin/export/{dataset}</code></td></tr>
+                <tr><td><span class="method m-post">POST</span></td><td><code>/admin/login</code>, <code>/admin/upload</code>, <code>/admin/users</code>, <code>/admin/embed-text</code>, <code>/admin/jobs/weekly-insights</code>, <code>/admin/domains</code></td></tr>
+                <tr><td><span class="method m-delete">DELETE</span></td><td><code>/admin/kb/chunks/{id}</code>, <code>/admin/users/{username}</code>, <code>/admin/embeddings/{source}</code>, <code>/admin/domains/{id}</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th colspan="2"><code>app/routers/api_v1.py</code> — public read API (<code>/api/v1/*</code>)</th></tr></thead>
+              <tbody>
+                <tr><td>master</td><td><code>/master/commodities</code>, <code>/master/regions</code>, <code>/master/dimensions</code></td></tr>
+                <tr><td>kb</td><td><code>/kb/coverage</code>, <code>/kb/{commodity}/sources</code>, <code>/kb/stats</code>, <code>/kb/matrix</code></td></tr>
+                <tr><td>analytics</td><td><code>/analytics/usage-summary</code>, <code>/analytics/questions</code>, <code>/analytics/survey</code>, <code>/analytics/daily-trend</code>, <code>/analytics/gaps</code></td></tr>
+                <tr><td>monitor</td><td><code>/monitor/alerts</code>, <code>/monitor/summary</code>, <code>/monitor/board</code></td></tr>
+                <tr><td>price</td><td><code>/price/daily-sheet</code>, <code>/price/{commodity}/latest|history|summary|ifga</code></td></tr>
+                <tr><td>production</td><td><code>/production/ranking</code>, <code>/production/{commodity}</code>, <code>/production/{commodity}/history</code></td></tr>
+                <tr><td>risk / rag</td><td><code>/risk/indicators</code>, <span class="method m-post">POST</span> <code>/rag/query</code> (ต้อง <code>X-API-Key</code>)</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th colspan="2">อื่น ๆ</th></tr></thead>
+              <tbody>
+                <tr><td><code>app/routers/conversations.py</code></td><td><code>GET/PUT/DELETE /conversations[...]</code></td></tr>
+                <tr><td><code>app/routers/line_webhook.py</code></td><td><span class="method m-post">POST</span> <code>/webhook/line</code> — ต้องตั้ง <code>LINE_CHANNEL_SECRET</code> + <code>LINE_CHANNEL_ACCESS_TOKEN</code> ไม่งั้น 503</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card__head"><span class="ico">⚙️</span><h4>Services — logic หลัก (app/services/)</h4></div>
+        <div class="card__body">
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>ไฟล์</th><th>หน้าที่</th></tr></thead>
+              <tbody>
+                <tr><td><code>rag.py</code></td><td><strong>หัวใจของ RAG</strong> — <code>embed_query</code>, <code>expand_query</code>, <code>retrieve_expanded</code>, <code>rerank_chunks</code></td></tr>
+                <tr><td><code>embedding.py</code></td><td>เรียก Ollama bge-m3 (1024-dim)</td></tr>
+                <tr><td><code>clients.py</code></td><td>singleton HTTP client (DeepSeek / Ollama) — <strong>ห้ามสร้าง client ใหม่ทุก call</strong></td></tr>
+                <tr><td><code>intent_router.py</code></td><td>เช็คก่อน RAG: ทักทาย/PII/off-topic → ตอบ canned reply ไม่ยิง DeepSeek — <strong>ตัวอย่างจุดฝึกแก้ text ที่ดี</strong> (<code>_GREETING_REPLY</code>, <code>_NO_DATA_REPLY</code>)</td></tr>
+                <tr><td><code>domain_router.py</code></td><td>เมื่อค้นหา "ทั้งหมด" → LLM จัดหมวดคำถามเข้า domain เดียว</td></tr>
+                <tr><td><code>tool_router.py</code></td><td>LLM เลือกว่าจะเรียก external API ตัวไหน (NABC/TMD/RID/DGR/…)</td></tr>
+                <tr><td><code>api_catalog.py</code></td><td>ดึง BigGeoEarth catalog มา auto-gen tool schema</td></tr>
+                <tr><td><code>web_search.py</code></td><td>DuckDuckGo augmentation</td></tr>
+                <tr><td><code>ocr.py</code></td><td>Typhoon OCR + chunking + background upload processing</td></tr>
+                <tr><td><code>followups.py</code></td><td>สร้าง suggestion chips (KB-backed)</td></tr>
+                <tr><td><code>nabc.py</code> / <code>agri_live.py</code> / <code>doa_pest.py</code> / <code>ckan_enrich.py</code></td><td>fetcher เฉพาะทางสำหรับราคา/สภาพอากาศ/ศัตรูพืช/ข้อมูล CKAN</td></tr>
+                <tr><td><code>dimensions.py</code></td><td>classify chunk เข้า 5 มิติ (production/market/risk/finance/farm)</td></tr>
+                <tr><td><code>query_normalize.py</code></td><td>รวมคำถามที่ตอบไม่ได้ที่คล้ายกันเป็น cluster เดียว</td></tr>
+                <tr><td><code>insights.py</code></td><td>weekly analytics report (DeepSeek, thinking mode เปิดได้เพราะไม่ latency-sensitive)</td></tr>
+                <tr><td><code>otp_mail.py</code></td><td>ส่งอีเมล OTP (SMTP หรือ dev-echo)</td></tr>
+                <tr><td><code>rate_limit.py</code> / <code>export.py</code> / <code>geo_links.py</code></td><td>rate limit /api/v1, สร้างไฟล์ export, ลิงก์ GIS</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card__head"><span class="ico">🗄️</span><h4>DB layer (app/db/) — 1 ไฟล์ต่อ 1 กลุ่มตาราง</h4></div>
+        <div class="card__body">
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>ไฟล์</th><th>ตาราง / หน้าที่</th></tr></thead>
+              <tbody>
+                <tr><td><code>pool.py</code></td><td><code>ThreadedConnectionPool</code>, <code>_db()</code>, <code>SQL_INIT</code> schema bootstrap</td></tr>
+                <tr><td><code>knowledge_base.py</code></td><td><code>knowledge_base</code> — pgvector chunk insert/retrieve/list/delete</td></tr>
+                <tr><td><code>qa_logs.py</code></td><td><code>qa_logs</code> — ทุก Q/A พร้อม category/province/season</td></tr>
+                <tr><td><code>conversations.py</code></td><td><code>conv_sessions</code>, <code>user_histories</code>, <code>user_conversations</code></td></tr>
+                <tr><td><code>users.py</code></td><td><code>users</code>, <code>user_profiles</code></td></tr>
+                <tr><td><code>domains.py</code></td><td><code>kb_domains</code>, <code>kb_subdomains</code> — taxonomy registry</td></tr>
+                <tr><td><code>price_facts.py</code> / <code>production_facts.py</code></td><td>ราคา/ผลผลิตที่ sync จาก NABC/CKAN</td></tr>
+                <tr><td><code>surveys.py</code> / <code>otps.py</code> / <code>api_links.py</code> / <code>insights.py</code></td><td>แบบสำรวจ, OTP code, ลิงก์ API ภายนอก, weekly insight cache</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head"><span class="ico">🧪</span><h4>คำสั่งอื่น ๆ ที่มีประโยชน์ (นอกจาก Terminal 2)</h4></div>
+        <div class="card__body">
+          <div class="codeblock">
+            <pre><code>uv run rag_server.py                    # รันตรง ๆ ไม่มี auto-reload (ปกติใช้ Terminal 2 แทน)
+uv run tests/test_chat.py               # RAG benchmark (shrimp)
+uv run tests/api_test.py                # admin endpoint smoke test</code></pre>
+            <button class="copy-btn" data-copy="uv run tests/test_chat.py">คัดลอก</button>
+          </div>
+          <div class="callout callout--warn">
+            <span class="callout__label">Gotcha สำคัญ</span>
+            <p>Route handler ต้องเป็น <code>def</code> ธรรมดา ไม่ใช่ <code>async def</code> เว้นแต่จะ <code>await</code> อะไรจริง ๆ —
+            เพราะ DB call (psycopg2) และ LLM call (OpenAI/ollama client) เป็น blocking call ทั้งหมด ถ้าใช้ <code>async def</code> เฉย ๆ
+            จะ freeze ทั้ง process เวลามีหลาย request พร้อมกัน (ดู "Concurrency model" ใน AGENTS.md)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ 3. FRONTEND ══════════════════ -->
+    <section class="section" id="frontend">
+      <div class="section-head"><span class="section-num">3</span><h2>Frontend (React + Vite-plus)</h2></div>
+      <p class="dek">1 React tree (<code>src-react/</code>) หลาย entry point — build ผ่าน <code>vp</code> (vite-plus), ไม่ใช่ vite ปกติ</p>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card__head"><span class="ico">🚪</span><h4>Entry point แต่ละหน้า</h4></div>
+        <div class="card__body">
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>Route</th><th>HTML shell</th><th>React entry</th></tr></thead>
+              <tbody>
+                <tr><td><code>/</code></td><td><code>index.html</code></td><td><code>src-react/landing/landing-main.tsx</code></td></tr>
+                <tr><td><code>/app</code></td><td><code>webapp/index.html</code></td><td><code>src-react/main.tsx</code> (ChatApp)</td></tr>
+                <tr><td><code>/admin</code></td><td><code>admin/index.html</code></td><td><code>src-react/admin-main.tsx</code></td></tr>
+                <tr><td><code>/portal</code></td><td><code>portal/index.html</code></td><td><code>src-react/portal/portal-main.tsx</code></td></tr>
+                <tr><td><code>/dashboard</code></td><td><code>dashboard/index.html</code></td><td><code>src-react/dashboard/dashboard-main.tsx</code></td></tr>
+                <tr><td><code>/survey</code></td><td><code>survey/index.html</code></td><td><code>src-react/survey/survey-main.tsx</code></td></tr>
+                <tr><td><code>/gis</code></td><td><code>gis/index.html</code></td><td><code>src-react/gis/gis-main.tsx</code></td></tr>
+                <tr><td><code>/api-docs</code></td><td><code>api-docs/index.html</code></td><td><code>src-react/api-docs/api-docs-main.tsx</code></td></tr>
+                <tr><td><code>/privacy</code></td><td><code>privacy/index.html</code></td><td><code>src-react/privacy/…</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card__head"><span class="ico">📦</span><h4>โฟลเดอร์หลักที่จะเจอบ่อย</h4></div>
+        <div class="card__body">
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>โฟลเดอร์/ไฟล์</th><th>หน้าที่</th></tr></thead>
+              <tbody>
+                <tr><td><code>src/auth.ts</code> · <code>chat.ts</code> · <code>geo.ts</code> · <code>types.ts</code></td><td><strong>API module ใช้ร่วม</strong> — เรียก backend, type กลาง import โดย src-react ทั้งหมด</td></tr>
+                <tr><td><code>src-react/landing/LandingApp.tsx</code></td><td>หน้า landing — <strong>ตัวอย่างจุดฝึกแก้ข้อความง่ายที่สุด</strong> ไม่มี API เกี่ยวข้องเลย</td></tr>
+                <tr><td><code>src-react/components/ChatApp.tsx</code></td><td>หน้าแชทหลัก + <code>MessageList.tsx</code>, <code>ChatInput.tsx</code>, <code>Sidebar.tsx</code>, <code>AuthModal.tsx</code></td></tr>
+                <tr><td><code>src-react/admin/AdminApp.tsx</code></td><td>admin shell + panel ย่อยหนึ่งไฟล์ต่อหนึ่งแท็บ (<code>KBPanel</code>, <code>AnalyticsPanel</code>, <code>UsersPanel</code>, <code>LogsPanel</code>, …)</td></tr>
+                <tr><td><code>src-react/admin/EChart.tsx</code></td><td>ECharts wrapper กลาง — กราฟ admin ทุกตัวใช้ตัวนี้ ห้าม hand-roll SVG chart เอง</td></tr>
+                <tr><td><code>src-react/dashboard/</code></td><td>executive dashboard — <code>Shell.tsx</code> + <code>views/</code></td></tr>
+                <tr><td><code>src-react/portal/</code></td><td>Smart Farm Data Portal — <code>api.ts</code> เป็น typed client ใช้ร่วมกับ dashboard</td></tr>
+                <tr><td><code>public/</code></td><td>static asset (geo json, favicon, vendor lib)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card__head"><span class="ico">⚠️</span><h4>vite.config.ts — จุดที่เคยเป็นปัญหา (ตอนนี้แก้แล้ว)</h4></div>
+        <div class="card__body">
+          <p><code>server.proxy</code> ใน <code>vite.config.ts</code> ผูก path API ทั้งหมด (<code>/chat</code>, <code>/auth</code>, <code>/admin/...</code> ฯลฯ)
+          เข้ากับตัวแปร <code>VITE_PROXY_TARGET</code> — <strong>เดิมค่า default ชี้ไป production VPS จริง</strong> ทำให้ dev บางครั้งเห็นข้อมูล production
+          ปนกับ local โดยไม่รู้ตัว ตอนนี้แก้ default ให้ชี้ <code>localhost:8000</code> แล้ว จึงไม่ต้องตั้งตัวแปรอะไรก่อน <code>npm run dev</code> อีกต่อไป</p>
+          <div class="callout callout--blue">
+            <span class="callout__label">ถ้าอยาก override เอง (ไม่จำเป็นสำหรับวันอบรม)</span>
+            <p><code>$env:VITE_PROXY_TARGET = "https://..."; npm run dev</code> — จำไว้ว่าตัวแปรนี้อ่านจาก shell environment ล้วน ๆ
+            <strong>ไม่โหลดจาก <code>.env</code> อัตโนมัติ</strong> เหมือนฝั่ง Python ต้องตั้งใหม่ทุกครั้งที่เปิด terminal ใหม่</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head"><span class="ico">▶️</span><h4>คำสั่งอื่น ๆ (นอกจาก Terminal 3)</h4></div>
+        <div class="card__body">
+          <div class="codeblock">
+            <pre><code>npm install       # ครั้งแรกหลัง clone เท่านั้น
+npm run build     # tsc && vp build → dist/ (ใช้ก่อน push จริง)
+npm run preview   # vp preview — เสิร์ฟ dist/ แบบ production-like</code></pre>
+            <button class="copy-btn" data-copy="npm run build">คัดลอก</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ 4. FEATURE MAP ══════════════════ -->
+    <section class="section" id="feature">
+      <div class="section-head"><span class="section-num">4</span><h2>Feature map — 1 ฟีเจอร์ แตะกี่ไฟล์</h2></div>
+      <p class="dek">เวลาจะแก้ "ฟีเจอร์" หนึ่งตัว มักต้องแก้ไฟล์ทั้งฝั่ง backend และ frontend พร้อมกัน — การ์ดนี้รวมไว้ให้ในที่เดียว</p>
+
+      <div class="featgrid">
+        <div class="feat">
+          <h4>💬 RAG Chat pipeline</h4>
+          <p class="desc">คำถาม → ค้นความรู้ → ตอบ พร้อม citation</p>
+          <div class="grp">Backend</div>
+          <ul>
+            <li><code>routers/chat.py</code></li>
+            <li><code>services/rag.py</code>, <code>intent_router.py</code>, <code>domain_router.py</code>, <code>tool_router.py</code></li>
+            <li><code>db/knowledge_base.py</code>, <code>qa_logs.py</code></li>
+          </ul>
+          <div class="grp">Frontend</div>
+          <ul>
+            <li><code>components/ChatApp.tsx</code>, <code>MessageList.tsx</code>, <code>ChatInput.tsx</code></li>
+            <li><code>src/chat.ts</code></li>
+          </ul>
+        </div>
+
+        <div class="feat">
+          <h4>🔐 Auth + OTP signup</h4>
+          <p class="desc">login/signup, JWT, guest session, OTP อีเมล</p>
+          <div class="grp">Backend</div>
+          <ul>
+            <li><code>routers/auth.py</code>, <code>app/auth.py</code></li>
+            <li><code>services/otp_mail.py</code></li>
+            <li><code>db/users.py</code>, <code>otps.py</code></li>
+          </ul>
+          <div class="grp">Frontend</div>
+          <ul>
+            <li><code>components/AuthModal.tsx</code>, <code>ProfilePage.tsx</code></li>
+            <li><code>src/auth.ts</code></li>
+          </ul>
+        </div>
+
+        <div class="feat">
+          <h4>📊 Admin — KB / Users / Logs</h4>
+          <p class="desc">อัปโหลดเอกสาร, จัดการผู้ใช้, ดู log คำถาม-คำตอบ</p>
+          <div class="grp">Backend</div>
+          <ul>
+            <li><code>routers/admin.py</code></li>
+            <li><code>services/ocr.py</code>, <code>export.py</code></li>
+            <li><code>db/knowledge_base.py</code>, <code>users.py</code>, <code>qa_logs.py</code></li>
+          </ul>
+          <div class="grp">Frontend</div>
+          <ul>
+            <li><code>admin/KBPanel.tsx</code>, <code>KBTreePanel.tsx</code>, <code>UsersPanel.tsx</code>, <code>LogsPanel.tsx</code></li>
+            <li><code>admin/api.ts</code></li>
+          </ul>
+        </div>
+
+        <div class="feat">
+          <h4>📈 Admin — Analytics / Insights</h4>
+          <p class="desc">กราฟผู้ใช้, gap cluster คำถามตอบไม่ได้, weekly report</p>
+          <div class="grp">Backend</div>
+          <ul>
+            <li><code>routers/admin.py</code> (<code>/admin/analytics</code>, <code>/admin/insights</code>)</li>
+            <li><code>services/insights.py</code>, <code>query_normalize.py</code></li>
+          </ul>
+          <div class="grp">Frontend</div>
+          <ul>
+            <li><code>admin/AnalyticsPanel.tsx</code>, <code>InsightsPanel.tsx</code></li>
+            <li><code>admin/EChart.tsx</code> (กราฟทุกตัวใช้ตัวนี้)</li>
+          </ul>
+        </div>
+
+        <div class="feat">
+          <h4>🌐 Public API v1 (Smart Farm)</h4>
+          <p class="desc">read-only API ให้หน่วยงานภายนอกเรียก + หน้า reference สวย ๆ</p>
+          <div class="grp">Backend</div>
+          <ul>
+            <li><code>routers/api_v1.py</code></li>
+            <li><code>services/apiv1.py</code>, <code>rate_limit.py</code></li>
+            <li><code>db/apiv1.py</code>, <code>price_facts.py</code>, <code>production_facts.py</code></li>
+          </ul>
+          <div class="grp">Frontend</div>
+          <ul>
+            <li><code>src-react/api-docs/</code> — หน้า reference (ไม่ใช่ Swagger)</li>
+          </ul>
+        </div>
+
+        <div class="feat">
+          <h4>📱 LINE OA webhook</h4>
+          <p class="desc">ตอบแชทผ่าน LINE Official Account</p>
+          <div class="grp">Backend เท่านั้น (ไม่มี UI)</div>
+          <ul>
+            <li><code>routers/line_webhook.py</code></li>
+            <li>reuse <code>services/rag.py</code> pipeline เดียวกับ <code>/chat</code></li>
+            <li><code>scripts/setup_line_rich_menu.py</code> (rich menu)</li>
+          </ul>
+        </div>
+
+        <div class="feat">
+          <h4>🗺️ Portal / Dashboard บริหาร</h4>
+          <p class="desc">ราคาสด, KPI มิติการตัดสินใจ, coverage matrix</p>
+          <div class="grp">Backend</div>
+          <ul>
+            <li><code>routers/api_v1.py</code> (<code>/kb/matrix</code>, <code>/monitor/*</code>)</li>
+          </ul>
+          <div class="grp">Frontend</div>
+          <ul>
+            <li><code>src-react/portal/PortalApp.tsx</code></li>
+            <li><code>src-react/dashboard/DashboardApp.tsx</code> + <code>views/</code></li>
+            <li><code>portal/api.ts</code> (typed client ใช้ร่วม 2 หน้า)</li>
+          </ul>
+        </div>
+
+        <div class="feat">
+          <h4>🏷️ Domain / Taxonomy registry</h4>
+          <p class="desc">เพิ่ม/ลบ domain-subdomain ก่อน embed ข้อมูลใหม่</p>
+          <div class="grp">Backend</div>
+          <ul>
+            <li><code>routers/admin.py</code> (<code>/admin/domains</code>)</li>
+            <li><code>db/domains.py</code></li>
+          </ul>
+          <div class="grp">Frontend</div>
+          <ul>
+            <li><code>admin/DomainsPanel.tsx</code></li>
+            <li><code>src/chat.ts</code> (<code>fetchDomainOptions</code> — ใช้ทั้ง chat pills และ admin dropdown)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ 5. SWAGGER ══════════════════ -->
+    <section class="section" id="swagger">
+      <div class="section-head"><span class="section-num">5</span><h2>Swagger / API Docs</h2></div>
+      <p class="dek">FastAPI สร้าง Swagger ให้อัตโนมัติ ไม่ต้องเขียนเอง — แต่มีจุดที่ต้องระวังเรื่อง URL</p>
+
+      <div class="callout callout--danger">
+        <span class="callout__label">ต้องเข้าที่พอร์ต backend (8000) เท่านั้น</span>
+        <p><code><a href="http://localhost:5173/docs" target="_blank" rel="noopener">http://localhost:5173/docs</a></code> จะ<strong>ไม่ใช่</strong> Swagger จริง — Vite dev server ไม่มี proxy rule สำหรับ <code>/docs</code>
+        เลยได้แค่หน้า React app เปล่า ๆ (SPA fallback) กลับมา ต้องเปิด <strong><code><a href="http://localhost:8000/docs" target="_blank" rel="noopener">http://localhost:8000/docs</a></code></strong> ตรง ๆ เสมอ
+        (ทดสอบแล้ว: 8000 ได้ Swagger UI จริง ส่วน 5173 ได้แค่ HTML shell ของ React)</p>
+      </div>
+
+      <div class="linkgrid">
+        <div class="linkcard">
+          <code><a href="http://localhost:8000/docs" target="_blank" rel="noopener">GET /docs</a></code>
+          <div class="d">Swagger UI แบบโต้ตอบได้ — ลองยิง endpoint จริงจากหน้าเว็บได้เลย (มี "Try it out") — <strong>ใช้ทดสอบการแก้ backend text ได้โดยไม่ต้องพึ่ง frontend</strong></div>
+          <span class="warn">ใช้ localhost:8000 เท่านั้น</span>
+        </div>
+        <div class="linkcard">
+          <code><a href="http://localhost:8000/redoc" target="_blank" rel="noopener">GET /redoc</a></code>
+          <div class="d">เอกสารแบบอ่านอย่างเดียว จัดหมวดสวยกว่า เหมาะเวลาจะพิมพ์ให้คนอื่นอ่าน</div>
+          <span class="warn">ใช้ localhost:8000 เท่านั้น</span>
+        </div>
+        <div class="linkcard">
+          <code><a href="http://localhost:8000/openapi.json" target="_blank" rel="noopener">GET /openapi.json</a></code>
+          <div class="d">OpenAPI schema ดิบ — เอาไป generate client code หรือ import เข้า Postman/Insomnia ได้</div>
+        </div>
+        <div class="linkcard">
+          <code><a href="http://localhost:8000/api-docs" target="_blank" rel="noopener">GET /api-docs</a></code>
+          <div class="d">หน้า React ที่เขียนเอง (ไม่ใช่ Swagger) — โฟกัสเฉพาะ <code>/api/v1/*</code> อธิบาย envelope format ให้หน่วยงานภายนอกอ่าน</div>
+        </div>
+      </div>
+
+      <div class="codeblock">
+        <pre><code># เช็คว่า backend รันอยู่ก่อนเปิด Swagger
+curl <a href="http://localhost:8000/health" target="_blank" rel="noopener">http://localhost:8000/health</a>
+
+# เปิด Swagger ในเบราว์เซอร์
+start <a href="http://localhost:8000/docs" target="_blank" rel="noopener">http://localhost:8000/docs</a></code></pre>
+        <button class="copy-btn" data-copy="start http://localhost:8000/docs">คัดลอก</button>
+      </div>
+
+      <div class="callout callout--blue">
+        <span class="callout__label">Endpoint ที่ต้อง login ก่อนถึงจะลองใน Swagger ได้</span>
+        <p><code>/admin/*</code> ต้องมี JWT token ของ admin (login ผ่าน <code>POST /admin/login</code> ก่อน แล้วเอา token มาใส่ปุ่ม "Authorize" มุมขวาบนของ Swagger UI)
+        ส่วน <code>POST /api/v1/rag/query</code> ต้องมี header <code>X-API-Key</code> จาก <code>API_V1_KEYS</code> ใน <code>.env</code></p>
+      </div>
+    </section>
+
+    <!-- ══════════════════ 6. CHEATSHEET ══════════════════ -->
+    <section class="section" id="cheatsheet">
+      <div class="section-head"><span class="section-num">6</span><h2>Cheatsheet</h2></div>
+      <p class="dek">สรุปจุดเข้าเร็ว — bookmark หน้านี้ไว้แล้วเลื่อนมาดูตรงนี้พอ</p>
+
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>อยากทำอะไร</th><th>ไปที่ไหน</th></tr></thead>
+          <tbody>
+            <tr><td>เปิดดูเว็บระหว่างแก้โค้ด</td><td><code><a href="http://localhost:5173" target="_blank" rel="noopener">http://localhost:5173</a></code></td></tr>
+            <tr><td>ดู endpoint ทั้งหมด + ลองยิงจริง</td><td><code><a href="http://localhost:8000/docs" target="_blank" rel="noopener">http://localhost:8000/docs</a></code></td></tr>
+            <tr><td>แก้ RAG pipeline / คุณภาพคำตอบ</td><td><code>app/services/rag.py</code></td></tr>
+            <tr><td>แก้ข้อความทักทาย / ตอบไม่ได้</td><td><code>app/services/intent_router.py</code></td></tr>
+            <tr><td>เพิ่ม endpoint ใหม่</td><td>ไฟล์ที่เหมาะใน <code>app/routers/*.py</code> → auto pick up จาก <code>app/main.py</code></td></tr>
+            <tr><td>แก้หน้าแชท</td><td><code>src-react/components/ChatApp.tsx</code></td></tr>
+            <tr><td>แก้หน้า landing</td><td><code>src-react/landing/LandingApp.tsx</code></td></tr>
+            <tr><td>แก้หน้า admin แท็บไหนสักแท็บ</td><td><code>src-react/admin/&lt;ชื่อ&gt;Panel.tsx</code></td></tr>
+            <tr><td>ตัวแปร config / feature flag</td><td><code>app/config.py</code> + <code>.env</code></td></tr>
+            <tr><td>schema ตาราง DB</td><td><code>db/init.sql</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════════════ 7. EXERCISES ══════════════════ -->
+    <section class="section" id="exercises">
+      <div class="section-head"><span class="section-num">7</span><h2>โจทย์ฝึกทำ (Workshop)</h2></div>
+      <p class="dek">โจทย์ลงมือแก้โค้ดจริง ไล่จากง่าย/ปลอดภัยที่สุด (frontend ข้อความล้วน) ไปหายากขึ้น (backend + Swagger) เหมาะใช้ในห้องอบรม</p>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card__head"><span class="ico">🎨</span><h4>7.1 Frontend — แก้ข้อความ, เห็นผลด้วย Hot Reload</h4></div>
+        <div class="card__body">
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>โจทย์</th><th>ไฟล์</th><th>บรรทัด/จุดที่แก้</th></tr></thead>
+              <tbody>
+                <tr><td>แก้ข้อความหน้า landing</td><td><code>src-react/landing/LandingApp.tsx</code></td><td>เนื้อหา hero/section ต่าง ๆ</td></tr>
+                <tr><td>แก้ placeholder ช่องพิมพ์คำถาม</td><td><code>src-react/components/ChatInput.tsx:52</code></td><td>"พิมพ์คำถามของท่าน… (Enter = ส่ง, Shift+Enter = ขึ้นบรรทัด)"</td></tr>
+                <tr><td>แก้ label ปุ่ม/สีธีม</td><td><code>src-react/components/Sidebar.tsx</code>, Tailwind class ในไฟล์ต่าง ๆ</td><td>เช่น สีปุ่ม, ไอคอน</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:13.6px;color:var(--ink-muted);margin:10px 0 0;"><strong>วิธีทำงาน:</strong> เปิด <code>npm run dev</code> (ไม่ต้องสนใจ <code>VITE_PROXY_TARGET</code> เลยสำหรับโจทย์กลุ่มนี้ เพราะเป็นข้อความล้วน ไม่มีการเรียก backend) → แก้ไฟล์ → save → เห็นผลที่ <code>localhost:5173</code> ทันทีด้วย hot reload — ปลอดภัย ไม่มี backend เกี่ยวข้อง เหมาะเป็นโจทย์อุ่นเครื่องก่อน</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card__head"><span class="ico">🔧</span><h4>7.2 Backend — แก้ข้อความ/พฤติกรรม, เห็นผลด้วย Swagger</h4></div>
+        <div class="card__body">
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>โจทย์</th><th>ไฟล์</th><th>ตัวแปร</th></tr></thead>
+              <tbody>
+                <tr><td>ข้อความทักทาย</td><td><code>app/services/intent_router.py:92</code></td><td><code>_GREETING_REPLY</code></td></tr>
+                <tr><td>ข้อความกรณีไม่เจอคำตอบ</td><td><code>app/services/intent_router.py:108</code></td><td><code>_NO_DATA_REPLY</code></td></tr>
+                <tr><td>รูปแบบการตอบ (bullet, การอ้างอิง, โทนเสียง)</td><td><code>app/config.py:250</code></td><td><code>SYSTEM_PROMPT</code></td></tr>
+                <tr><td>ชื่อบอท/บุคลิก</td><td><code>SYSTEM_PROMPT</code> เดียวกัน</td><td>ค้นหาคำว่า "สศก Chatbot"</td></tr>
+                <tr><td>ความยาวคำตอบ</td><td><code>app/config.py:61</code></td><td><code>DEEPSEEK_MAX_TOKENS_CONCISE</code> (ลอง 300 vs 1500 เทียบกัน)</td></tr>
+                <tr><td>เปิด/ปิดการจัดลำดับผลลัพธ์ใหม่</td><td><code>app/config.py</code></td><td><code>RAG_RERANK_ENABLED = True/False</code> — เห็นผลต่างชัดถ้าถามคำถามในโดเมนที่มีข้อมูลซ้อนกันหลายปี</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:13.6px;color:var(--ink-muted);margin:12px 0 8px;"><strong>วิธีทำงาน (แนะนำสำหรับห้องอบรม 10 คน):</strong></p>
+          <ol style="font-size:13.6px;color:var(--ink);margin:0 0 4px;padding-inline-start:20px;">
+            <li>รัน backend ด้วย <code>uv run uvicorn rag_server:app --reload --port 8000</code> (<code>--reload</code> สำคัญ — แก้ <code>.py</code> แล้ว server รีสตาร์ทเองอัตโนมัติ ไม่ต้องกด Ctrl+C เอง)</li>
+            <li>แก้ไฟล์ตามตารางข้างบน → save → รอ terminal reload เสร็จ (ไม่กี่วินาที)</li>
+            <li>เปิด <code>localhost:8000/docs</code> → หา <code>POST /chat</code> → กด "Try it out" → ใส่ <code>{"message": "สวัสดี"}</code> (ทดสอบทักทาย) หรือคำถามนอกโดเมนที่มี เช่น "ราคาปลา" (ทดสอบ no-data reply เพราะ local KB มีแค่ chicken/palm_oil/swine) → Execute → เห็นข้อความที่แก้ตรง ๆ ในผลลัพธ์ ไม่ต้องพึ่ง frontend เลย</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head"><span class="ico">✨</span><h4>7.3 โจทย์เสริม (ถ้าเวลาเหลือ)</h4></div>
+        <div class="card__body">
+          <ul style="font-size:13.6px;color:var(--ink);margin:0 0 12px;padding-inline-start:20px;">
+            <li>ปรับ <code>TOP_K</code> (<code>app/config.py</code>) จาก 10 → 3 แล้วดูว่าคำตอบสั้น/แคบลงไหม (ทำให้เห็นผลของ RAG parameter ชัดเจน)</li>
+            <li>ปิด <code>INTENT_ROUTER_ENABLED</code> ชั่วคราว แล้วลองพิมพ์ "สวัสดี" อีกครั้ง — จะเห็นว่าคำตอบเปลี่ยนจาก canned reply เป็นไป RAG เต็มรูปแบบแทน (สอนให้เห็นว่า flag ตัวนี้ทำอะไร)</li>
+          </ul>
+          <div class="callout callout--blue">
+            <span class="callout__label">ต่อยอด (advanced, ถ้ามีคนไวกว่ากลุ่ม)</span>
+            <p>ลองตั้ง <code>VITE_PROXY_TARGET=http://localhost:8000</code> แล้วเปิดหน้าแชทจริงดูผลลัพธ์ที่แก้ผ่าน UI จริง — เก็บไว้เป็นด่านท้าย ไม่ใช่ด่านแรก</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer style="max-width:none;padding:24px 0 0;">
+      สรุปจาก AGENTS.md + โครงสร้างไฟล์จริงของ repo ณ วันที่สร้างเอกสารนี้ — ถ้าโครงสร้างเปลี่ยนไปมาก ให้ยึด AGENTS.md เป็นหลักเสมอ
+    </footer>
+  </main>
+</div>
+
+<script>
+  Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var text = (btn.getAttribute("data-copy") || "").replace(/&#10;/g, "\n");
+      var done = function () {
+        var original = btn.textContent;
+        btn.textContent = "คัดลอกแล้ว ✓";
+        btn.classList.add("copied");
+        window.setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove("copied");
+        }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); done(); });
+      } else {
+        fallbackCopy(text); done();
+      }
+    });
+  });
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  // Highlight the sidebar entry matching the section currently in view.
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll("#sidenav a"));
+    var sections = links.map(function (a) { return document.querySelector(a.getAttribute("href")); }).filter(Boolean);
+    if (!("IntersectionObserver" in window) || !sections.length) return;
+    var byId = {};
+    links.forEach(function (a) { byId[a.getAttribute("href").slice(1)] = a; });
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = byId[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          links.forEach(function (a) { a.classList.remove("active"); });
+          link.classList.add("active");
+        }
+      });
+    }, { rootMargin: "-15% 0px -75% 0px", threshold: 0 });
+    sections.forEach(function (s) { observer.observe(s); });
+  })();
+</script>
