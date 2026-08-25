@@ -332,9 +332,11 @@ docker compose up -d postgres</code></pre>
       </div>
 
       <div class="callout callout--danger">
-        <span class="callout__label">กฎเดียวที่ต้องจำ</span>
-        <p>ตลอดคาบ เปิดแค่ <code><a href="http://localhost:5173" target="_blank" rel="noopener">http://localhost:5173</a></code> เท่านั้นในเบราว์เซอร์ — ห้ามเปิด <code>localhost:8000</code> ดูเว็บเด็ดขาด
-        (8000 เปิดดูเฉพาะตอนอยากเช็ค API ผ่าน Swagger ที่ <code>/docs</code> เท่านั้น ดูหัวข้อ 5)</p>
+        <span class="callout__label">** local web server **</span>
+        <p><code><a href="http://localhost:5173" target="_blank" rel="noopener">http://localhost:5173</a></code> เมื่อแก้ frontend <br>
+          <code><a href="http://localhost:8000/docs" target="_blank" rel="noopener">http://localhost:8000</a></code> เช็ค Swagger / API docs (อย่าเปิดดูเว็บตรงนี้)
+          <br>
+          </p>
       </div>
 
       <h4 style="font-size:14px;margin:26px 0 8px;">แก้โค้ดแล้ว ต้อง restart อะไรไหม</h4>
@@ -508,7 +510,7 @@ docker compose up -d postgres</code></pre>
         </div>
       </div>
 
-      <div class="card">
+      <!-- <div class="card">
         <div class="card__head"><span class="ico">🧪</span><h4>คำสั่งอื่น ๆ ที่มีประโยชน์ (นอกจาก Terminal 2)</h4></div>
         <div class="card__body">
           <div class="codeblock">
@@ -524,7 +526,7 @@ uv run tests/api_test.py                # admin endpoint smoke test</code></pre>
             จะ freeze ทั้ง process เวลามีหลาย request พร้อมกัน (ดู "Concurrency model" ใน AGENTS.md)</p>
           </div>
         </div>
-      </div>
+      </div> -->
     </section>
 
     <!-- ══════════════════ 3. FRONTEND ══════════════════ -->
@@ -735,10 +737,10 @@ npm run preview   # vp preview — เสิร์ฟ dist/ แบบ production
       <p class="dek">FastAPI สร้าง Swagger ให้อัตโนมัติ ไม่ต้องเขียนเอง — แต่มีจุดที่ต้องระวังเรื่อง URL</p>
 
       <div class="callout callout--danger">
-        <span class="callout__label">ต้องเข้าที่พอร์ต backend (8000) เท่านั้น</span>
-        <p><code><a href="http://localhost:5173/docs" target="_blank" rel="noopener">http://localhost:5173/docs</a></code> จะ<strong>ไม่ใช่</strong> Swagger จริง — Vite dev server ไม่มี proxy rule สำหรับ <code>/docs</code>
+        <span class="callout__label"><a href="http://localhost:8000/docs" target="_blank" rel="noopener">http://localhost:8000/docs</a></span>
+        <!-- <p><code><a href="http://localhost:8000/docs" target="_blank" rel="noopener">http://localhost:8000/docs</a></code> จะ<strong>ไม่ใช่</strong> Swagger จริง — Vite dev server ไม่มี proxy rule สำหรับ <code>/docs</code>
         เลยได้แค่หน้า React app เปล่า ๆ (SPA fallback) กลับมา ต้องเปิด <strong><code><a href="http://localhost:8000/docs" target="_blank" rel="noopener">http://localhost:8000/docs</a></code></strong> ตรง ๆ เสมอ
-        (ทดสอบแล้ว: 8000 ได้ Swagger UI จริง ส่วน 5173 ได้แค่ HTML shell ของ React)</p>
+        (ทดสอบแล้ว: 8000 ได้ Swagger UI จริง ส่วน 5173 ได้แค่ HTML shell ของ React)</p> -->
       </div>
 
       <div class="linkgrid">
@@ -756,10 +758,7 @@ npm run preview   # vp preview — เสิร์ฟ dist/ แบบ production
           <code><a href="http://localhost:8000/openapi.json" target="_blank" rel="noopener">GET /openapi.json</a></code>
           <div class="d">OpenAPI schema ดิบ — เอาไป generate client code หรือ import เข้า Postman/Insomnia ได้</div>
         </div>
-        <div class="linkcard">
-          <code><a href="http://localhost:8000/api-docs" target="_blank" rel="noopener">GET /api-docs</a></code>
-          <div class="d">หน้า React ที่เขียนเอง (ไม่ใช่ Swagger) — โฟกัสเฉพาะ <code>/api/v1/*</code> อธิบาย envelope format ให้หน่วยงานภายนอกอ่าน</div>
-        </div>
+
       </div>
 
       <div class="codeblock">
@@ -817,10 +816,13 @@ start <a href="http://localhost:8000/docs" target="_blank" rel="noopener">http:/
                 <tr><td>แก้ข้อความหน้า landing</td><td><code>src-react/landing/LandingApp.tsx</code></td><td>เนื้อหา hero/section ต่าง ๆ</td></tr>
                 <tr><td>แก้ placeholder ช่องพิมพ์คำถาม</td><td><code>src-react/components/ChatInput.tsx:52</code></td><td>"พิมพ์คำถามของท่าน… (Enter = ส่ง, Shift+Enter = ขึ้นบรรทัด)"</td></tr>
                 <tr><td>แก้ label ปุ่ม/สีธีม</td><td><code>src-react/components/Sidebar.tsx</code>, Tailwind class ในไฟล์ต่าง ๆ</td><td>เช่น สีปุ่ม, ไอคอน</td></tr>
+                <tr><td>เปลี่ยนสีธีมทั้งเว็บทีเดียว (จุดศูนย์กลาง)</td><td><code>src-react/style.css:7-12</code></td><td><code>--color-brand-50</code> … <code>--color-brand-900</code> — แก้ที่นี่ที่เดียว สีเปลี่ยนทั้งปุ่ม/gradient/active state ทุกหน้าพร้อมกัน ต่างจากแถวบนที่ไล่แก้ทีละไฟล์</td></tr>
+                <tr><td>แก้หัวข้อ/คำอธิบายการ์ดแนะนำตอนเปิดแชทใหม่</td><td><code>src-react/components/MessageList.tsx:161-182</code></td><td><code>WELCOME_CAPS</code> — แก้ <code>icon</code>/<code>title</code>/<code>desc</code> ของการ์ดใดการ์ดหนึ่ง</td></tr>
               </tbody>
             </table>
           </div>
-          <p style="font-size:13.6px;color:var(--ink-muted);margin:10px 0 0;"><strong>วิธีทำงาน:</strong> เปิด <code>npm run dev</code> (ไม่ต้องสนใจ <code>VITE_PROXY_TARGET</code> เลยสำหรับโจทย์กลุ่มนี้ เพราะเป็นข้อความล้วน ไม่มีการเรียก backend) → แก้ไฟล์ → save → เห็นผลที่ <code>localhost:5173</code> ทันทีด้วย hot reload — ปลอดภัย ไม่มี backend เกี่ยวข้อง เหมาะเป็นโจทย์อุ่นเครื่องก่อน</p>
+          <p style="font-size:13.6px;color:var(--ink-muted);margin:10px 0 0;"><strong>วิธีทำงาน:</strong> เปิด <code>npm run dev</code>
+            (โจทย์กลุ่มนี้ เป็นข้อความล้วน ไม่มีการเรียก backend) → แก้ไฟล์ → save → เห็นผลที่ <code>localhost:5173</code> ทันทีด้วย hot reload </p>
         </div>
       </div>
 
@@ -835,6 +837,10 @@ start <a href="http://localhost:8000/docs" target="_blank" rel="noopener">http:/
                 <tr><td>ข้อความกรณีไม่เจอคำตอบ</td><td><code>app/services/intent_router.py:108</code></td><td><code>_NO_DATA_REPLY</code></td></tr>
                 <tr><td>รูปแบบการตอบ (bullet, การอ้างอิง, โทนเสียง)</td><td><code>app/config.py:250</code></td><td><code>SYSTEM_PROMPT</code></td></tr>
                 <tr><td>ชื่อบอท/บุคลิก</td><td><code>SYSTEM_PROMPT</code> เดียวกัน</td><td>ค้นหาคำว่า "สศก Chatbot"</td></tr>
+                <tr><td colspan="3" style="font-size:13px;color:var(--ink-muted);"> ** หลังจากเปลี่ยนบุคลิกและโทนเสียงของ bot แล้ว ให้ลองถาม เช่น "คุณคือใคร" หรือ "รู้จักหมูมั้ย" เพื่อเปรียบเทียบโทนเสียงในการตอบคำถาม</td></tr>
+                <tr><td>ข้อความกรณีคำถามนอกขอบเขต</td><td><code>app/services/intent_router.py:103-108</code></td><td><code>_OUT_OF_SCOPE_REPLY</code> — ทดสอบด้วยการพิมพ์ "เขียนโค้ดให้หน่อย" หรือ "ทำนายฝัน"</td></tr>
+                <tr><td>เพิ่มคำเข้า intent classifier (แก้ logic ไม่ใช่แค่ข้อความ)</td><td><code>app/services/intent_router.py:48-65</code></td><td>เพิ่มคำใหม่เข้า tuple <code>_OFF_TOPIC</code> เช่น <code>"ดูดวงไพ่"</code> แล้วลองถามคำนั้นก่อน/หลังแก้ เพื่อเห็นว่าคำถามเปลี่ยนจากไป RAG เป็น canned reply ทันที</td></tr>
+                <tr><td>ข้อความตอบขอบคุณ</td><td><code>app/services/intent_router.py:96</code></td><td><code>_THANKS_REPLY</code> — ทดสอบด้วยการพิมพ์ "ขอบคุณค่ะ"</td></tr>
                 <tr><td>ความยาวคำตอบ</td><td><code>app/config.py:61</code></td><td><code>DEEPSEEK_MAX_TOKENS_CONCISE</code> (ลอง 300 vs 1500 เทียบกัน)</td></tr>
                 <tr><td>เปิด/ปิดการจัดลำดับผลลัพธ์ใหม่</td><td><code>app/config.py</code></td><td><code>RAG_RERANK_ENABLED = True/False</code> — เห็นผลต่างชัดถ้าถามคำถามในโดเมนที่มีข้อมูลซ้อนกันหลายปี</td></tr>
               </tbody>
@@ -844,6 +850,8 @@ start <a href="http://localhost:8000/docs" target="_blank" rel="noopener">http:/
           <ol style="font-size:13.6px;color:var(--ink);margin:0 0 4px;padding-inline-start:20px;">
             <li>รัน backend ด้วย <code>uv run uvicorn rag_server:app --reload --port 8000</code> (<code>--reload</code> สำคัญ — แก้ <code>.py</code> แล้ว server รีสตาร์ทเองอัตโนมัติ ไม่ต้องกด Ctrl+C เอง)</li>
             <li>แก้ไฟล์ตามตารางข้างบน → save → รอ terminal reload เสร็จ (ไม่กี่วินาที)</li>
+            <li>ถ้ามีการแก้ไฟล์ .env ต้อง restart backend — กด Ctrl+C ที่ terminal ที่รัน uvicorn แล้วรันคำสั่งเดิมใหม่:<br>
+            <code>uv run uvicorn rag_server:app --reload --port 8000</code></li>
             <li>เปิด <code>localhost:8000/docs</code> → หา <code>POST /chat</code> → กด "Try it out" → ใส่ <code>{"message": "สวัสดี"}</code> (ทดสอบทักทาย) หรือคำถามนอกโดเมนที่มี เช่น "ราคาปลา" (ทดสอบ no-data reply เพราะ local KB มีแค่ chicken/palm_oil/swine) → Execute → เห็นข้อความที่แก้ตรง ๆ ในผลลัพธ์ ไม่ต้องพึ่ง frontend เลย</li>
           </ol>
         </div>
@@ -856,10 +864,7 @@ start <a href="http://localhost:8000/docs" target="_blank" rel="noopener">http:/
             <li>ปรับ <code>TOP_K</code> (<code>app/config.py</code>) จาก 10 → 3 แล้วดูว่าคำตอบสั้น/แคบลงไหม (ทำให้เห็นผลของ RAG parameter ชัดเจน)</li>
             <li>ปิด <code>INTENT_ROUTER_ENABLED</code> ชั่วคราว แล้วลองพิมพ์ "สวัสดี" อีกครั้ง — จะเห็นว่าคำตอบเปลี่ยนจาก canned reply เป็นไป RAG เต็มรูปแบบแทน (สอนให้เห็นว่า flag ตัวนี้ทำอะไร)</li>
           </ul>
-          <div class="callout callout--blue">
-            <span class="callout__label">ต่อยอด (advanced, ถ้ามีคนไวกว่ากลุ่ม)</span>
-            <p>ลองตั้ง <code>VITE_PROXY_TARGET=http://localhost:8000</code> แล้วเปิดหน้าแชทจริงดูผลลัพธ์ที่แก้ผ่าน UI จริง — เก็บไว้เป็นด่านท้าย ไม่ใช่ด่านแรก</p>
-          </div>
+
         </div>
       </div>
     </section>
