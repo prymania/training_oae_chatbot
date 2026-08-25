@@ -221,9 +221,9 @@
   <main>
     <div class="hero">
       <div class="hero__eyebrow">Developer Reference</div>
-      <h1>เจอโจทย์แล้วต้องเปิดไฟล์ไหน ฟังก์ชันไหน endpoint ไหน</h1>
+      <h1>ไฟล์, ฟังก์ชัน, endpointและโจทย์ฝึกทำ</h1>
       <p class="lead">
-        ไม่ใช่คู่มือสอนติดตั้ง (ดูชุด onboarding ที่ <a href="index.html">หน้าหลัก</a> แทน) — หน้านี้คือแผนที่อ้างอิงสำหรับคนที่เขียนโค้ดอยู่แล้ว
+        
         ต้องการรู้เร็ว ๆ ว่า "ฟีเจอร์นี้แก้ไฟล์ไหน" "endpoint นี้อยู่ที่ไหน" "อยากลองยิง API ต้องเปิดอะไร"
       </p>
       <dl class="hero__facts">
@@ -235,9 +235,8 @@
     </div>
 
     <div class="callout">
-      <span class="callout__label">โครงสร้างเอกสารตัวจริง</span>
-      <p>หน้านี้เป็น "แผนที่ย่อ" ที่ตัดยอดมาจาก <code>AGENTS.md</code> ที่ root repo — ถ้าอยากได้รายละเอียดเจาะลึกกว่านี้ (tunables, gotchas,
-      RAG flow แบบเต็ม) เปิด <code>AGENTS.md</code> เป็นแหล่งความจริงหลักเสมอ ไฟล์นี้แค่ช่วยให้ scan หาไฟล์ที่ต้องแก้ได้เร็วขึ้น</p>
+      <span class="callout__label">โครงสร้างเอกสาร</span>
+      <p>หน้านี้เป็น "คู่มือฉลับย่อ" ที่ตัดยอดมาจาก <code>AGENTS.md</code> ที่ root repo เพื่อช่วยให้ scan หาไฟล์ที่ต้องแก้ได้เร็วขึ้น</p>
     </div>
 
     <!-- ══════════════════ 1. RUN LOCAL ══════════════════ -->
@@ -251,7 +250,7 @@
           <div class="num">5173</div>
           <div class="role">Frontend dev server</div>
           <div class="note">หน้าเว็บสด ๆ ตามไฟล์ที่แก้ล่าสุด มี hot reload</div>
-          <span class="tag tag--use">เปิดดูตลอดคาบ</span>
+          <span class="tag tag--use">เปิดดูตลอดการทำงาน</span>
         </div>
         <div class="portcard">
           <div class="num">8000</div>
@@ -269,7 +268,7 @@
           <div class="num">11434</div>
           <div class="role">Ollama (bge-m3)</div>
           <div class="note">รันเป็น native service อยู่แล้วบนเครื่อง ไม่ต้องสั่งอะไรเพิ่ม</div>
-          <span class="tag tag--bg">ไม่ต้องยุ่ง</span>
+          <span class="tag tag--bg">ไม่ต้องแตะ</span>
         </div>
       </div>
 
@@ -298,7 +297,7 @@ docker compose up -d postgres</code></pre>
             <span class="stay">เปิดทิ้งไว้</span>
           </div>
           <div class="term__body">
-            <p><code>--reload</code> สำคัญมาก — แก้ไฟล์ <code>.py</code> แล้ว save จะรีสตาร์ทให้เองอัตโนมัติ ไม่ต้องกด Ctrl+C เอง:</p>
+            <p><code>--reload</code> สำคัญมาก — เมื่อมีการแก้ไฟล์ <code>.py</code> แล้ว save จะรีสตาร์ทให้เองอัตโนมัติ :</p>
             <div class="codeblock">
               <pre><code>uv run uvicorn rag_server:app --reload --port 8000</code></pre>
               <button class="copy-btn" data-copy="uv run uvicorn rag_server:app --reload --port 8000">คัดลอก</button>
@@ -577,7 +576,7 @@ uv run tests/api_test.py                # admin endpoint smoke test</code></pre>
       </div>
 
       <div class="card" style="margin-bottom:16px">
-        <div class="card__head"><span class="ico">⚠️</span><h4>vite.config.ts — จุดที่เคยเป็นปัญหา (ตอนนี้แก้แล้ว)</h4></div>
+        <div class="card__head"><span class="ico">⚠️</span><h4>vite.config.ts </h4></div>
         <div class="card__body">
           <p><code>server.proxy</code> ใน <code>vite.config.ts</code> ผูก path API ทั้งหมด (<code>/chat</code>, <code>/auth</code>, <code>/admin/...</code> ฯลฯ)
           เข้ากับตัวแปร <code>VITE_PROXY_TARGET</code> — <strong>เดิมค่า default ชี้ไป production VPS จริง</strong> ทำให้ dev บางครั้งเห็นข้อมูล production
