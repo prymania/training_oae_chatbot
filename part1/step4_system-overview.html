@@ -630,7 +630,7 @@
       </div>
 
       <div class="prose">
-        <p>หลักการออกแบบสำคัญ: <strong>ทุกส่วนเป็นบริการแยกกัน (loosely coupled)</strong> — ถ้า DeepSeek ล่ม ระบบยังค้นเอกสารได้ ถ้า API ภายนอกล่ม ระบบยัง fallback กลับไปตอบจากเอกสารอย่างเดียวได้ ไม่มีจุดใดจุดหนึ่งทำให้ทั้งระบบหยุดทำงาน (ยกเว้นฐานข้อมูลและ backend เอง)</p>
+        <p>หลักการออกแบบ: <strong>การค้นหา + การ enrich จาก external API เป็น loosely-coupled และมี fallback ของตัวเอง</strong></p>
       </div>
 
       <div class="cardgrid">
