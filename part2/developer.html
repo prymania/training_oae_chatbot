@@ -838,8 +838,16 @@ start <a href="http://localhost:8000/docs" target="_blank" rel="noopener">http:/
                 <tr><td>รูปแบบการตอบ (bullet, การอ้างอิง, โทนเสียง)</td><td><code>app/config.py:250</code></td><td><code>SYSTEM_PROMPT</code></td></tr>
                 <tr><td>ชื่อบอท/บุคลิก</td><td><code>SYSTEM_PROMPT</code> เดียวกัน</td><td>ค้นหาคำว่า "สศก Chatbot"</td></tr>
                 <tr><td colspan="3" style="font-size:13px;color:var(--ink-muted);"> ** หลังจากเปลี่ยนบุคลิกและโทนเสียงของ bot แล้ว ให้ลองถาม เช่น "คุณคือใคร" หรือ "รู้จักหมูมั้ย" เพื่อเปรียบเทียบโทนเสียงในการตอบคำถาม</td></tr>
-                <tr><td>ข้อความกรณีคำถามนอกขอบเขต</td><td><code>app/services/intent_router.py:103-108</code></td><td><code>_OUT_OF_SCOPE_REPLY</code> — ทดสอบด้วยการพิมพ์ "เขียนโค้ดให้หน่อย" หรือ "ทำนายฝัน"</td></tr>
-                <tr><td>เพิ่มคำเข้า intent classifier (แก้ logic ไม่ใช่แค่ข้อความ)</td><td><code>app/services/intent_router.py:48-65</code></td><td>เพิ่มคำใหม่เข้า tuple <code>_OFF_TOPIC</code> เช่น <code>"ดูดวงไพ่"</code> แล้วลองถามคำนั้นก่อน/หลังแก้ เพื่อเห็นว่าคำถามเปลี่ยนจากไป RAG เป็น canned reply ทันที</td></tr>
+                <!-- <tr><td>แก้ข้อความแนะนำเริ่มต้น</td><td><code>app/services/kb_suggestions.py:38</code></td><td><code>_TOPIC_TEMPLATES</code> — เพิ่มปุ่มแนะนำคำถามเริ่มต้น เพิ่มค่านี้ไปด้านบน <br>(("ทั่วไป", "ภาพรวม"), "ข้อมูลทั่วไปเกี่ยวกับ{label}มีอะไรบ้าง?"),</td></tr> -->
+                <tr>
+                  <td>แก้ข้อความแนะนำเริ่มต้น</td>
+                  <td><code>app/services/kb_suggestions.py:38</code></td>
+                  <td><code>_TOPIC_TEMPLATES</code> — หากต้องการเพิ่มปุ่มแนะนำคำถามเริ่มต้น ให้เพิ่ม tuple ใหม่ไว้บนสุดของ list เช่น
+                    <br><code>(("ทั่วไป", "ภาพรวม"), "ข้อมูลทั่วไปเกี่ยวกับ{label}มีอะไรบ้าง?"),</code></td>
+                </tr>
+
+                <tr><td>ข้อความกรณีคำถามนอกขอบเขต</td><td><code>app/services/intent_router.py:103-108</code></td><td><code>_OUT_OF_SCOPE_REPLY</code> — ทดสอบด้วยการพิมพ์ "เขียนโค้ดให้หน่อย" หรือ "ทำนายฝัน" เพื่อดูข้อความ reply </td></tr>
+                <tr><td>เพิ่มคำเข้า intent classifier (แก้ logic ไม่ใช่แค่ข้อความ)</td><td><code>app/services/intent_router.py:48-65</code></td><td>เพิ่มคำใหม่เข้า tuple <code>_OFF_TOPIC</code> เช่น <code> "แฟชั่น", "อาหาร", "กีฬา", "ดนตรี"</code> แล้วลองถามคำนั้นก่อน/หลังแก้ เพื่อเห็นว่าคำถามเปลี่ยนจากไป RAG เป็น canned reply ทันที</td></tr>
                 <tr><td>ข้อความตอบขอบคุณ</td><td><code>app/services/intent_router.py:96</code></td><td><code>_THANKS_REPLY</code> — ทดสอบด้วยการพิมพ์ "ขอบคุณค่ะ"</td></tr>
                 <tr><td>ความยาวคำตอบ</td><td><code>app/config.py:61</code></td><td><code>DEEPSEEK_MAX_TOKENS_CONCISE</code> (ลอง 300 vs 1500 เทียบกัน)</td></tr>
                 <tr><td>เปิด/ปิดการจัดลำดับผลลัพธ์ใหม่</td><td><code>app/config.py</code></td><td><code>RAG_RERANK_ENABLED = True/False</code> — เห็นผลต่างชัดถ้าถามคำถามในโดเมนที่มีข้อมูลซ้อนกันหลายปี</td></tr>
